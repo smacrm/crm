@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+<p:panelGrid style="width: 100%;">
+    <f:facet name="header">
+        <p:row>
+            <p:column style="margin: 0;padding: 0">
+                <p:commandButton title="#{crmcloud['label.logout']}" ajax="true" action="#{loginController.doLogout}" icon="fa fa-fw fa-refresh"/>
+            </p:column>
+            <p:column style="margin: 0;padding: 0" styleClass="gn_span_date">
+                <p:inputText />
+                <p:commandButton ajax="true" type="button" icon="fa fa-fw fa-remove" style="transform: scale(0.8);margin: 0;padding: 0"/>
+            </p:column>
+            <p:column style="margin: 0;padding: 0">
+                <p:commandButton title="#{crmcloud['label.logout']}" ajax="true" action="#{loginController.doLogout}" icon="fa fa-fw fa-phone-square" />
+            </p:column>
+        </p:row>
+    </f:facet>
+</p:panelGrid>
+
+<p:panelGrid style="width: 100%;text-align: center;">
+    <p:row>
+        <p:column><p:commandButton ajax="true" value="1" type="button" /></p:column>
+        <p:column><p:commandButton ajax="true" value="2" type="button" /></p:column>
+        <p:column><p:commandButton ajax="true" value="3" type="button" /></p:column>
+    </p:row>
+    <p:row>
+        <p:column><p:commandButton ajax="true" value="4" type="button" /></p:column>
+        <p:column><p:commandButton ajax="true" value="5" type="button" /></p:column>
+        <p:column><p:commandButton ajax="true" value="6" type="button" /></p:column>
+    </p:row>
+    <p:row>
+        <p:column><p:commandButton ajax="true" value="7" type="button" /></p:column>
+        <p:column><p:commandButton ajax="true" value="8" type="button" /></p:column>
+        <p:column><p:commandButton ajax="true" value="9" type="button" /></p:column>
+    </p:row>
+    <p:row>
+        <p:column><p:commandButton ajax="true" value="0" type="button" /></p:column>
+        <p:column><p:commandButton ajax="true" value="#" type="button" /></p:column>
+        <p:column><p:commandButton ajax="true" value="AC" type="button"/></p:column>
+    </p:row>
+</p:panelGrid>
+
+</ui:composition>

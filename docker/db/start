@@ -1,0 +1,9 @@
+#!/bin/bash
+if [ ! -f .pid ]; then	
+	pid=crmcloud_db
+	docker start $pid
+	echo "$pid" > .pid
+	echo "CRMCloud DB is started: $pid"
+else
+	echo "CRMCloud DB is ready running!"
+fi

@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <p:panelGrid style="width: 100%;" styleClass="panelGrid_related_cases panelGrid_todos" id="panelGrid_todos">
+        <f:facet name="header">
+            <p:row>
+                <p:column styleClass="td_minus">
+                    <p:commandLink 
+                        partialSubmit="true"
+                        process="@this"
+                        onstart="start()" onsuccess="finish()"
+                        oncomplete="PF('dlgCustomerTodo').show();"
+                        actionListener="${issueTodoController.create()}"
+                        rendered="#{sec.isMaster() or sec.hasMethod('IssueTodoController', 'create')}"
+                        update=":panelGridCustomerTodo"
+                        title="${issue['label.tab_todo_list']}${msg['label.add']}"
+                        styleClass="btn btn-xs btn-default">
+                        <span class="fa fa-plus-circle"></span>
+                        <f:param name="todoId" value="" />
+                    </p:commandLink>
+                </p:column>
+                <p:column styleClass="td_18">
+                    <h:outputLabel value="${msg['label.plans.datetime']}" />
+                </p:column>
+                <p:column styleClass="td_10">
+                    <h:outputLabel value="${msg['label.situation']}" />
+                </p:column>
+                <p:column styleClass="td_10">
+                    <h:outputLabel value="${msg['label.importance']}" />
+                </p:column>
+                <p:column>
+                    <h:outputLabel value="${issue['label.todo_comment']}" />
+                </p:column>
+            </p:row>
+        </f:facet>
+
+        <c:forEach var="todoList" items="${issueController.issue.issueTodoList}" >
+            <p:row styleClass="panelGrid_related_cases_tr">
+                <p:column styleClass="td_minus">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-success btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                            <span class="fa fa-cog"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <p:commandLink
+                                    onstart="start()" onsuccess="finish()"
+                                    oncomplete="PF('dlgCustomerTodo').show();"
+                                    actionListener="${issueTodoController.edit(todoList)}"
+                                    update=":panelGridCustomerTodo"
+                                    process="@this"
+                                    rendered="#{sec.isMaster() or sec.hasMethod('IssueTodoController', 'update')}"
+                                    value="#{msg['label.edit']}"
+                                    styleClass="fa fa-edit"/>
+                            </li>
+                            <li>
+                                <p:commandLink
+                                    onstart="start()" onsuccess="finish()"
+                                    actionListener="${issueTodoController.delete}"
+                                    oncomplete="activeCurentTap($.trim($('#issueActiveTab').val()), 'tabViewIssue');"
+                                    update="@this:panelGrid_todos, @this:tabViewTodoListTitle, :sidebarLeft:todoListGroup, :growl"
+                                    value="#{msg['label.delete']}"
+                                    rendered="#{sec.isMaster() or sec.hasMethod('IssueTodoController', 'delete')}"
+                                    styleClass="fa fa-remove">
+                                    <f:param name="todoId" value="${todoList.todoId}"/>
+                                    <p:confirm
+                                        header="${msg['label.delete']}"
+                                        message="${issue['label.delete_todos']}"
+                                        icon="ui-icon-alert" />
+                                </p:commandLink>
+                            </li>
+                        </ul>
+                    </div>
+                </p:column>
+                <p:column>
+                    <h:outputLabel value="${todoList.todoIntendedDatetime}" >
+                        <f:convertDateTime type="date" pattern="yyyy/MM/dd HH:mm" />
+                    </h:outputLabel>
+                </p:column>
+                <p:column>
+                    <p:inputSwitch value="#{todoList.done}" onLabel="#{msg['label.complete']}" offLabel="#{msg['label.incomplete']}" style="width: 90px" disabled="#{not (sec.isMaster() or sec.hasMethod('IssueTodoController', 'update'))}">
+                        <p:ajax listener="#{issueTodoController.updateStatus(todoList)}" onstart="start()" onsuccess="finish()" oncomplete="$('.reload-todo-list').trigger('click')" />
+                    </p:inputSwitch>
+                </p:column>
+                <p:column>
+                    <h:outputLabel value="#{todoList.todoImportantLevel.getItemViewData(localeController.locale)}" />
+                </p:column>
+                <p:column>
+                    <h:outputLabel value="${todoList.todoContent}" />
+                </p:column>
+            </p:row>
+        </c:forEach>
+    </p:panelGrid>
+</ui:composition>

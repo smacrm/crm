@@ -1,0 +1,45 @@
+http://www.clusterdb.com/mysql/replication-and-auto-failover-made-easy-with-mysql-utilities
+
+yum install -y mysql-community-common-0:5.7.17-1.el7.x86_64 \
+            mysql-community-server-0:5.7.17-1.el7.x86_64 \
+            mysql-community-libs-compat-0:5.7.17-1.el7.x86_64 \
+            mysql-community-libs-0:5.7.17-1.el7.x86_64 \
+            mysql-community-client-0:5.7.17-1.el7.x86_64
+
+
+Cong cu kiem tra replication
+# bizcrm-master
+yum install -y mysql-utilities mysql-utilities-extra
+
+Tai khoan check replication
+# bizcrm-master & bizcrm-node01
+GRANT ALL PRIVILEGES ON *.* TO 'replica'@'%' IDENTIFIED BY 'Bizcrm383838!';
+GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'replica'@'%' IDENTIFIED BY PASSWORD 'Bizcrm383838!';
+FLUSH PRIVILEGES;
+
+SETUP (Sau khi khoi dong database server thi phai goi lenh nay):
+mysqlreplicate --master=replica:'Bizcrm383838!'@bizcrm-master:3306 --slave=replica:'Bizcrm383838!'@bizcrm-node01:3306 --rpl-user=replica:'Bizcrm383838!'
+
+
+SHOW STATUS:
+mysqlrplshow --master=replica:'Bizcrm383838!'@bizcrm-master:3306 --discover-slaves-login=replica:'Bizcrm383838!'
+
+
+CHECK REPLICATION RELATIONSHIP:
+mysqlrplcheck --master=replica:'Bizcrm383838!'@bizcrm-master:3306 --slave=replica:'Bizcrm383838!'@bizcrm-node01:3306
+
+
+MONITOR FAILOVER:
+mysqlfailover --master=replica:'Bizcrm383838!'@bizcrm-master:3306 --slaves=replica:'Bizcrm383838!'@bizcrm-node01 --candidates=replica:'Bizcrm383838!'@bizcrm-node01 -v
+
+
+SHUTDOWN WHEN ERROR:
+mysqladmin -hbizcrm-master -P3306 -u root -p shutdown
+
+
+TUNING MYSQL CONFIGURATION: https://github.com/major/MySQLTuner-perl
+yum install -y perl perl-devel perl-Data-Dumper
+wget http://mysqltuner.pl/ -O mysqltuner.pl
+wget https://raw.githubusercontent.com/major/MySQLTuner-perl/master/basic_passwords.txt -O basic_passwords.txt
+wget https://raw.githubusercontent.com/major/MySQLTuner-perl/master/vulnerabilities.csv -O vulnerabilities.csv
+perl mysqltuner.pl --host 127.0.0.1 --user root --pass Bizcrm383838!

@@ -1,0 +1,161 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <f:view locale="#{localeController.locale}">
+        <f:metadata>
+            <f:viewParam name="custId" value="#{customerController.custIdViewParamInDialog}"/>
+        </f:metadata>
+        
+        <h:head>
+            <title>${issue['label.tab_customer_special']} <h:outputText value="No：[${customerController.customer.custId}]" rendered="${!empty customerController.customer.custId}" /></title>
+            <!-- 受付情報Javascript関連処理部分 -->
+            <h:outputStylesheet library="css" name="dialog_growl.css"  />
+            <h:outputStylesheet library="css" name="dialog.css"  />
+        </h:head>
+
+        <h:body>
+            <h:form id="form_special_customer" prependId="false">
+                <p:growl id="dialog_growl" showDetail="false" life="3000" />
+                <p:panelGrid styleClass="panelGridDialog" id="panelGridCust_#{customerController.customer.tabIdx}">
+                    <p:row>
+                        <p:column>
+                            <h:outputText value="${issue['label.cust_special_name']}" /><font>*</font>
+                        </p:column>
+                        <p:column colspan="3">
+                            <h:outputLabel value="#{customerController.customer.custSpecialId.getItemViewData(localeController.locale)}" />
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column>
+                            <h:outputText value="${issue['label.name_kana']}" /><font>*</font>
+                        </p:column>
+                        <p:column colspan="3">
+                            <h:outputLabel value="#{customerController.customer.custFirstKana}" />
+                            <h:outputLabel value=" - #{customerController.customer.custLastKana}" rendered="#{!empty customerController.customer.custLastKana}" />
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column>
+                            <h:outputText value="${issue['label.name_hira']}" /><font>*</font>
+                        </p:column>
+                        <p:column colspan="3">
+                            <h:outputLabel value="#{customerController.customer.custFirstHira}" />
+                            <h:outputLabel value=" - #{customerController.customer.custLastHira}" rendered="#{!empty customerController.customer.custLastHira}" />
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column>
+                            <h:outputText value="${issue['label.sex']}" />
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="#{customerController.customer.custSexId.getItemViewData(localeController.locale)}" />
+                        </p:column>
+                        <p:column>
+                            <h:outputText value="${issue['label.age']}" />
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="#{customerController.customer.custAgeId.getItemViewData(localeController.locale)}" />
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column>
+                            <h:outputText value="${issue['label.post']}" />
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="#{customerController.customer.custPost}" />
+                        </p:column>
+                        <p:column>
+                            <h:outputText value="${issue['label.city']}" />
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="#{customerController.customer.custCity.prefectureName}" />
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column>
+                            <h:outputText value="${issue['label.address']}" />
+                        </p:column>
+                        <p:column colspan="3">
+                            <h:outputLabel value="#{customerController.customer.custAddress}" />
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column>
+                            <h:outputText value="${issue['label.address_kana']}" />
+                        </p:column>
+                        <p:column colspan="3">
+                            <h:outputLabel value="#{customerController.customer.custAddressKana}" />
+                        </p:column>
+                    </p:row>
+
+                    <c:forEach var="tel" items="#{customerController.customer.tel}" varStatus="telStatus">
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="${issue['label.tel']}" rendered="${(telStatus.index == 0)}" />
+                                <h:outputText value="${issue['label.tel']} ${(status.index+1)}" rendered="${(telStatus.index > 0)}" />
+                            </p:column>
+                            <p:column>
+                                <h:outputLabel value="#{tel.custTargetData}" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="${issue['label.session']}" />
+                            </p:column>
+                            <p:column style="white-space: nowrap">
+                                <h:outputLabel value="#{tel.custTargetClass.getItemViewData(localeController.locale)}" />
+                            </p:column>
+                        </p:row>
+                    </c:forEach>
+
+                    <c:forEach var="mobile" items="#{customerController.customer.mobile}" varStatus="mobileStatus">
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="${issue['label.mobile']}" rendered="${(mobileStatus.index == 0)}" />
+                                <h:outputText value="${issue['label.mobile']} ${(mobileStatus.index+1)}" rendered="${(mobileStatus.index > 0)}" />
+                            </p:column>
+                            <p:column>
+                                <h:outputLabel value="#{mobile.custTargetData}" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="${issue['label.session']}" />
+                            </p:column>
+                            <p:column style="white-space: nowrap">
+                                <h:outputLabel value="#{mobile.custTargetClass.getItemViewData(localeController.locale)}" />
+                            </p:column>
+                        </p:row>
+                    </c:forEach>
+
+                    <c:forEach var="mail" items="#{customerController.customer.mail}" varStatus="mailStatus">
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="${issue['label.mail']}" rendered="${(mailStatus.index == 0)}" />
+                                <h:outputText value="${issue['label.mail']} ${(mailStatus.index+1)}" rendered="${(mailStatus.index > 0)}" />
+                            </p:column>
+                            <p:column colspan="3">
+                                <h:outputLabel value="#{mail.custTargetData}" />
+                            </p:column>
+                        </p:row>
+                    </c:forEach>
+
+                    <p:row>
+                        <p:column>
+                            <h:outputText value="${issue['label.memo']}" />
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:inputTextarea
+                                rows="10"
+                                autoResize="false"
+                                readonly="true"
+                                value="${customerController.customer.custMemo}"
+                                style="width: 100%"
+                                styleClass="font_weight_normal inputTextareaNotBorder" />
+                        </p:column>
+                    </p:row>
+                </p:panelGrid>
+            </h:form>
+        </h:body>
+    </f:view>
+</html>

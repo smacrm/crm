@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <style>
+        a[href="#speech-record"] .fa{
+            color: #fff;
+        }
+        a[href="#speech-record"] .state-stop{
+            display: inline-block;
+        }
+        a[href="#speech-record"] .state-play{
+            display: none;
+        }
+        a[href="#speech-record"].active .state-stop{
+            display: none;
+        }
+        a[href="#speech-record"].active .state-play{
+            display: inline-block;
+        }
+    </style>
+    <p:tabView id="tabViewIssue" scrollable="false">
+        <c:if test="#{!loginController.member.companyStoreMode}">
+            <ui:include src="/modules/issue/common/info_tab.xhtml"/>
+        </c:if>
+        
+        <c:if test="#{loginController.member.companyStoreMode}">
+            <c:set var="customerList" value="#{issueController.issue.customerList}"/>
+            <c:forEach var="customer" items="#{customerList}" varStatus="tabIndex" begin="0" end="1">
+                <p:tab>
+                    <ui:include src="/modules/issue/common/customer.xhtml" >
+                        <ui:param name="customerIndex" value="#{tabIndex.index}"/>
+                    </ui:include>
+                </p:tab>
+            </c:forEach>
+        </c:if>
+        
+        <ui:include src="/modules/customize/tab.xhtml">
+            <ui:param name="tabList" value="#{issueController.customizeForm}"/>
+            <ui:param name="mode" value="edit"/>
+        </ui:include>
+        
+        <p:tab id="tabViewRelatedCases" rendered="#{issue_mode eq 'edit' and (sec.isMaster() or sec.hasMethod('IssueController', 'related'))}">
+            <f:facet name="title">
+                ${issue['label.tab_related_cases']} 
+                <h:outputText
+                    id="tabViewRelatedCasesTitle"
+                    value="(${issueController.issue.relatedCases.size()}${issue['label.count']})" />
+            </f:facet>
+            <ui:include src="related_cases.xhtml" />
+        </p:tab>
+        <p:tab id="tabViewcFileActtachment" rendered="#{issue_mode eq 'edit' and (sec.isMaster() or sec.hasMethod('IssueAttachmentController', 'SEARCH')) }">
+            <!--<h:outputLabel value="音声" />-->
+            <f:facet id="facetTodoTitle" name="title">${issue['label.attachment.title']}</f:facet>
+            <ui:include src="issue_attachment.xhtml" >
+                <ui:param name="mode" value="edit"/>
+            </ui:include>
+        </p:tab>
+        <p:tab id="tabViewTodoList" class="tabViewTodoList" rendered="#{issue_mode eq 'edit' and (sec.isMaster() or sec.hasMethod('IssueTodoController', 'SEARCH')) }">
+            <f:facet id="facetTodoTitle" name="title">
+                ${issue['label.tab_todo_list']} 
+                <h:outputText
+                    id="tabViewTodoListTitle"
+                    value="(${issueController.issue.issueTodoList.size()}${issue['label.count']})" />
+            </f:facet>
+            <ui:include src="todo_list.xhtml" />
+        </p:tab>
+    </p:tabView>
+
+    <!-- 対応履歴 -->
+    <ui:include src="/modules/issue/common/escalation_list.xhtml" />
+</ui:composition>

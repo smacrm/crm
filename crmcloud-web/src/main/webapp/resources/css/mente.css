@@ -1,0 +1,303 @@
+.text_align_left {
+    text-align: left !important;
+}
+
+/*Mente*/
+.mentetab table.grid-wrapper.ui-panelgrid{
+    table-layout: fixed;
+}
+.mentetab .grid-wrapper.ui-panelgrid > tbody{
+    display: block;
+    overflow-x: auto;
+}
+.mentetab .grid-wrapper.ui-panelgrid > tbody > tr > td{
+    vertical-align: top;
+}
+
+.mentetab .grid-wrapper.ui-panelgrid .ui-panelgrid-cell{
+    border: 0;
+    padding: 2px !important;
+}
+.mentetab .ui-datatable-data tr.active > * {
+    background-color: #fcf8e3;
+    font-weight: bold;
+}
+
+.mentetab .ui-datatable-data tr.ui-row-editing > * {
+    background-color: inherit !important;
+}
+
+.mentetab .ui-datatable-data > tr > td:first-child > a {
+    display: block !important;
+}
+
+.mentetab .select-language{
+    filter:         alpha(opacity=100) !important;
+    -ms-filter:     "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)" !important;
+    -webkit-opacity: 1 !important;
+    -khtml-opacity: 1 !important;
+      -moz-opacity: 1 !important;
+       -ms-opacity: 1 !important;
+        -o-opacity: 1 !important;
+           opacity: 1 !important;
+}
+.mentetab .select-language > a{
+    padding: 0 !important;
+}
+.mentetab .select-language .ui-button{
+    font-size: 10px !important;
+    padding: 0 !important;
+}
+
+.mentetab > .ui-tabs-panels,
+.mentetab > .ui-tabs-panels > .ui-tabs-panel:not(.ui-helper-hidden)
+{
+    -webkit-flex: 1 1 auto;
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+    display: -webkit-flex;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
+    height: 100%;
+}
+
+.mentetab > .ui-tabs-panels > .ui-tabs-panel table,
+.mentetab > .ui-tabs-panels > .ui-tabs-panel table tbody{
+    height: 100%;
+}
+
+/*.mentetab > .ui-tabs-panels > .ui-tabs-panel
+{
+    -webkit-flex: 1 1 auto;
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    height: 0px;
+    min-height: 0px;
+}*/
+.mentetab div.grid-wrapper,
+.mentetab div.grid-wrapper > .item{
+    -webkit-flex: 0 1 auto;
+    -ms-flex: 0 1 auto;
+    flex: 0 1 auto;
+    display: -webkit-flex;
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 0;
+}
+.mentetab div.grid-wrapper > .item{
+    display: inline-block;
+    vertical-align: top;
+    overflow: auto;
+    width: calc(25% - 30px); /* 30px = 120px/4 */
+}
+.mentetab div.grid-wrapper > .item.issue_proposal_id{
+    width: calc(33% - 30px); /* 30px = 120px/4 */
+}
+.mentetab div.grid-wrapper > .item.item-count-4{
+    flex: 1 1 auto;
+}
+.mentetab div.grid-wrapper > .item:first-child{
+    width: 120px !important;
+    flex: 0 1 auto;
+}
+.mentetab input {
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    -o-border-radius: 0;
+    border-radius: 0;
+    width: 100%;
+}
+.mentetab textarea {
+    width: 100%;
+}
+
+.mentetab .table-action{
+    width: 50px;
+    padding: 0 !important;
+}
+.mentetab .mente-toggle{
+    width: 80px;
+    padding: 0 !important;
+}
+.mentetab .ui-outputpanel{
+    display: -webkit-flex;
+    display: flex;
+    flex-direction: row;
+}
+.mentetab .ui-outputpanel input:first-child{
+    -webkit-flex: 0 1 auto;
+    -ms-flex: 0 1 auto;
+    flex: 0 1 auto;
+    width: 50px;
+}
+.mentetab .ui-outputpanel input:last-child{
+    -webkit-flex: 1 1 auto;
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+}
+
+table.panelGridMenteSample {
+    width: 100%;
+    border: none !important;
+    height: auto !important;
+}
+
+table.panelGridMenteSample tr:first-child > td.verticalAlignTop {
+    vertical-align: top;
+    margin: 0;
+    padding: 0 !important;
+    text-align: left;
+    border: none !important;
+}
+
+table.tableCommandLinkList {
+    width: 100%;
+    border: none !important;
+    height: auto !important;
+}
+
+table.tableCommandLinkList tbody > tr > td {
+    line-height: 2.5em !important;
+    padding-right: 0.5em;
+    border: 1px solid #d9d9d9 !important;
+}
+
+table.tableCommandLinkList tbody > tr > td > a {
+    display: block !important;
+}
+
+table.panelEscalationSample {
+    width: 100% !important;
+}
+
+table.panelEscalationSample tbody > tr > td:first-child {
+/*    line-height: 2.5em !important;*/
+    width: 15%;
+}
+
+table.panelEscalationSample tbody > tr > td > textArea {
+    width: 100%;
+}
+
+table.panelEscalationSample tbody > tr > td > font {
+    color: red;
+}
+
+div.dataTableProjectPassDays table {
+    width: 100% !important;
+}
+
+div.dataTableProjectPassDays table > tbody td {
+    font-weight: normal !important;
+    padding: 0;
+    padding-left: 0.3em;
+    line-height: 1.3em !important;
+}
+
+div.dataTableProjectPassDays table > tbody td input {
+    width: 100%;
+}
+
+/*div.dataTableProjectPassDays table > tbody td:nth-child(1),td:nth-child(3)  {
+    text-align: left !important;
+}
+
+div.dataTableProjectPassDays table > tbody td:nth-child(2),td:nth-child(4) {
+    text-align: center !important;
+}*/
+
+
+
+.mentetab .reOrderable{
+    width: 50px;
+    text-align: center;
+}
+.mentetab span.reOrderable,
+.mentetab label.reOrderable{
+    float: right;
+    position: relative
+}
+.mentetab input.reOrderable{}
+.mentetab span.reOrderable .up,
+.mentetab span.reOrderable .down{
+    position: absolute;
+    right: 0;
+    width: 15px;
+    height: 15px;
+}
+.mentetab span.reOrderable .up:hover,
+.mentetab span.reOrderable .down:hover{
+    color: #186ba0;
+    cursor: pointer;
+}
+.mentetab span.reOrderable .up{
+    top: -6px;
+}
+.mentetab span.reOrderable .down{
+    top: 6px;
+}
+.mentetab .ui-datatable.order-table tbody > tr[role="row"]:first-child span.reOrderable .up{
+    display: none;
+}
+.mentetab .ui-datatable.order-table tbody > tr[role="row"]:first-child span.reOrderable .down{
+    bottom:auto;
+}
+.mentetab .ui-datatable.order-table tbody > tr[role="row"]:last-child span.reOrderable .down{
+    display: none;
+}
+.mentetab .ui-datatable.order-table tbody > tr[role="row"]:last-child span.reOrderable .up{
+    top: auto;
+}
+
+div.issueStatusPanel {
+    top: 60px !important;
+}
+
+#dlgAutoSendMailMembers .ui-picklist-buttons{
+    width: 40px;
+}
+#dlgAutoSendMailMembers .ui-tree,
+#dlgAutoSendMailMembers .ui-picklist .ui-picklist-list{
+    height: 300px;
+}
+
+div.panel_mente_lamp_box > div {
+    border: none !important;
+}
+
+div.panel_mente_lamp_box > div > ul {
+    margin: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+div.panel_mente_lamp {
+    text-align: left;
+    display: -webkit-inline-box;
+}
+
+div.panel_mente_period_lamp {
+    border: none;
+}
+
+div.panel_mente_period_lamp > div {
+    padding: 0 !important;
+    text-align: left;
+}
+
+div.panel_mente_lamp_view {
+    text-align: left;
+    width: 100%;
+    border: none !important;
+}
+
+div.panel_mente_lamp_view > span:first-child {
+    width: 125px;
+    border: 1px solid #d5d5d5;
+}
+
+div.panel_mente_lamp_view span {
+    padding: 0.5em;
+    display: -webkit-inline-box;
+}

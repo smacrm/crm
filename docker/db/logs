@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [ -f .pid ]; then
+	docker logs `cat .pid`
+else
+	echo "CRMCloud DB is not running!"
+fi

@@ -1,0 +1,184 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html">
+    <div id="pageTitle">#{systemBundle['label.system.server.title']} #{msg['symbol.paren.left']}#{systemBundle['label.system.server.title.create']}#{msg['symbol.paren.right']}</div>
+    <h:form id="frmServerEdit">
+        <h:panelGrid width="100%" styleClass="page-header">
+            <f:facet name="header">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h1>
+                            #{systemBundle['label.system.server.title']}
+                            <small>#{systemBundle['label.system.server.title.create']}</small>
+                        </h1>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <p:commandButton value="#{msg['label.back']}" icon="fa fa-chevron-circle-left"
+                                         actionListener="#{serverController.load}"
+                                         title="#{msg['label.back']}" update="mainContent" process="@this"
+                                         onstart="start()" onsuccess="finish()">
+                            <p:confirm header="#{msg['label.confirm']}" message="#{msg['label.message.confirm.back']}" icon="ui-icon-alert"/>
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+                        <p:commandButton value="#{msg['label.update']}" icon="fa fa-check-circle"
+                                         actionListener="#{serverController.save}"
+                                         rendered="${sec.hasMethod('ServerController', 'create')}"
+                                         title="#{msg['label.update']}"
+                                         update="frmServerEdit,mainContent,:growl"
+                                         onstart="start()" onsuccess="finish()">
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+                    </div>
+                </div>
+            </f:facet>
+        </h:panelGrid>
+        <div class="box">
+            <div class="box-body">
+                <p:panelGrid id="pgServer" styleClass="crmcloud-panelgrid">
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{systemBundle['label.system.server.name']}" styleClass="required"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:inputText value="#{serverController.model.server.serverName}"
+                                         styleClass="input_text" id="j_server_name" maxlength="150">
+                                <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:attribute name="max" value="150"/>
+                                <f:attribute name="title" value="#{systemBundle['label.system.server.name']}"/>
+                            </p:inputText>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{systemBundle['label.system.server.type']}" styleClass="required" />
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:selectOneMenu id="serverType" value="#{serverController.serverTypeEnum}">
+                                <f:selectItems value="#{serverController.transferType}" var="transferType"
+                                               itemValue="#{transferType.type}" itemLabel="#{transferType.name()}" itemDisabled="#{!transferType.inUse}"/>
+                            </p:selectOneMenu>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel for="serverFlag" value="#{systemBundle['label.system.server.console']}" />
+                        </p:column>
+                        <p:column>
+                            <p:selectOneMenu id="serverFlag" value="#{serverController.serverFlagEnum}"
+                                             valueChangeListener="#{serverController.onChangeServerFlag}">
+                                <f:selectItems value="#{serverController.serverFlag}" var="flag"
+                                               itemValue="#{flag}" itemLabel="#{flag.name()}" />
+                                <p:ajax update="serverFolder"/>
+                            </p:selectOneMenu>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{systemBundle['label.system.server.folder']}" styleClass="required" />
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:inputText id="serverFolder" value="#{serverController.model.server.serverFolder}" styleClass="input_text" maxlength="150">
+                                <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:attribute name="max" value="150"/>
+                                <f:attribute name="title" value="#{systemBundle['label.system.server.folder']}"/>
+                            </p:inputText>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{systemBundle['label.system.server.host']}" styleClass="required"/>
+                        </p:column>
+                        <p:column >
+                            <p:inputText value="#{serverController.model.server.serverHost}" styleClass="input_text" maxlength="150" required="true" label="#{systemBundle['label.system.server.host']}">
+                                <p:keyFilter regEx="/[a-zA-Z0-9_\-\.]/i" preventPaste="false"/>
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:attribute name="max" value="150"/>
+                                <f:validator validatorId="gnext.validator.DomainIpValidator" />
+                                <f:attribute name="title" value="#{systemBundle['label.system.server.host']}"/>
+                            </p:inputText>
+                        </p:column>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{systemBundle['label.system.server.port']}" styleClass="required"/>
+                        </p:column>
+                        <p:column >
+                            <p:inputText value="#{serverController.model.server.serverPort}" styleClass="input_text" maxlength="8">
+                                <p:keyFilter regEx="/[0-9]/i" preventPaste="false"/>
+                                <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                <f:validator validatorId="gnext.validator.NumberValidator" />
+                                <f:attribute name="title" value="#{systemBundle['label.system.server.port']}"/>
+                            </p:inputText>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{systemBundle['label.system.server.username']}" styleClass="required"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:inputText value="#{serverController.model.server.serverUsername}" styleClass="input_text" maxlength="150">
+                                <p:keyFilter regEx="/[a-zA-Z0-9_\-]/i" preventPaste="false"/>
+                                <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:attribute name="max" value="150"/>
+                                <f:attribute name="title" value="#{systemBundle['label.system.server.username']}"/>
+                            </p:inputText>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{systemBundle['label.system.server.password']}" styleClass="required"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:password value="#{serverController.model.server.serverPassword}" styleClass="input_text" maxlength="150">
+                                <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:attribute name="max" value="150"/>
+                                <f:attribute name="title" value="#{systemBundle['label.system.server.password']}"/>
+                            </p:password>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{systemBundle['label.system.server.ssl']}"/>
+                        </p:column>
+                        <p:column style="width: 375px;">
+                            <p:selectBooleanCheckbox value="#{serverController.model.serverSsl}"
+                                                     valueChangeListener="#{serverController.onChangeSecurity}">
+                                <p:ajax event="change" update="serverProtocol,protocol_lb"/>
+                            </p:selectBooleanCheckbox>
+                        </p:column>
+                        <p:column >
+                            <p:outputPanel id="protocol_lb">
+                                <h:panelGroup rendered="#{serverController.model.serverSsl}">
+                                <p:outputLabel value="#{systemBundle['label.system.server.protocol']}"/>
+                                </h:panelGroup>
+                            </p:outputPanel>
+                        </p:column>
+                        <p:column>
+                            <p:outputPanel id="serverProtocol">
+                                <h:panelGroup rendered="#{serverController.model.serverSsl}">
+                                    <p:selectOneMenu value="#{serverController.protocolTypeEnum}">
+                                        <f:selectItems value="#{serverController.protocolType}" var="protocolType"
+                                                       itemValue="#{protocolType.type}" itemLabel="#{protocolType.name()}" itemDisabled="#{!protocolType.inUse}"/>
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+                            </p:outputPanel>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{systemBundle['label.system.server.memo']}"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:inputTextarea value="#{serverController.model.server.serverMemo}" styleClass="input_text_area" maxlength="200"/>
+                        </p:column>
+                    </p:row>
+                </p:panelGrid>
+            </div>
+        </div>
+    </h:form>
+</ui:composition>

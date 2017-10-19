@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <ui:composition>
+        <h:head>
+            <h:outputScript library="js" name="add-checkbox-menu.js"/>
+        </h:head>
+        <f:view locale="#{localeController.locale}">
+            <p:dialog header="" id="dlgQuickseach" widgetVar="dlgQuickseach" minimizable="true" maximizable="true" modal="true" width="1000" height="400">
+                <ui:include src="/modules/system/quicksearch/index.xhtml"/>
+            </p:dialog>
+            <nav class="navbar navbar-static-top" role="navigation">
+                <h:form id="navigation">
+                    <div class="navbar-custom-menu">
+                        <ul class="nav navbar-nav">
+                            <ui:include src="/blocks/infile/speech.xhtml" />
+                            <ui:include src="/blocks/infile/phone.xhtml"/>
+                            <!-- Chat: style can be found in dropdown.less
+                            <ui:include src="/blocks/infile/chat.xhtml"/>
+                             -->
+
+                            <ui:include src="/blocks/infile/user.xhtml"/>
+
+                            <c:if test="#{loginController.member.userId ==1}">
+                                <li class="user user-menu">
+                                    <p:commandLink actionListener="#{layout.sendToPage()}" update="mainContent" ajax="true" title="#{msg['label.admin.support']}" styleClass="pull-right" onstart="start()" onsuccess="finish()">
+                                        <span class="fa fa-gears"></span>
+                                        <f:param name="toPage" value="/modules/authority/page_scan.xhtml" />
+                                        <f:param name="force" value="true"/>
+                                    </p:commandLink>
+                                </li>
+                            </c:if>
+                        </ul>
+                    </div>
+                </h:form>
+            </nav>
+        </f:view>
+    </ui:composition>
+</html>

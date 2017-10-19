@@ -1,0 +1,195 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:crm="http://gnext.co.jp/facelets">
+    <div id="pageTitle">#{sf['label.twilio.history.title']} #{msg['symbol.paren.left']}#{sf['label.twilio.history.desc']}#{msg['symbol.paren.right']}</div>
+    <h:form>
+        <h:panelGrid width="100%" styleClass="page-header">
+            <f:facet name="header">
+                <!-- Content Header (Page header) -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <h1>
+                            #{sf['label.twilio.history.title']}
+                            <small>#{sf['label.twilio.history.desc']}</small>
+                        </h1>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <p:commandButton value="#{msg['label.reload']}" actionListener="#{twilioController.reload()}"
+                                         title="#{msg['label.reload']}"  icon="fa fa-refresh" update="mainContent"
+                                         onstart="start()" onsuccess="finish()" 
+                                         rendered="${sec.hasMethod('TwilioController', 'search')}"/>
+                        <p:commandButton value="#{msg['label.download']}" title="Export" icon="fa fa-cloud-download"
+                                         rendered="${sec.hasMethod('TwilioController', 'download')}" ajax="false">
+                            <pe:exporter type="xlsx" target="configDataTable" tableTitle="#{sf['label.twilio.history.desc']}"
+                                         fileName="#{twilioController.exportFileName}" encoding="UTF-8"/>
+                        </p:commandButton>
+                    </div>
+                </div>
+            </f:facet>
+        </h:panelGrid>
+        <p:outputPanel rendered="${sec.hasMethod('TwilioController', 'search')}">
+            <div class="box box-solid box-search">
+                <div class="box-header with-border" data-widget="collapse">
+                    <h3 class="box-title">#{msg['label.search.title']}</h3>
+                    #{msg['symbol.colon']}<code></code>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <div id="search-filter"></div>
+                </div>
+                <div class="box-footer text-center">
+                    <h:inputText value="#{twilioController.searchDataJson}" styleClass="searchDataJson" style="display: none"/>
+                    <p:commandLink actionListener="#{twilioController.search}" 
+                                   style="display:none" styleClass="search-action" 
+                                   onstart="start()" onsuccess="finish()" 
+                                   update="mainContent, :growl"/>
+
+                    <p:commandButton value="#{msg['label.search']}" type="button" icon="fa fa-search" styleClass="btn-search"></p:commandButton>
+                </div>
+            </div>
+        </p:outputPanel>
+        
+        <c:set var="rowsPerPageTemplate" value="#{configController.getConfig('DATATABLE_ROW_PER_PAGE')}" scope="session" />
+        <c:set var="rows" value="#{configController.getConfig('DATATABLE_DEFAULT_PER_PAGE')}" scope="session" />
+        
+        <p:dataTable id="configDataTable" var="r" rowIndexVar="itemViewIndex" value="#{twilioController.list}" scrollable="true"
+            lazy="true" paginator="true" paginatorTemplate="#{layout.paginatorTemplate}" currentPageReportTemplate="#{layout.currentPageReportTemplate}"
+            rowsPerPageTemplate="#{rowsPerPageTemplate}" rows="#{rows}" pageLinks="5" rowHover="true" emptyMessage="#{msg['label.data.empty']}">
+            <p:column style="width:72px" styleClass="table-action" exportable="false">
+                <p:commandLink actionListener="#{twilioController.view(r, itemViewIndex)}"
+                               update="mainContent"
+                               title="#{msg['label.edit']}" styleClass="fa fa-search"
+                               onstart="start()" onsuccess="finish()"
+                               rendered="${sec.hasMethod('TwilioController', 'view')}">
+                    <f:param name="force" value="true"/>
+                </p:commandLink>
+            </p:column>
+            <p:column style="width:180px">
+                <f:facet name="header">  
+                    <h:outputText value="#{issue['label.attachment.caller.phone']}"/>  
+                </f:facet> 
+                <h:outputText value="#{r.from}" />
+            </p:column>
+
+            <p:column>
+                <f:facet name="header">  
+                    <h:outputText value="#{issue['label.attachment.creator']}"/>  
+                </f:facet> 
+                <h:outputText value="#{empty r.agent ? r.agentId : r.agent.memberNameFull}" />
+            </p:column>
+
+            <p:column style="width:100px">
+                <f:facet name="header">  
+                    <h:outputText value="#{sf['label.status']}"/>  
+                </f:facet> 
+                <h:outputText value="#{r.status}"/>
+            </p:column>
+            
+            <p:column style="width:360px">
+                <f:facet name="header">  
+                    <h:outputText value="#{issue['label.attachment.timerange']}"/>  
+                </f:facet> 
+                <h:outputText value="#{r.callStartTime}" rendered="#{not empty r.callStartTime}">
+                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                </h:outputText>
+                <h:outputText value="#{r.receivedTime}" rendered="#{empty r.callStartTime}">
+                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                </h:outputText>
+                ~ 
+                <h:outputText value="#{r.callFinishTime}">
+                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                </h:outputText>
+            </p:column>
+<!--            <p:column style="width:180px" styleClass="text-center">
+                <f:facet name="header">  
+                    <h:outputText value="${msg['label.delete']}"/>  
+                </f:facet> 
+                <crm:state state="#{r.deleted}"/>
+            </p:column>-->
+        </p:dataTable>
+        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+            <p:commandButton value="${msg['label.yes']}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+            <p:commandButton value="${msg['label.no']}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+        </p:confirmDialog>
+        <h:outputScript library="js" name="search-filter.js"/>
+        <script type="text/javascript">
+            var searchFilterOpts = {
+                fields: [
+                    {
+                        "type": "string",
+                        "label": "#{issue['label.attachment.caller.phone']}",
+                        "name": 'o.from',
+                        'operator': ['EQ', 'LIKE']
+                    },
+                    {
+                        "type": "select",
+                        "label": "#{issue['label.attachment.creator']}",
+                        "name": 'o.agentId',
+                        'operator': ['EQ', 'BLANK', 'NOT_BLANK'],
+                        "data": [
+                            <c:forEach items="#{issueController.select.get('d_o_user')}" var="item">
+                            {
+                                'label': "<h:outputText value="#{item.label}"/>",
+                                'value': "<h:outputText value="#{item.value.memberLoginId}"/>"
+                            },
+                            </c:forEach>
+                        ]
+                    },
+                    {
+                        "type": "date",
+                        "label": "#{sf['label.time.receive']}",
+                        "name": 'o.receivedTime',
+                        'operator': ['EQ', 'LIKE', 'BLANK']
+                    }
+                ],
+                callback: {
+                    onValue: function(field, value){
+                        var list = {};
+                        <c:forEach items="#{issueController.select.get('d_o_user')}" var="item">
+                        list['#{item.label}'] = '#{item.value.memberLoginId}'; 
+                        </c:forEach>
+                        
+                        return list[value];
+                    },
+                    onDisplayValue: function(field, value){
+                        return value;
+                    }
+                },
+                data: $('.searchDataJson').val(),
+                displayQuery: true,
+                queryContainer: $("#search-filter").closest('.box.box-search').find('.box-header code'),
+                langs:{
+                    AND: '#{msg['label.condition.and']}',
+                    OR: '#{msg['label.condition.or']}',
+                    LIKE: '#{msg['label.condition.like']}',
+                    LIKE_START: '#{msg['label.condition.like_start']}',
+                    LIKE_END: '#{msg['label.condition.like_end']}',
+                    NOT_LIKE: '#{msg['label.condition.not_like']}',
+                    BLANK: '#{msg['label.condition.blank']}',
+                    NOT_BLANK: '#{msg['label.condition.not_blank']}'
+                }
+            };
+        </script>
+        <script type="text/javascript">
+            jQuery(document).ready(function ($) {
+                var sf = $("#search-filter").searchFilter(searchFilterOpts);
+
+                $(".btn-search").click(function (event) {
+                    event.preventDefault();
+                    var data = sf.data('searchFilter').getData();
+                    $('.searchDataJson').val(data);
+                    $(".search-action").trigger('click');
+                });
+            });
+        </script>
+    </h:form>
+</ui:composition>
+

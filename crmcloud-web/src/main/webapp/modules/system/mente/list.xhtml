@@ -1,0 +1,770 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:a="http://xmlns.jcp.org/jsf/passthrough"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <div id="pageTitle">${msg['label.menu.MaintenanceController']} #{msg['symbol.paren.left']}${msg['label.manager']}#{msg['symbol.paren.right']}</div>
+    <h:form id="mentefrm" enctype="multipart/form-data" onkeypress="if (event.keyCode === 13 &amp;&amp; $(event.target).prop('tagName') !== 'TEXTAREA') { return false; }">
+        <h:panelGrid width="100%" styleClass="page-header" columns="1">
+            <f:facet name="header">
+                <!-- Content Header (Page header) -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <h1>
+                            ${msg['label.menu.MaintenanceController']}
+                            <small>${msg['label.manager']}</small>
+                        </h1>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <c:if test="${maintenanceController.selectedTab eq 'tabEscalationSample' and maintenanceController.currentStaticParent ne 'project_pass_days'}">
+                            <c:choose>
+                                <c:when test="${!empty maintenanceController.escalationSample and maintenanceController.escalationSample.sampleId > 0}">
+                                    <p:commandButton
+                                        value="${msg['label.update']}"
+                                        actionListener="#{maintenanceController.escalationSampleInsert}"
+                                        icon="fa fa-edit"  
+                                        update=":mainContent ,:growl" />
+                                </c:when>
+                                <c:otherwise>
+                                    <p:commandButton
+                                        value="${msg['label.insert']}"
+                                        actionListener="#{maintenanceController.escalationSampleInsert}"
+                                        icon="fa fa-save"  
+                                        update=":mainContent ,:growl" />
+                                </c:otherwise>
+                            </c:choose>
+                            <p:commandButton
+                                value="${msg['label.delete']}"
+                                actionListener="#{maintenanceController.escalationSampleDelete}"
+                                process="@this"
+                                icon="fa fa-trash-o"
+                                update=":mainContent ,:growl"
+                                rendered="#{!empty maintenanceController.escalationSample and maintenanceController.escalationSample.sampleId > 0}">
+                                <h:inputHidden value="${maintenanceController.escalationSample.sampleId}" />
+                            </p:commandButton>
+                        </c:if>
+                        <p:commandButton value="${msg['label.reload']}" actionListener="#{maintenanceController.reload()}"
+                                         icon="fa fa-refresh" update="mainContent"
+                                         onstart="start()" onsuccess="finish()" 
+                                         rendered="${sec.hasMethod('MaintenanceController', 'search')}"/>
+                    </div>
+                </div>
+            </f:facet>
+        </h:panelGrid>
+        <p:tabView id="mentetab" styleClass="mentetab" binding="#{maintenanceController.tabView}">
+            <p:ajax event="tabChange" listener="#{maintenanceController.onSPTabChange}" update="mainContent" onstart="start()" onsuccess="finish()" />
+            
+            <p:tab title="#{customize['label.customize.pagetype.1']}">
+                <p:panelGrid styleClass="grid-wrapper" columns="2" id="panelGridTabStaticColumn">
+                    <p:column style="width: 15%;">
+                        <p:dataTable var="row" value="#{maintenanceController.staticColumnsData}" rowStyleClass="#{maintenanceController.currentStaticParent eq row ? 'active' : null}"
+                                     rowIndexVar="index" styleClass="menteStaticList">
+                            <p:column headerText="${msg['label.value.master.list']}">
+                                <p:commandLink
+                                    value="#{issue['label.'.concat(row.replaceAll('cust_tel_session_id','session').replaceAll('_id', '_name'))]}"
+                                    actionListener="#{maintenanceController.showStaticColumnLvl2(row)}"
+                                    process="@this"
+                                    update="mainContent"
+                                    onstart="start()"
+                                    onsuccess="finish()"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:column>
+                    <p:column rendered="#{not empty maintenanceController.staticColumnsDataLvl2}">
+                        <p:dataTable id="tbl_static_columns" styleClass="static-table order-table" var="row" rowIndexVar="index" value="#{maintenanceController.staticColumnsDataLvl2}" editable="true">
+                            <p:ajax event="rowEdit" listener="#{maintenanceController.onRowEdit}" update="tbl_static_columns :growl"
+                                    oncomplete="$('.menteStaticList tr[role=row].active a').click()"/>
+                            <p:ajax event="rowEditCancel" listener="#{maintenanceController.onRowCancel}" update="tbl_static_columns :growl" oncomplete="transformOrderElm();"/>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:commandButton value="${msg['label.download']}" icon="fa fa-cloud-download"
+                                                    rendered="${sec.hasMethod('MaintenanceController', 'download')}" 
+                                                    actionListener="#{maintenanceController.exportStaticData()}"
+                                                    style="float: left" onstart="start()" onsuccess="finish()"
+                                                    ajax="false">
+                                   </p:commandButton>
+                                    <p:commandButton value="${msg['label.upload']}" icon="fa fa-cloud-upload"
+                                                    rendered="${sec.hasMethod('MaintenanceController', 'upload')}"
+                                                    onclick="PF('uploadPanel').show();" style="float: left">
+                                    </p:commandButton>
+                                    
+                                    <h:outputText value="#{maintenanceController.staticColumnsDataHeaderLvl2}"/>  
+                                    <h:outputLabel value="#{msg['label.order']}" styleClass="reOrderable"/>
+                                </f:facet> 
+                                <p:cellEditor>
+                                    <f:facet name="output">
+                                        <h:outputText value="#{row.getItemViewData(maintenanceController.locale)}" style="width:calc(100% - 50px)"/>
+                                        <h:outputText value="#{row.itemOrder}" styleClass="reOrderable"/>
+                                    </f:facet>
+                                    <f:facet name="input">
+                                        <p:inputText label="#{issue['label.'.concat(maintenanceController.staticColumnsData.get(maintenanceController.indexCurrentStaticParent).replaceAll('cust_tel_session_id','session').replaceAll('_id', '_name'))]}" value="#{row.itemData}" a:placeHolder="#{row.getItemViewData(maintenanceController.locale)}" a:ref="#{row.itemId}" 
+                                                     style="width:calc(100% - 50px)" styleClass="editable-input" required="true">
+                                            <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                            <f:attribute name="title" value="#{issue['label.'.concat(maintenanceController.staticColumnsData.get(maintenanceController.indexCurrentStaticParent).replaceAll('cust_tel_session_id','session').replaceAll('_id', '_name'))]}"/>
+                                        </p:inputText>
+                                        <p:inputText styleClass="reOrderable" placeholder="#{msg['label.order']}" value="#{row.itemOrder}"/>
+                                    </f:facet>
+                                </p:cellEditor>
+                            </p:column>
+                            <p:column style="width: 90px" rendered="#{maintenanceController.currentStaticParent eq 'issue_status_id'}">
+                                <f:facet name="header">
+                                    <h:outputLabel value="#{msg['label.action']}"/>
+                                </f:facet>
+                                <p:cellEditor>
+                                    <f:facet name="output">
+                                        <p:commandButton
+                                            icon="fa fa-cog"
+                                            styleClass="btn btn-primary btn-xs"
+                                            value="#{msg['label.action']}"
+                                            actionListener="#{maintenanceController.configIssueStatus(row)}" 
+                                            update="@(.issueStatusPanel)" process="@this"
+                                            oncomplete="PF('issueStatusPanel').show();" />
+                                    </f:facet>
+                                    <f:facet name="input">
+                                        <p:outputLabel value=""/>
+                                    </f:facet>
+                                </p:cellEditor>
+                            </p:column>
+                            <p:column style="width:70px" styleClass="table-action" rendered="#{sec.hasMethod('MaintenanceController', 'create') or sec.hasMethod('MaintenanceController', 'update')}">
+                                <f:facet name="header">
+                                    <p:commandLink styleClass="btn btn-xs btn-default"
+                                                   process="mentefrm:mentetab:panelGridTabStaticColumn"
+                                                   actionListener="#{maintenanceController.addStaticRow()}" 
+                                                   update="tbl_static_columns :growl"
+                                                   rendered="#{sec.hasMethod('MaintenanceController', 'create')}">
+                                        <span class="fa fa-plus-circle"></span>
+                                    </p:commandLink>
+                                </f:facet>
+                                <p:rowEditor styleClass="text-center editable rowid-#{row.itemId}" rendered="#{sec.hasMethod('MaintenanceController','update')}"/>
+                                <p:commandLink styleClass="ui-icon ui-icon-trash"
+                                               process="mentefrm:mentetab:panelGridTabStaticColumn"
+                                               actionListener="#{maintenanceController.delete(row)}" update="mainContent :growl"
+                                               rendered="#{
+                                                ( 
+                                                    ( not row.required )
+                                                    or
+                                                    ( row.required and index > 0)
+                                                )
+                                                and sec.hasMethod('MaintenanceController', 'delete')
+                                                }">
+                                    <p:confirm header="#{msg['label.delete']}" message="#{mainte['label.dialog.confirm']}" icon="ui-icon-alert" />
+                                </p:commandLink>
+                            </p:column>
+                        </p:dataTable>
+                    </p:column>
+                </p:panelGrid>
+            </p:tab>
+            
+            <p:tab title="#{customize['label.customize.pagetype.2']}" rendered="#{!loginController.member.companyCustomerMode}">
+                <div class="grid-wrapper">
+                    <div class="item datatable-item">
+                        <p:dataTable var="row" value="#{maintenanceController.dynamicColumnRoot}" rowStyleClass="#{maintenanceController.currentDynamicRoot eq row ? 'active' : null}">
+                            <p:column headerText="${msg['label.value.master.list']}">
+                                <p:commandLink
+                                    actionListener="#{maintenanceController.showDynamicRoot(row)}"
+                                    process="@this"
+                                    update="mainContent"
+                                    onstart="start()"
+                                    onsuccess="finish()">#{msg['label.'.concat(row)]}</p:commandLink>
+                            </p:column>
+                        </p:dataTable>
+                    </div>
+                    <c:forEach items="#{maintenanceController.dynamicColumns}" var="items" varStatus="loop">
+                        <div class="${maintenanceController.currentDynamicRoot} item datatable-item item-count-#{maintenanceController.dynamicColumns.size()}">
+                            <p:dataTable var="row" rowIndexVar="rowIndex" value="#{items}" editable="true" id="panelGridTabCustomizeColumn#{loop.index + 1}"
+                                         styleClass="order-table"
+                                         rowStyleClass="#{maintenanceController.dynamicColumnSelected.size() > loop.index+1 and  maintenanceController.dynamicColumnSelected.get(loop.index + 1) eq row.itemId ? 'active' : null}">
+                                <p:ajax event="rowEdit" listener="#{maintenanceController.onRowEdit}" update=":growl" 
+                                        oncomplete="$('.datatable-item tr[role=row].active:last a:first').click()"/>
+                                <p:ajax event="rowEditCancel" listener="#{maintenanceController.onRowCancel}" oncomplete="transformOrderElm(); $('.datatable-item tr[role=row].active:last a:first').click()"/>
+                                <p:column headerText="">
+                                    <f:facet name="header">
+                                        <!-- upload/download issue_proposal_id -->
+                                        <h:outputFormat
+                                            rendered="${(sec.hasMethod('MaintenanceController', 'download') or sec.hasMethod('MaintenanceController', 'upload'))
+                                                        and (!loginController.member.companyCustomerMode)
+                                                        and maintenanceController.currentDynamicRoot == 'issue_proposal_id'
+                                                        and loop.index == 0}">
+                                            <p:commandButton value="${msg['label.download']}" icon="fa fa-cloud-download"
+                                                             rendered="${sec.hasMethod('MaintenanceController', 'download')}" process="@this"
+                                                            actionListener="#{maintenanceController.exportData(3)}"
+                                                            ajax="false" />
+                                            <p:commandButton value="${msg['label.upload']}" icon="fa fa-cloud-upload" process="@this"
+                                                            rendered="${sec.hasMethod('MaintenanceController', 'upload')}"
+                                                            onclick="PF('uploadProposalPanel').show();" />
+                                        </h:outputFormat>
+
+                                        <!-- upload/download issue_product_id -->
+                                        <h:outputFormat
+                                            rendered="${(sec.hasMethod('MaintenanceController', 'download') or sec.hasMethod('MaintenanceController', 'upload'))
+                                                        and (!loginController.member.companyCustomerMode)
+                                                        and maintenanceController.currentDynamicRoot == 'issue_product_id'
+                                                        and loop.index == 3}">
+                                            <p:commandButton value="${msg['label.download']}" icon="fa fa-cloud-download"
+                                                             rendered="${sec.hasMethod('MaintenanceController', 'download')}" process="@this"
+                                                            actionListener="#{maintenanceController.exportData(1)}"
+                                                            ajax="false" />
+                                            <p:commandButton value="${msg['label.upload']}" icon="fa fa-cloud-upload" process="@this"
+                                                            rendered="${sec.hasMethod('MaintenanceController', 'upload')}"
+                                                            onclick="PF('uploadPanel').show();" />
+                                        </h:outputFormat>
+                                        <h:outputFormat
+                                            rendered="${(sec.hasMethod('MaintenanceController', 'download') or sec.hasMethod('MaintenanceController', 'upload'))
+                                                        and (!loginController.member.companyCustomerMode)
+                                                        and maintenanceController.currentDynamicRoot == 'issue_product_id'
+                                                        and loop.index == 0}">
+                                            <p:commandButton value="${msg['label.download']}" icon="fa fa-cloud-download" process="@this"
+                                                            rendered="${sec.hasMethod('MaintenanceController', 'download')}" 
+                                                            actionListener="#{maintenanceController.exportData(2)}"
+                                                            ajax="false" />
+                                            <p:commandButton value="${msg['label.upload']}" icon="fa fa-cloud-upload" process="@this"
+                                                            rendered="${sec.hasMethod('MaintenanceController', 'upload')}"
+                                                            onclick="PF('uploadProductPanel').show();" />
+                                        </h:outputFormat>
+                                        <h:outputFormat rendered="#{maintenanceController.currentDynamicRoot == 'issue_product_id' or maintenanceController.currentDynamicRoot == 'issue_proposal_id'}"><br /><br /></h:outputFormat>
+                                        <h:outputText value="#{maintenanceController.dynamicColumnHeader.get(loop.index)}"/>
+                                        <h:outputLabel value="#{msg['label.order']}" styleClass="reOrderable"/>
+                                    </f:facet> 
+                                    <p:cellEditor>
+                                        <f:facet name="output">
+                                            <p:outputPanel rendered="#{row.itemName eq 'issue_product_id'}">
+                                                <c:choose>
+                                                    <c:when test="#{loop.index lt 2}"> <!-- show category -->
+                                                        <p:commandLink
+                                                            value="#{row.getItemViewData(maintenanceController.locale)}"
+                                                            actionListener="#{maintenanceController.showDynamicColumn(loop.index, row)}"
+                                                            styleClass="item_cmd_${row.itemId}"
+                                                            update="mainContent"
+                                                            onstart="start()"
+                                                            onsuccess="finish()"
+                                                            style="display: block;width: calc(100% - 50px)"
+                                                            process="@this" />
+                                                        <h:outputText value="#{row.itemOrder}" styleClass="reOrderable"/>
+                                                    </c:when>
+                                                    <c:when test="#{loop.index eq 2}"> <!-- show product -->
+                                                        <p:commandLink
+                                                            value="#{row.getItemViewData(maintenanceController.locale)}"
+                                                            actionListener="#{maintenanceController.showProductCol(loop.index, row)}" 
+                                                            styleClass="item_cmd_${row.itemId}"
+                                                            update="mainContent"
+                                                            onstart="start()"
+                                                            onsuccess="finish()"
+                                                            style="display: block;width: 100%"
+                                                            process="@this" />
+                                                        <h:outputText value="#{row.itemOrder}" styleClass="reOrderable"/>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <p:outputLabel value="#{row.productsName}" style="width: calc(100% - 50px)"/>
+                                                        <h:outputText value="#{row.productsOrder}" styleClass="reOrderable"/>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </p:outputPanel>
+                                            <p:outputPanel rendered="#{row.itemName ne 'issue_product_id' }">
+                                                <c:if test="#{loop.index lt 2}">
+                                                    <p:commandLink
+                                                        value="#{row.getItemViewData(maintenanceController.locale)}"
+                                                        actionListener="#{maintenanceController.showDynamicColumn(loop.index, row)}" 
+                                                        styleClass="item_cmd_${row.itemId}"
+                                                        update="mainContent"
+                                                        onstart="start()"
+                                                        onsuccess="finish()"
+                                                        style="display: block;width: calc(100% - 50px)"
+                                                        process="@this"/>
+                                                    <h:outputText value="#{row.itemOrder}" styleClass="reOrderable"/>
+                                                </c:if>
+                                                <c:if test="#{loop.index ge 2}">
+                                                    <p:inputTextarea
+                                                        readonly="true"
+                                                        autoResize="false"
+                                                        style="width: calc(100% - 50px)"
+                                                        rows="4" required="true" label="#{maintenanceController.dynamicColumnHeader.get(loop.index)}"
+                                                        value="#{row.getItemViewData(maintenanceController.locale)}"
+                                                        styleClass="font_weight_normal inputTextareaNotBorder"
+                                                        rendered="${row.itemName eq 'example_sentence_type_id'}" />
+                                                    <p:outputLabel style="width: calc(100% - 50px)"
+                                                         value="#{row.getItemViewData(maintenanceController.locale)}"
+                                                         rendered="${row.itemName ne 'example_sentence_type_id'}" />
+                                                     <h:outputText value="#{row.itemOrder}" styleClass="reOrderable"/>
+                                                </c:if>
+                                            </p:outputPanel>
+                                        </f:facet>
+                                        <f:facet name="input">
+                                            <p:outputPanel rendered="#{row.itemName eq 'issue_product_id' and loop.index ge 3}" styleClass="input-product">
+                                                <p:inputText value="#{row.productsCode}" a:placeHolder="#{systemBundle['label.system.code']}" a:ref="#{row.productsCode}" 
+                                                             styleClass="editable-#{loop.index}-input" required="true" label="#{systemBundle['label.system.code']}">
+                                                    <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                                </p:inputText>
+                                                <p:inputText value="#{row.productsName}" a:placeHolder="#{row.productsName}" a:ref="#{row.productsId}" 
+                                                             styleClass="editable-#{loop.index}-input" required="true" label="#{systemBundle['label.system.name']}">
+                                                    <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                                </p:inputText>
+                                                <p:inputText styleClass="reOrderable" placeholder="#{msg['label.order']}" value="#{row.productsOrder}"/>
+                                            </p:outputPanel>
+                                            <p:outputPanel rendered="#{row.itemName ne 'issue_product_id' or loop.index ne 3}">
+                                                <p:inputTextarea
+                                                    rows="4"
+                                                    value="#{row.itemData}"
+                                                    a:ref="#{row.itemId}"
+                                                    style="width: calc(100% - 50px)"
+                                                    required="true" label="#{maintenanceController.dynamicColumnHeader.get(loop.index)}"
+                                                    styleClass="editable-#{loop.index}-input"
+                                                    rendered="${row.itemName eq 'example_sentence_type_id' and loop.index eq 2}">
+                                                    <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                                </p:inputTextarea>
+                                                <p:inputText
+                                                    value="#{row.itemData}"
+                                                    a:ref="#{row.itemId}"
+                                                    style="width: calc(100% - 50px)"
+                                                    required="true" label="#{maintenanceController.dynamicColumnHeader.get(loop.index)}"
+                                                    styleClass="editable-#{loop.index}-input"
+                                                    rendered="${row.itemName ne 'example_sentence_type_id' or (row.itemName eq 'example_sentence_type_id' and loop.index ne 2)}">
+                                                    <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                                </p:inputText>
+                                                <p:inputText styleClass="reOrderable" placeholder="#{msg['label.order']}" value="#{row.itemOrder}"/>
+                                            </p:outputPanel>
+                                        </f:facet>
+                                    </p:cellEditor>
+                                </p:column>
+                                <p:column headerText="#{mainte['label.mainte.risk_sensor']}" rendered="#{maintenanceController.currentDynamicParent.itemName eq 'issue_proposal_id' and loop.index eq 2}" styleClass="text-center mente-toggle">
+                                    <p:cellEditor>
+                                        <f:facet name="output"><p:selectBooleanCheckbox value="#{row.itemRiskSensor}" disabled="true"/></f:facet>
+                                        <f:facet name="input"><p:selectBooleanCheckbox value="#{row.itemRiskSensor}" /></f:facet>
+                                    </p:cellEditor>
+                                </p:column>
+                                <p:column styleClass="table-action" rendered="#{sec.hasMethod('MaintenanceController', 'create') or sec.hasMethod('MaintenanceController', 'update')}">
+                                    <f:facet name="header">
+                                        <p:commandLink styleClass="btn btn-xs btn-default" 
+                                                       process="mentefrm:mentetab:panelGridTabCustomizeColumn#{loop.index + 1}"
+                                                       actionListener="#{maintenanceController.addDynamicRow(loop.index)}" update="mainContent"
+                                                       rendered="#{sec.hasMethod('MaintenanceController', 'create')}"
+                                                       ><span class="fa fa-plus-circle"></span></p:commandLink>
+                                    </f:facet>
+
+                                    <p:rowEditor styleClass="text-center editable-#{loop.index} rowid-#{row.productsId}"
+                                                 rendered="#{(row.itemName eq 'issue_product_id' and loop.index ge 3) and sec.hasMethod('MaintenanceController','update')}"/>
+                                    <p:commandLink styleClass="ui-icon ui-icon-trash"
+                                                   update="mentefrm,mainContent :growl"
+                                                   rendered="#{(row.itemName eq 'issue_product_id' and loop.index ge 3) and sec.hasMethod('MaintenanceController','delete')}"
+                                                   onstart="start()" onsuccess="finish(); $('.item_cmd_${row.productsCategorySmallId}').trigger('click');" 
+                                                   process="mentefrm:mentetab:panelGridTabCustomizeColumn#{loop.index + 1}"
+                                                   actionListener="#{maintenanceController.deleteProduct(row)}">
+                                        <p:confirm header="${msg['label.delete']}" message="#{msg['label.confirm.delete']}" icon="ui-icon-alert" />
+                                    </p:commandLink>
+
+                                    <p:rowEditor styleClass="text-center editable-#{loop.index} rowid-#{row.itemId}"
+                                                 rendered="#{row['class'].simpleName eq 'MenteItem' and (row.itemName ne 'issue_product_id' or loop.index lt 3) and sec.hasMethod('MaintenanceController','update')}"/>
+                                    <p:commandLink styleClass="ui-icon ui-icon-trash"
+                                                   update="mentefrm,mainContent :growl"
+                                                   rendered="#{row['class'].simpleName eq 'MenteItem' and (row.itemName ne 'issue_product_id' or loop.index lt 3) and ( 
+                                                    ( not row.required )
+                                                    or
+                                                    ( row.required and loop.index > 0)
+                                                    or
+                                                    ( row.required and loop.index eq 0 and rowIndex > 0 )
+                                                )
+                                                and  sec.hasMethod('MaintenanceController','delete')}"
+                                                   onstart="start()" onsuccess="finish(); $('.item_cmd_${row.itemParent.itemId}').trigger('click');" 
+                                                   process="mentefrm:mentetab:panelGridTabCustomizeColumn#{loop.index + 1}"
+                                                   actionListener="#{maintenanceController.delete(row)}">
+                                        <p:confirm header="${msg['label.delete']}" message="#{msg['label.confirm.delete']}" icon="ui-icon-alert" />
+                                    </p:commandLink>
+                                </p:column>
+                            </p:dataTable>
+                        </div>
+                    </c:forEach>
+                </div>
+            </p:tab>
+
+            <p:tab id="tabGoodsExportXLS" title="#{customize['label.customize.pagetype.3']}">
+                    <p></p>
+                    <div class="col-md-12">
+                        <h:outputFormat rendered="#{(sec.isMaster() or sec.hasMethod('IssueController', 'upload'))}">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                        <c:choose>
+                            <c:when test="#{loginController.member.companyCustomerMode or loginController.member.companyBusinessFlag == 1}">
+                                ${msg['label.menu.CustomerController']}
+                            </c:when>
+                            <c:otherwise>${msg['label.menu.ISSUE']}</c:otherwise>
+                        </c:choose>
+                                    </div>
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-xs-6 col-sm-8 col-md-9 col-lg-10">
+                                            <p:commandButton type="button"
+                                                rendered="#{(sec.isMaster() or sec.hasMethod('IssueController', 'upload'))}"
+                                                value="${msg['label.upload']}"
+                                                icon="fa fa-cloud-upload"
+                                                onclick="PF('uploadIssuePanel').show();"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </h:outputFormat>
+                    </div>
+                </p:tab>
+            
+            <p:tab disabled="true" titleStyleClass="pull-right select-language" rendered="#{!loginController.member.companyCustomerMode}">
+                <f:facet name="title">
+                    <p:selectOneButton value="#{maintenanceController.locale}" rendered="#{loginController.member.company.companyGlobalLocale eq 1}">
+                        <p:ajax listener="#{maintenanceController.onChangeLanguage}" onstart="start()" onsuccess="finish()" update="mainContent" process="@this"/>
+                        <f:selectItems value="#{localeController.locales}"/>
+                    </p:selectOneButton>
+                </f:facet>
+            </p:tab>
+            
+            <p:tab id="tabEscalationSample" title="#{customize['label.customize.pagetype.4']}">
+                <ui:include src="./page/page4.xhtml" />
+            </p:tab>
+        </p:tabView>
+    
+    <h:outputStylesheet library="css" name="mente.css"/>
+    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+        <p:commandButton value="#{msg['label.yes']}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+        <p:commandButton value="#{msg['label.no']}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+    </p:confirmDialog>
+    
+    <p:dialog widgetVar="uploadIssuePanel" header="${msg['label.upload']}" showEffect="fade" hideEffect="fade" resizable="false" dynamic="true" responsive="true" modal="true" width="500">
+        <p:ajax event="close" update="@parent" listener="#{issueImportController.handleCloseDialog}" />
+        ${msg['label.upload_file']}#{msg['symbol.colon']}
+        <p:outputLabel value="#{issueImportController.uploadedFile.fileName}" id="file-name1"/>
+        <p:fileUpload fileUploadListener="#{issueImportController.fileUploadListener}" auto="true" skinSimple="true" 
+                      label="${msg['label.select']}" update="file-name1"
+                                 multiple="false" sizeLimit="3072000" allowTypes="/(\.|\/)(xls)$/"/>
+        <f:facet name="footer">
+            <p:outputPanel styleClass="text-right">
+                <p:commandButton value="${msg['label.import']}" actionListener="#{issueImportController.importData()}" 
+                                 update="mainContent, :growl" onclick="PF('uploadIssuePanel').hide();" 
+                                 styleClass="ui-confirmdialog-yes" icon="ui-icon-check"
+                                 onstart="start()" onsuccess="finish()">
+                    <f:param name="force" value="true"/>
+                </p:commandButton>
+                <p:commandButton value="${msg['label.cancel']}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" onclick="PF('uploadIssuePanel').hide();"/>
+            </p:outputPanel>
+        </f:facet>
+    </p:dialog>
+    
+    <p:dialog widgetVar="uploadProposalPanel" header="${msg['label.upload']}" showEffect="fade" hideEffect="fade" resizable="false" dynamic="true" responsive="true" modal="true" width="500">
+        <p:ajax event="close" update="@parent" listener="#{maintenanceController.handleCloseDialog}" />
+        ${msg['label.upload_file']}#{msg['symbol.colon']} <p:outputLabel value="#{maintenanceController.uploadedFile.fileName}" id="file-name4"/>
+        <p:fileUpload fileUploadListener="#{maintenanceController.fileUploadListener}" auto="true" skinSimple="true" label="${msg['label.select']}" update="file-name4" multiple="false" sizeLimit="3072000" allowTypes="/(\.|\/)(xls)$/"/>
+        <f:facet name="footer">
+            <p:outputPanel styleClass="text-right">
+                <p:commandButton value="${msg['label.import']}" actionListener="#{maintenanceController.importProposalData()}"  update="mainContent, :growl" onclick="PF('uploadProposalPanel').hide();"  styleClass="ui-confirmdialog-yes" icon="ui-icon-check" onstart="start()" onsuccess="finish()">
+                    <f:param name="force" value="true"/>
+                </p:commandButton>
+                <p:commandButton value="${msg['label.cancel']}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" onclick="PF('uploadProposalPanel').hide();"/>
+            </p:outputPanel>
+        </f:facet>
+    </p:dialog>
+    
+    <p:dialog widgetVar="uploadPanel" header="${msg['label.upload']}" showEffect="fade" hideEffect="fade" resizable="false" dynamic="true" responsive="true" modal="true" width="500">
+        <p:ajax event="close" update="@parent" listener="#{maintenanceController.handleCloseDialog}" />
+        ${msg['label.upload_file']}#{msg['symbol.colon']}
+            <p:outputLabel value="#{maintenanceController.uploadedFile.fileName}" id="file-name2"/>
+            <p:fileUpload fileUploadListener="#{maintenanceController.fileUploadListener}" auto="true" skinSimple="true" 
+                          label="${msg['label.select']}" update="file-name2"
+                                 multiple="false" sizeLimit="3072000" allowTypes="/(\.|\/)(xls)$/"/>
+        <f:facet name="footer">
+            <p:outputPanel styleClass="text-right">
+                <p:commandButton value="${msg['label.import']}" actionListener="#{maintenanceController.importData()}" 
+                                 update="mainContent, :growl" onclick="PF('uploadPanel').hide();" 
+                                 styleClass="ui-confirmdialog-yes" icon="ui-icon-check"
+                                 onstart="start()" onsuccess="finish()">
+                    <f:param name="force" value="true"/>
+                </p:commandButton>
+                <p:commandButton value="${msg['label.cancel']}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" onclick="PF('uploadPanel').hide();"/>
+            </p:outputPanel>
+        </f:facet>
+    </p:dialog>
+
+    <p:dialog widgetVar="uploadProductPanel" header="${msg['label.upload']}" showEffect="fade" hideEffect="fade" resizable="false" dynamic="true" responsive="true" modal="true" width="500">
+        <!--<p:ajax event="open" update="@parent" listener="#{maintenanceController.handleCloseDialog}" />-->
+        <p:ajax event="close" update="@parent" listener="#{maintenanceController.handleCloseDialog}" />
+        ${msg['label.upload_file']}#{msg['symbol.colon']}
+            <p:outputLabel value="#{maintenanceController.uploadedFile.fileName}" id="file-name3"/>
+            <p:fileUpload fileUploadListener="#{maintenanceController.fileUploadListener}" auto="true" skinSimple="true" 
+                          label="${msg['label.select']}" update="file-name3"
+                                 multiple="false" sizeLimit="3072000" allowTypes="/(\.|\/)(xls)$/"/>
+        <f:facet name="footer">
+            <p:outputPanel styleClass="text-right">
+                <p:commandButton value="${msg['label.import']}" actionListener="#{maintenanceController.importProductData()}" 
+                                 update="mainContent, :growl" onclick="PF('uploadPanel').hide();" 
+                                 styleClass="ui-confirmdialog-yes" icon="ui-icon-check" 
+                                 onstart="start()" onsuccess="finish()">
+                    <f:param name="force" value="true"/>
+                </p:commandButton>
+                <p:commandButton value="${msg['label.cancel']}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" onclick="PF('uploadProductPanel').hide();"/>
+            </p:outputPanel>
+        </f:facet>
+    </p:dialog>
+    <p:dialog
+        widgetVar="issueStatusPanel"
+        id="issueStatusPanel"
+        styleClass="issueStatusPanel"
+        header="#{issue['label.status.action']}" 
+        showEffect="fade"
+        hideEffect="fade"
+        width="650"
+        resizable="false"
+        dynamic="true"
+        responsive="true"
+        modal="true">
+        <p:outputLabel value="${issue['label.issue_status_name']}" style="vertical-align: middle; display: inline-block; padding-right: 10px;"/> 
+        <p:selectOneMenu style="vertical-align: middle" value="#{maintenanceController.issueStatusConfigItem.issueStatusStep}">
+            <p:ajax listener="#{maintenanceController.onChangeIssueStep}" update="chkIssueOptions"/>
+            <f:selectItem itemLabel="----" itemValue="0" noSelectionOption="true"/>
+            <f:selectItem itemLabel="${issue['label.mail_correspondence_customers']}" itemValue="1"/>
+            <f:selectItem itemLabel="${issue['label.escalation_2']}" itemValue="2"/>
+            <f:selectItem itemLabel="${issue['label.escalation_3']}" itemValue="3"/>
+            <f:selectItem itemLabel="${issue['label.escalation_4']}" itemValue="4"/>
+            <f:selectItem itemLabel="${issue['label.escalation_6']}" itemValue="5"/>
+            <f:selectItem itemLabel="${msg['label.complete']}" itemValue="6"/>
+        </p:selectOneMenu>
+        <p:outputPanel id="chkIssueOptions" style="margin-top: 10px; ">
+            <p:selectBooleanCheckbox itemLabel="#{issue['label.data.required.hint']}" style="display: block"
+                                     value="#{maintenanceController.issueStatusConfigItem.issueStatusDataRequired}"
+                                     rendered="#{maintenanceController.issueStatusConfigItem.issueStatusStep ne 0 
+                                and maintenanceController.issueStatusConfigItem.issueStatusStep ne 5 
+                                and maintenanceController.issueStatusConfigItem.issueStatusStep ne 6 
+                            }"/>
+            <p:selectBooleanCheckbox itemLabel="#{issue['label.enddate.required.hint']}"  style="display: block"
+                                     rendered="#{maintenanceController.issueStatusConfigItem.issueStatusStep eq 6}"
+                                     value="#{maintenanceController.issueStatusConfigItem.issueStatusEndDateRequired}"/>
+            <p:selectBooleanCheckbox itemLabel="#{issue['label.automail.check']}"  style="display: block"
+                                     rendered="#{maintenanceController.issueStatusConfigItem.issueStatusStep eq 2 
+                                or maintenanceController.issueStatusConfigItem.issueStatusStep eq 5 
+                                or maintenanceController.issueStatusConfigItem.issueStatusStep eq 6 
+                            }"
+                            value="#{maintenanceController.issueStatusConfigItem.issueStatusAutoMail}">
+                <p:ajax update="@parent"/>
+            </p:selectBooleanCheckbox>
+
+            <p:outputPanel rendered="#{maintenanceController.issueStatusConfigItem.issueStatusAutoMail and (
+                                       maintenanceController.issueStatusConfigItem.issueStatusStep eq 2 
+                                or maintenanceController.issueStatusConfigItem.issueStatusStep eq 5 
+                                or maintenanceController.issueStatusConfigItem.issueStatusStep eq 6 )}">
+                <c:forEach items="#{maintenanceController.autoMailConfigList}" var="item" varStatus="index">
+                    <p:outputPanel style="width: 100%; position: relative; border: 1px solid lightgray; padding: 8px; border-radius: 5px; margin-bottom: 10px; background-color: #{index.even ? '#FFF' : '#EEE'}">
+                        <h:outputText value="${index.index + 1}" styleClass="label label-success" style="position: absolute; top: -1px; left: -1px;"/>
+                        <div style="position: absolute; top: -1px; right: -3px;">
+                            <p:commandButton icon="fa fa-plus-circle" rendered="#{ index.first }" disabled="#{maintenanceController.autoMailConfigList.size() ge 5}"
+                                             actionListener="#{maintenanceController.addNewAutoMailConfig()}" update="chkIssueOptions"/>
+                            <p:commandButton icon="fa fa-minus-circle" rendered="#{ not index.first }"
+                                         actionListener="#{maintenanceController.removeAutoMailConfig(item)}" update="chkIssueOptions"/>
+                        </div>
+                        <div>
+                            <p:outputLabel value="${issue['label.issue_proposal_name']}" style="vertical-align: middle; display: inline-block; padding-right: 10px;"/> 
+                            <p:selectCheckboxMenu label="#{item.proposalList.isEmpty() ? msg['label.select'] : item.getProposalNames(localeController.locale)}" 
+                                                  filter="true" filterMatchMode="startsWith" widgetVar="cbmProposalIds_#{index.index}"
+                                                  converter="gnext.converter.smart" value="#{item.proposalList}"
+                                                  style="vertical-align: middle; margin-right: 5px">
+                                <f:selectItems value="#{issueImportController.filterLevel(1, issueController.select.get('issue_proposal_id'))}"/>
+                                <p:ajax update="@this" oncomplete="PF('cbmProposalIds_#{index.index}').show()"/>
+                                <p:ajax event="toggleSelect" update="@this" oncomplete="PF('cbmProposalIds_#{index.index}').show()"/>
+                            </p:selectCheckboxMenu>
+                            <p:outputLabel value="${issue['label.issue_product_name']}" style="vertical-align: middle; display: inline-block; padding-right: 10px; border-left: 1px solid lightgray; padding-left: 10px; margin-left: 10px !important;"/> 
+                            <p:selectCheckboxMenu label="#{item.productList.isEmpty() ? msg['label.select'] : item.getProductNames(localeController.locale)}" 
+                                                  filter="true" filterMatchMode="startsWith" widgetVar="cbmProductLv1Ids_#{index.index}"
+                                                  converter="gnext.converter.smart" value="#{item.productList}"
+                                                  style="vertical-align: middle; margin-right: 5px">
+                                <f:selectItems value="#{issueImportController.filterLevel(1, issueController.select.get('issue_product_id'))}"/>
+                                <p:ajax update="@this, cbmProductLv2Ids_#{index.index}" oncomplete="PF('cbmProductLv1Ids_#{index.index}').show()"/>
+                                <p:ajax event="toggleSelect" update="@this, cbmProductLv2Ids_#{index.index}" oncomplete="PF('cbmProductLv1Ids_#{index.index}').show()"/>
+                            </p:selectCheckboxMenu>
+                            <p:selectCheckboxMenu label="#{item.productLv2List.isEmpty() ? msg['label.select'] : item.getProductLv2Names(localeController.locale)}" 
+                                                  filter="true" filterMatchMode="startsWith" widgetVar="cbmProductLv2Ids_#{index.index}"
+                                                  id="cbmProductLv2Ids_#{index.index}"
+                                                  converter="gnext.converter.smart" value="#{item.productLv2List}"
+                                                  style="vertical-align: middle; margin-right: 5px">
+                                <f:selectItems value="#{issueImportController.filterItemByParent(item.productList)}"/>
+                                <p:ajax update="@this" oncomplete="PF('cbmProductLv2Ids_#{index.index}').show()"/>
+                                <p:ajax event="toggleSelect" update="@this" oncomplete="PF('cbmProductLv2Ids_#{index.index}').show()"/>
+                            </p:selectCheckboxMenu>
+                            <p:selectBooleanCheckbox id="autosend_#{index.index}" value="#{item.autoSend}" label="保存する際送信" 
+                                                     style="vertical-align: text-top; margin-left: 10px; margin-right: 5px">
+                                <p:ajax update="configTime_#{index.index}"/>
+                            </p:selectBooleanCheckbox>
+                            <p:outputLabel value="保存する際送信" for="autosend_#{index.index}" style="vertical-align: middle;"/>
+                        </div>
+                        <p:outputPanel id="configTime_#{index.index}">
+                            <p:outputPanel rendered="#{!item.autoSend}" style="padding: 5px 5px 15px; border: 1px solid #ececec; margin-top: 6px;">
+                                <div style="display: inline-block; width: 120px; margin-left: 10px;">
+                                    <h:outputLabel value="受付日から" style="vertical-align: middle;"/>
+                                    <p:inputText id="listSearchPeriodId_#{index.index}" value="#{item.day}" style="width: 2.5em !important; float: right; margin-top: -4px;"/>
+                                    <p:slider for="listSearchPeriodId_#{index.index}" maxValue="36" style="margin-top: 5px"/>
+                                </div>
+                                <p:selectOneButton value="#{item.mode}" style="vertical-align: middle; margin-left: 10px;">
+                                    <f:selectItem itemLabel="当日" itemValue="0" />
+                                    <f:selectItem itemLabel="毎日" itemValue="1" />
+                                </p:selectOneButton>
+                                <p:selectOneMenu value="#{item.hours}" style="vertical-align: middle; margin-left: 5px;">>
+                                    <c:forEach begin="6" end="21" var="h">
+                                        <f:selectItem itemLabel="#{h}時" itemValue="#{h}"/>
+                                    </c:forEach>
+                                </p:selectOneMenu>
+                            </p:outputPanel>
+                        </p:outputPanel>
+                        <div class="flex" style="margin-top: 10px">
+                            <div class="flex flex_1_1">
+                                <div class="flex_0_1">
+                                    <h:outputLabel value="#{msg['label.mail.to']}" />
+                                    <p:commandButton
+                                        icon="fa fa-th"
+                                        actionListener="#{maintenanceController.setAutoMailMode(item, 'to')}"
+                                        oncomplete="PF('dlgAutoSendMailMembers').show()"
+                                        update="@(.pickGroups), @(.pickMembers)"/>
+                                </div>
+                                <div class="flex flex_1_1" style="padding: 0 10px">
+                                    <p:panel styleClass="panel_to_d_o_users flex_1_1 ui-corner-all">
+                                        <c:forEach var="item2" items="${item.toList}" >
+                                            <span title="${item2.description}" class="label label-success" style="margin-right: 5px;">
+                                                ${item2.label}
+                                                <p:commandLink style="vertical-align: middle; color: #fff; display: inline-block; width: 10px;"
+                                                               update="@parent" title="${msg['label.delete']}"
+                                                               actionListener="#{maintenanceController.removeMember(item, item2 ,'to')}">&#215;</p:commandLink>
+                                            </span>
+                                        </c:forEach>
+                                    </p:panel>
+                                </div>
+                            </div>
+                            <div class="flex flex_1_1">
+                                <div class="flex_0_1">
+                                    <h:outputLabel value="#{msg['label.mail.cc']}" />
+                                    <p:commandButton
+                                        icon="fa fa-th"
+                                        actionListener="#{maintenanceController.setAutoMailMode(item, 'cc')}"
+                                        oncomplete="PF('dlgAutoSendMailMembers').show()"
+                                        update="@(.pickGroups), @(.pickMembers)"/>
+                                </div>
+                                <div class="flex flex_1_1" style="padding: 0 10px">
+                                    <p:panel styleClass="panel_cc_d_o_users flex_1_1 ui-corner-all">
+                                        <c:forEach var="item2" items="${item.ccList}" >
+                                            <span title="${item2.description}" class="label label-success" style="margin-right: 5px;">
+                                                ${item2.label}
+                                                <p:commandLink style="vertical-align: middle; color: #fff; display: inline-block; width: 10px;"
+                                                               update="@parent" title="${msg['label.delete']}"
+                                                               actionListener="#{maintenanceController.removeMember(item, item2 ,'cc')}">&#215;</p:commandLink>
+                                            </span>
+                                        </c:forEach>
+                                    </p:panel>
+                                </div>
+                            </div>
+                        </div>
+                    </p:outputPanel>
+                </c:forEach>
+            </p:outputPanel>
+        </p:outputPanel>
+        <f:facet name="footer">
+            <p:outputPanel styleClass="text-right">
+                <p:commandButton value="${msg['label.setting']}" actionListener="#{maintenanceController.saveConfigIssueStatus()}"
+                                 update=":growl"
+                                 styleClass="ui-confirmdialog-yes" icon="ui-icon-check" 
+                                 onstart="start()" onsuccess="finish()">
+                    <f:param name="force" value="true"/>
+                </p:commandButton>
+                <p:commandButton value="${msg['label.cancel']}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" onclick="PF('issueStatusPanel').hide();"/>
+            </p:outputPanel>
+        </f:facet>
+    </p:dialog>
+    <p:dialog id="dlgAutoSendMailMembers" widgetVar="dlgAutoSendMailMembers" dynamic="true" modal="true" resizable="false" responsive="true">
+            <p:outputPanel id="panelAutoSendMailMembers" styleClass="panelAutoSendMailMembers">
+                <div class="flex">
+                    <div class="flex_0_1">
+                        <div class="ui-picklist-caption ui-widget-header ui-corner-tl ui-corner-tr" style="line-height: 25px;">#{msg['label.group.name']}</div>
+                        <p:tree value="#{maintenanceController.groupTree}" var="node" dynamic="true" id="pickGroups" styleClass="pickGroups"
+                                selectionMode="single" style="width: 100% !important;">
+                            <p:ajax event="select" update="@(.pickMembers)" listener="#{maintenanceController.onChangeGroup}"
+                                    onstart="$('#panelAutoSendMailMembers #pickMembers').block({message: ''})"
+                                    onsuccess="$('#panelAutoSendMailMembers #pickMembers').unblock()"/>
+                            <p:treeNode>
+                                <h:outputText value="#{node.groupName}" />
+                            </p:treeNode>
+                        </p:tree>
+                    </div>
+                    <div class="flex_1_1" style="padding-left: 15px;">
+                        <p:pickList
+                            id="pickMembers"
+                            styleClass="pickMembers"
+                            value="#{maintenanceController.autoMailMembers}"
+                            var="members"
+                            itemLabel="#{members.label}"
+                            itemValue="#{members}"
+                            immediate="true"
+                            rendered="true"
+                            converter="gnext.picklist.converter.selecitem">
+                            <f:facet name="sourceCaption">#{mailBundle['label.mail.person.member']}</f:facet>
+                            <f:facet name="targetCaption">#{mailBundle['label.mail.person.add']}</f:facet>
+                            <p:ajax event="transfer" listener="#{maintenanceController.onTransferMember}"/>
+                        </p:pickList>
+                    </div>
+                </div>
+                <p/>
+                <div style="text-align: center;">
+                    <p:commandButton
+                            value="#{mailBundle['label.mail.person.decision']}"
+                            actionListener="#{maintenanceController.updatePickList()}"
+                            onstart="start()" onsuccess="finish()" oncomplete="PF('dlgAutoSendMailMembers').hide()"
+                            update="@(.panel_to_d_o_users), @(.panel_cc_d_o_users)" />
+                </div>
+            </p:outputPanel>
+        </p:dialog>
+    
+    </h:form>
+    <script type="text/javascript">
+        //<![CDATA[
+        jQuery(document).ready(function($){
+            $('.mentetab .table-action .ui-row-editor .ui-icon-close').on('click', function(e){
+                if( $(this).parent().hasClass("rowid-") ){
+                    $(this).closest('tr').remove();
+                }
+            });
+            
+            $('.mentetab').on('keypress', 'textarea.ui-inputtextarea', function(e){
+                if(e.which === 13){
+                    $(this).val($(this).val() + "\r\n");
+                }
+            });
+            
+            transformOrderElm();
+        });
+        function transformOrderElm(){
+            $('span.reOrderable:not(.ready)').each(function(){
+                var elm = $(this);
+                elm.addClass('.ready');
+                var order = 1;
+                try{
+                    order = parseInt(elm.text());
+                }catch(e){}
+                var up = $('<a/>', {
+                    class: 'up',
+                    title: '#{mailBundle['label.mail.filter.priority.high']}'
+                });
+                up.html('<i class="fa fa-caret-up" aria-hidden="true"></i>');
+                up.click(function(){
+                    if(order > 1){
+                        order = order - 1;
+                        elm.closest('.ui-cell-editor').find('input.reOrderable').val(order);
+                        elm.closest('tr').find('.ui-row-editor-check').trigger('click');
+                    }
+                });
+                var down = $('<a/>', {
+                    class: 'down',
+                    title: '#{mailBundle['label.mail.filter.priority.low']}'
+                });
+                down.html('<i class="fa fa-caret-down" aria-hidden="true"></i>');
+                down.click(function(){
+                    if( order >= elm.closest('tbody').find('tr').length ) return;
+                    order = order + 1;
+                    elm.closest('.ui-cell-editor').find('input.reOrderable').val(order);
+                    elm.closest('tr').find('.ui-row-editor-check').trigger('click');
+                });
+                elm.append(up, down);
+            });
+        }
+        //]]>
+    </script>
+</ui:composition>

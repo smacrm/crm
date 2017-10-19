@@ -1,0 +1,159 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+<p:dialog
+    id="dbServerManager"
+    widgetVar="dbServerManager"
+    header="#{companyBundle['label.company_db_server_info']}"
+    modal="true"
+    width="300"
+    style="margin-top: 50px;"
+    draggable="false"
+    resizable="false"
+    dynamic="true"
+    responsive="true"
+    position="top">
+    <h:form id="dbServerManagerPanel"> 
+        <p:panelGrid style="width: 100%" styleClass="no-border">
+            <p:row>
+                <p:column style="width: 30%;word-break: keep-all;"><p:outputLabel value="#{companyBundle['label.company_existing_server']}"/></p:column>
+                <p:column>
+                    <table>
+                        <tr>
+                            <td style="width: 1.5em;line-height: 2.6em;">
+                                <p:selectBooleanCheckbox value="#{dbServerController.selected}">
+                                    <p:ajax update=":dbServerManagerPanel" />
+                                </p:selectBooleanCheckbox>
+                            </td>
+                            <td>
+                                <p:selectOneMenu
+                                    value="#{dbServerController.bean.databaseServerId}"
+                                    rendered="#{dbServerController.selected}">
+                                    <p:ajax event="change" listener="#{dbServerController.resetDatabaseServer}" update=":dbServerManagerPanel" />
+                                    <f:selectItems value="#{companyController.databaseServers}" var="ds" itemValue="#{ds.databaseServerId}" itemLabel="#{ds.databaseServerName}"/>
+                                    <f:selectItem itemValue="0" itemLabel="#{companyBundle['label.company_db_server']}#{msg['label.create']}" />
+                                </p:selectOneMenu>
+                            </td>
+                        </tr>
+                    </table>
+                </p:column>
+            </p:row>
+
+            <c:if test="#{!dbServerController.selected}">
+                <p:row>
+                    <p:column><p:outputLabel value="#{systemBundle['label.system.server.name']}"/></p:column>
+                    <p:column>
+                        <p:inputText
+                            value="#{dbServerController.bean.databaseServerName}" 
+                            maxlength="30" required="true" 
+                            label="#{systemBundle['label.system.server.name']}">
+                            <f:validator validatorId="gnext.validator.RequiredValidator" />
+                            <f:validator validatorId="gnext.validator.LengthValidator" />
+                            <f:attribute name="max" value="30"/>
+                            <f:attribute name="title" value="#{systemBundle['label.system.server.name']}"/>
+                        </p:inputText>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column><p:outputLabel value="#{systemBundle['label.system.server.type']}"/></p:column>
+                    <p:column>
+                        <p:selectOneMenu value="#{dbServerController.bean.databaseServerDriver}" >
+                            <f:selectItem itemValue="com.mysql.jdbc.Driver" itemLabel="MySQL"/>
+                        </p:selectOneMenu>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column><p:outputLabel value="#{systemBundle['label.system.server.username']}"/></p:column>
+                    <p:column>
+                        <p:inputText
+                            value="#{dbServerController.bean.databaseServerUsername}" 
+                            maxlength="100" required="true" 
+                            label="#{systemBundle['label.system.server.username']}">
+                            <f:validator validatorId="gnext.validator.RequiredValidator" />
+                            <f:validator validatorId="gnext.validator.LengthValidator" />
+                            <f:attribute name="max" value="100"/>
+                            <f:attribute name="title" value="#{systemBundle['label.system.server.username']}"/>
+                        </p:inputText>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column><p:outputLabel value="#{systemBundle['label.system.server.password']}"/></p:column>
+                    <p:column>
+                        <p:password
+                            value="#{dbServerController.bean.databaseServerPassword}" 
+                            maxlength="100" required="true" 
+                            label="#{systemBundle['label.system.server.password']}">
+                            <f:validator validatorId="gnext.validator.RequiredValidator" />
+                            <f:validator validatorId="gnext.validator.LengthValidator" />
+                            <f:attribute name="max" value="100"/>
+                            <f:attribute name="title" value="#{systemBundle['label.system.server.password']}"/>
+                        </p:password>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column><p:outputLabel value="#{systemBundle['label.system.server.port']}"/></p:column>
+                    <p:column>
+                        <p:inputText
+                            value="#{dbServerController.bean.databaseServerPort}" 
+                            maxlength="10" required="true" 
+                            label="#{systemBundle['label.system.server.port']}">
+                            <p:keyFilter regEx="/[0-9]/i" preventPaste="false"/>
+                            <f:validator validatorId="gnext.validator.RequiredValidator" />
+                            <f:validator validatorId="gnext.validator.NumberValidator" />
+                            <f:validator validatorId="gnext.validator.LengthValidator" />
+                            <f:attribute name="max" value="10"/>
+                            <f:attribute name="title" value="#{systemBundle['label.system.server.port']}"/>
+                        </p:inputText>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column><p:outputLabel value="#{systemBundle['label.system.server.host']}"/></p:column>
+                    <p:column>
+                        <p:inputText
+                            value="#{dbServerController.bean.databaseServerHost}" 
+                            maxlength="100" required="true" 
+                            label="#{systemBundle['label.system.server.host']}">
+                            <p:keyFilter regEx="/[a-zA-Z0-9\.-]/i" preventPaste="false"/>
+                            <f:validator validatorId="gnext.validator.RequiredValidator" />
+                            <f:validator validatorId="gnext.validator.LengthValidator" />
+                            <f:attribute name="max" value="100"/>
+                            <f:attribute name="title" value="#{systemBundle['label.system.server.host']}"/>
+                        </p:inputText>
+                    </p:column>
+                </p:row>
+            </c:if>
+
+            <p:row>
+                <p:column colspan="2" style="text-align: center;padding-top: 1em !important;">
+                    <!--<p:commandButton type="button" value="#{msg['label.cancel']}" onclick="PF('dbServerManager').hide()" />-->
+                    <c:choose>
+                        <c:when test="#{empty dbServerController.bean or empty dbServerController.bean.databaseServerId or dbServerController.bean.databaseServerId eq 0}">
+                            <p:commandButton
+                                rendered="#{empty companyController.companyModel.company or empty companyController.companyModel.company.companyId}"
+                                update=":frmCompany:dbServerCbx, :growl"
+                                actionListener="#{dbServerController.create()}"
+                                value="#{msg['label.insert']}" />
+                            <p:commandButton
+                                rendered="#{!empty companyController.companyModel.company.companyId}"
+                                update=":growl"
+                                actionListener="#{dbServerController.create()}"
+                                value="#{msg['label.insert']}" />
+                        </c:when>
+                        <c:otherwise>
+                            <p:commandButton
+                                update=":growl"
+                                actionListener="#{dbServerController.edit()}"
+                                value="#{msg['label.edit']}" />
+                        </c:otherwise>
+                    </c:choose>
+                </p:column>
+            </p:row>
+        </p:panelGrid>
+    </h:form>
+</p:dialog>
+</ui:composition>

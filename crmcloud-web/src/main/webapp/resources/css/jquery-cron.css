@@ -1,0 +1,10 @@
+#selector {
+    font-size: 14px;
+}
+#selector span select{
+    border: 1px solid #d6d6d6;
+    background: #fff;
+    font-weight: normal;
+    color: #555;
+    border-radius: 4px;
+}

@@ -1,0 +1,144 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:crm="http://gnext.co.jp/facelets">
+    <div id="pageTitle">#{sf['label.twilio.setting.title']} #{msg['symbol.paren.left']}#{sf['label.twilio.setting.desc']}#{msg['symbol.paren.right']}</div>
+    <h:form>
+        <h:panelGrid width="100%" styleClass="page-header">
+            <f:facet name="header">
+                <!-- Content Header (Page header) -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <h1>
+                            #{sf['label.twilio.setting.title']}
+                            <small>#{sf['label.twilio.setting.desc']}</small>
+                        </h1>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <p:commandButton value="#{msg['label.reload']}" actionListener="#{dataController.reload()}"
+                                         title="#{msg['label.reload']}"  icon="fa fa-refresh" update="mainContent"
+                                         onstart="start()" onsuccess="finish()" 
+                                         rendered="${sec.hasMethod('DataController', 'search')}"/>
+                        <p:commandButton value="#{msg['label.create']}" actionListener="#{dataController.create()}"
+                                         title="#{msg['label.create']}"  icon="fa fa-plus-circle" update="mainContent"
+                                         onstart="start()" onsuccess="finish()" 
+                                         rendered="${sec.hasMethod('DataController', 'create')}">
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+                    </div>
+                </div>
+            </f:facet>
+        </h:panelGrid>
+        <p:outputPanel rendered="${sec.hasMethod('DataController', 'search')}">
+            <div class="box box-solid box-search">
+                <div class="box-header with-border" data-widget="collapse">
+                    <h3 class="box-title">#{msg['label.search.title']}</h3>
+                    #{msg['symbol.colon']}<code></code>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <div id="search-filter"></div>
+                </div>
+                <div class="box-footer text-center">
+                    <h:inputText value="#{dataController.searchDataJson}" styleClass="searchDataJson" style="display: none"/>
+                <p:commandLink actionListener="#{dataController.search}" 
+                        style="display:none" styleClass="search-action" 
+                        onstart="start()" onsuccess="finish()" 
+                        update="mainContent, :growl"/>
+
+                <p:commandButton value="#{msg['label.btn.search']}" type="button" icon="fa fa-search" styleClass="btn-search"></p:commandButton>
+                </div>
+            </div>
+        </p:outputPanel>
+        
+        <c:set var="rowsPerPageTemplate" value="#{configController.getConfig('DATATABLE_ROW_PER_PAGE')}" scope="session" />
+        <c:set var="rows" value="#{configController.getConfig('DATATABLE_DEFAULT_PER_PAGE')}" scope="session" />
+        <p:dataTable var="r" rowIndexVar="itemViewIndex" value="#{dataController.list}" scrollable="true"
+            lazy="true" paginator="true" paginatorTemplate="#{layout.paginatorTemplate}" currentPageReportTemplate="#{layout.currentPageReportTemplate}"
+            rowsPerPageTemplate="#{rowsPerPageTemplate}" rows="#{rows}" pageLinks="5" rowHover="true" emptyMessage="#{msg['label.data.empty']}">
+            <p:column style="width:60px" styleClass="table-action">
+                <p:commandLink actionListener="#{dataController.update(r, itemViewIndex)}"
+                               update="mainContent"
+                               title="View Detail" styleClass="ui-icon ui-icon-pencil"
+                               onstart="start()" onsuccess="finish()"
+                               rendered="${sec.hasMethod('DataController', 'update')}">
+                    <f:param name="force" value="true"/>
+                </p:commandLink>
+            </p:column>
+            <p:column headerText="#{sf['label.twilio.setting.phone']}">
+                <h:outputText value="#{r.phoneNumber}" />
+            </p:column>
+
+            <p:column headerText="#{sf['label.twilio.setting.locale']}">
+                <h:outputText value="#{localeController.getLocaleName(r.locale)}" />
+            </p:column>
+            
+            <p:column headerText="#{issue['label.created_name']}">
+                <h:outputText value="#{r.creatorId.memberNameLast}" />
+                <h:outputText value="#{r.creatorId.memberNameFirst}" />
+            </p:column>
+            <p:column headerText="#{issue['label.updated_name']}">
+                <h:outputText value="#{r.updatedId.memberNameFull}" />
+            </p:column>
+            <p:column headerText="#{issue['label.created_time']}">
+                <h:outputText value="#{r.createdTime}">
+                    <f:convertDateTime type="date" pattern="yyyy-MM-dd HH:mm"/>
+                </h:outputText>
+            </p:column>
+             <p:column headerText="#{issue['label.updated_time']}">
+                 <h:outputText value="#{r.updatedTime}" >
+                    <f:convertDateTime type="date" pattern="yyyy-MM-dd HH:mm"/>
+                 </h:outputText>
+            </p:column>
+        </p:dataTable>
+        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+            <p:commandButton value="#{msg['label.yes']}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+            <p:commandButton value="#{msg['label.no']}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+        </p:confirmDialog>
+        <h:outputScript library="js" name="search-filter.js"/>
+        <script type="text/javascript">
+            var searchFilterOpts = {
+                fields: [
+                    {
+                        "type": "string",
+                        "label": "#{sf['label.twilio.setting.phone']}",
+                        "name": 'c.phoneNumber',
+                        'operator': ['EQ', 'LIKE']
+                    },
+                ],
+                data: $('.searchDataJson').val(),
+                displayQuery: true,
+                queryContainer: $("#search-filter").closest('.box.box-search').find('.box-header code'),
+                langs:{
+                    AND: '#{msg['label.condition.and']}',
+                    OR: '#{msg['label.condition.or']}',
+                    LIKE: '#{msg['label.condition.like']}',
+                    LIKE_START: '#{msg['label.condition.like_start']}',
+                    LIKE_END: '#{msg['label.condition.like_end']}',
+                    NOT_LIKE: '#{msg['label.condition.not_like']}',
+                    BLANK: '#{msg['label.condition.blank']}',
+                    NOT_BLANK: '#{msg['label.condition.not_blank']}'
+                }
+            };
+        </script>
+        <script type="text/javascript">
+            jQuery(document).ready(function ($) {
+                var sf = $("#search-filter").searchFilter(searchFilterOpts);
+
+                $(".btn-search").click(function (event) {
+                    event.preventDefault();
+                    var data = sf.data('searchFilter').getData();
+                    $('.searchDataJson').val(data);
+                    $(".search-action").trigger('click');
+                });
+            });
+        </script>
+    </h:form>
+</ui:composition>
+

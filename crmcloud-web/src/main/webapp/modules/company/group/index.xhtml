@@ -1,0 +1,203 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+                xmlns:crm="http://gnext.co.jp/facelets">
+    <div id="pageTitle">#{companyBundle['label.group.title']} #{msg['symbol.paren.left']}#{companyBundle['label.group.title.list']}#{msg['symbol.paren.right']}</div>
+    <h:form id="fromGroupList">
+        <p:confirmDialog message="#{msg['label.dialog.confirm']}" header="#{msg['label.dialog.header']}"  widgetVar="confirmDeleteGroup" id="confirmDeleteGroup">  
+            <p:commandButton value="#{msg['label.dialog.yes']}" onclick="PF('confirmDeleteGroup').hide();" update="mainContent :growl"
+                             actionListener="#{groupController.delete}" title="accept" icon="ui-icon-check">
+                <f:param name="groupId" value="#{groupController.selectGroupId}"/>
+                <f:param name="force" value="true"/>
+            </p:commandButton>
+            <p:commandButton value="#{msg['label.dialog.no']}" onclick="PF('confirmDeleteGroup').hide();" type="button" title="close" icon="ui-icon-close"/>   
+        </p:confirmDialog>
+        <h:panelGrid width="100%" styleClass="page-header">
+            <f:facet name="header">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h1>
+                            #{companyBundle['label.group.title']}
+                            <small>#{companyBundle['label.group.title.list']}</small>
+                        </h1>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <p:commandButton value="#{msg['label.create']}"
+                                         icon="fa fa-plus-circle" title="#{msg['label.create']}"
+                                         actionListener="#{groupController.show}"
+                                         update="mainContent"
+                                         rendered="${sec.hasMethod('GroupController', 'create')}"
+                                         onstart="start()" onsuccess="finish()">
+                            <f:param name="showType" value="create"/>
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+                        <p:commandButton value="#{msg['label.download']}" title="#{msg['label.download']}" icon="fa fa-cloud-download"
+                                       action="#{groupController.download('tblGroups','groups')}" ajax="false"
+                                       rendered="${sec.hasMethod('GroupController', 'download')}">
+                        </p:commandButton>
+                    </div>
+                </div>
+            </f:facet>
+        </h:panelGrid>
+        <p:outputPanel rendered="${sec.hasMethod('GroupController', 'search')}">
+            <div class="box box-solid box-search">
+                <div class="box-header with-border" data-widget="collapse">
+                    <h3 class="box-title">#{msg['label.search.title']}</h3>
+                    #{msg['symbol.colon']}<code></code>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <div id="search-filter"></div>
+                </div>
+                <div class="box-footer text-center">
+                    <h:inputText value="#{groupController.searchDataJson}" styleClass="searchDataJson" style="display: none"/>
+
+                    <p:commandLink actionListener="#{groupController.search}" 
+                                   style="display:none" styleClass="search-action" 
+                                   onstart="start()" onsuccess="finish()" 
+                                   update="mainContent, :growl"/>
+
+                    <p:commandButton value="#{msg['label.search']}" type="button" icon="fa fa-search" styleClass="btn-search"></p:commandButton>
+                </div>
+            </div>
+        </p:outputPanel>
+        <c:set var="rowsPerPageTemplate" value="#{configController.getConfig('DATATABLE_ROW_PER_PAGE')}" scope="session" />
+        <c:set var="rows" value="#{configController.getConfig('DATATABLE_DEFAULT_PER_PAGE')}" scope="session" />
+        <p:dataTable id="tblGroups" rowIndexVar="rowIndex"
+                     var="model" value="#{groupController.groupModels}"
+                     styleClass="crmcloud_datatable" scrollable="true"
+                     lazy="true" paginator="true" paginatorTemplate="#{layout.paginatorTemplate}" currentPageReportTemplate="#{layout.currentPageReportTemplate}"
+                     rowsPerPageTemplate="#{rowsPerPageTemplate}" rows="#{rows}" pageLinks="5" rowHover="true" emptyMessage="#{msg['label.data.empty']}" >
+            <p:column styleClass="table-action status-column" exportable="false">
+                <p:commandButton id="dynaButton" icon="fa fa-cog" styleClass="btn-option" style="height: 23px;"/>
+                <p:menu overlay="true" trigger="dynaButton" my="left top" at="left bottom">
+                    <p:menuitem actionListener="#{groupController.show}" update="mainContent"
+                                value="#{msg['label.detail']}" icon="fa fa-search" onstart="start()" onsuccess="finish()"
+                                rendered="${sec.hasMethod('GroupController', 'view')}">
+                        <f:param name="rowNum" value="#{model.rowNum}"/>
+                        <f:param name="showType" value="view"/>
+                        <f:param name="groupId" value="#{model.group.groupId}"/>
+                        <f:param name="force" value="true"/>
+                    </p:menuitem>
+                    <p:menuitem actionListener="#{groupController.show}" update="mainContent"
+                                value="#{msg['label.edit']}" icon="fa fa-edit" onstart="start()" onsuccess="finish()"
+                                rendered="${sec.hasMethod('GroupController', 'update')}">
+                        <f:param name="showType" value="edit"/>
+                        <f:param name="groupId" value="#{model.group.groupId}"/>
+                        <f:param name="force" value="true"/>
+                    </p:menuitem>
+                    <p:menuitem actionListener="#{groupController.onChangeSelectGroupId}" update="fromGroupList:confirmDeleteGroup"
+                                value="#{msg['label.delete']}" icon="fa fa-remove" oncomplete="PF('confirmDeleteGroup').show();"
+                                rendered="${sec.hasMethod('GroupController', 'delete') and sec.isAllowDeleteGroup(model.group)}">
+                        <f:param name="groupId" value="#{model.group.groupId}"/>
+                    </p:menuitem>
+                </p:menu>
+            </p:column>
+            <p:column headerText="#{companyBundle['label.group.parent.name']}">                
+                <h:outputText value="#{model.group.parent.groupName} " />
+            </p:column>
+            <p:column headerText="#{companyBundle['label.group.name']}">
+                <h:outputText value="#{model.group.groupName} " rendered="#{!sec.hasMethod('GroupController','view')}"/>
+                <p:commandLink value="#{model.group.groupName}" actionListener="#{groupController.show}"
+                               update="mainContent" styleClass="link"
+                               onstart="start()" onsuccess="finish()" rendered="#{sec.hasMethod('GroupController','view')}">
+                    <f:param name="rowNum" value="#{model.rowNum}"/>
+                    <f:param name="showType" value="view"/>
+                    <f:param name="groupId" value="#{model.group.groupId}"/>
+                    <f:param name="force" value="true"/>
+                </p:commandLink>                
+            </p:column>
+            <p:column headerText="#{msg['label.memo']}">
+                <p:inputTextarea
+                    rows="2"
+                    autoResize="false"
+                    readonly="true"
+                    value="#{model.group.groupMemo}"
+                    style="width: 100%"
+                    styleClass="font_weight_normal inputTextareaNotBorder" />
+            </p:column>
+            <p:column headerText="#{msg['label.creator']}">
+                <h:outputText value="#{model.group.creator.memberNameFirst} " />
+            </p:column>
+            <p:column headerText="#{msg['label.update.time']}" styleClass="date-column">
+                <h:outputText value="#{model.displayCreateTime} " />
+            </p:column>
+            <p:column headerText="#{msg['label.updater']}">        
+                <h:outputText value="#{model.group.updator.memberNameFirst} " />
+            </p:column>
+            <p:column headerText="#{msg['label.update.time']}" styleClass="date-column">
+                <h:outputText value="#{model.displayUpdateTime} " />                
+            </p:column>
+            <p:column headerText="#{companyBundle['label.group.role']}">                
+                <h:outputText value="#{model.viewRoleName}"/>
+            </p:column>
+            <p:column headerText="#{msg['label.state']}" styleClass="text-center status-column">
+                <crm:state state="#{model.group.groupDeleted}"/>
+            </p:column>
+        </p:dataTable>
+    </h:form>
+    <h:outputScript library="js" name="search-filter.js"/>
+    <script type="text/javascript">
+        var searchFilterOpts = {
+            fields: [
+                {
+                    "type": "string",
+                    "label": "#{companyBundle['label.group.name']}",
+                    "name": 'g.groupName',
+                    'operator': ['EQ', 'LIKE', 'BLANK']
+                },
+                {
+                    "type": "select",
+                    "label": "#{companyBundle['label.group.parent.name']}",
+                    "name": 'g.parent.groupId',
+                    'operator': ['EQ'],
+                    "data": ${groupController.groupList}
+                },
+                {
+                    "type": "select",
+                    "label": "#{msg['label.state']}",
+                    "name": 'g.groupDeleted',
+                    'operator': ['EQ'],
+                    "data": [
+                        {
+                            'label': "#{msg['label.state.using']}",
+                            'value': '0'
+                        },
+                        {
+                            'label': "#{msg['label.state.deleted']}",
+                            'value': '1'
+                        }
+                    ]
+                }
+            ],
+            data: $('.searchDataJson').val(),
+            displayQuery: true,
+            queryContainer: $("#search-filter").closest('.box.box-search').find('.box-header code'),
+            langs:{
+                AND: '#{msg['label.condition.and']}',
+                OR: '#{msg['label.condition.or']}',
+                LIKE: '#{msg['label.condition.like']}',
+                LIKE_START: '#{msg['label.condition.like_start']}',
+                LIKE_END: '#{msg['label.condition.like_end']}',
+                NOT_LIKE: '#{msg['label.condition.not_like']}',
+                BLANK: '#{msg['label.condition.blank']}',
+                NOT_BLANK: '#{msg['label.condition.not_blank']}'
+            }
+        };
+        jQuery(document).ready(function ($) {
+            var sf = $("#search-filter").searchFilter(searchFilterOpts);
+            $(".btn-search").click(function (event) {
+                event.preventDefault();
+                var data = sf.data('searchFilter').getData();
+                $('.searchDataJson').val(data);
+                $(".search-action").trigger('click');
+            });
+        });
+    </script>
+</ui:composition>

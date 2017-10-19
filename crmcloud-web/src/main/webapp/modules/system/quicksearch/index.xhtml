@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:a="http://xmlns.jcp.org/jsf/passthrough"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <style type="text/css">
+        #frmQuickSearch .table > tbody > tr > td { padding: 0px; }
+        #frmQuickSearch .table > thead > tr > td { padding: 0px; font-weight: bold; }
+    </style>
+    <h:form id="frmQuickSearch">
+        <c:forEach items="#{quickSearchController.vals}" var="vals">
+            <c:if test="#{quickSearchController.cols.containsKey(vals.key)}">
+                <div class="panel panel-primary"  style="width: 97%; margin-left: 16px;margin-top: -18px;">
+                    <div class="panel-heading" style="padding-left: 15px; padding-top: 2px; padding-bottom: 2px;">
+                        <table style="width: 100%">
+                            <tr>
+                                <td style="text-align: left;">
+                                    <c:set var="title_module" value="label.menu.#{vals.key}"/>
+                                    #{msg[title_module]}
+                                </td>
+                                <td style="text-align: right;">
+                                    <p:commandButton title="#{msg['label.previous']}" icon="fa fa-angle-left" styleClass="ui-corner-left"
+                                                    disabled="#{quickSearchController.from[vals.key] == 0}"
+                                                    actionListener="#{quickSearchController.previous(vals.key)}"
+                                                    update="frmQuickSearch" onstart="start()" onsuccess="finish()">
+                                        <f:param name="module_name" value="#{vals.key}"/>
+                                    </p:commandButton>
+                                    <c:set var="paging_to" value="#{quickSearchController.from[vals.key]+quickSearchController.pagesize[vals.key]>quickSearchController.total[vals.key]?quickSearchController.total[vals.key]:quickSearchController.from[vals.key]+quickSearchController.pagesize[vals.key]}"/>
+                                    <h:outputText value="#{quickSearchController.from[vals.key]+1} ~ #{paging_to} / #{quickSearchController.total[vals.key]}"/>
+                                    <p:commandButton title="#{msg['label.next']}" icon="fa fa-angle-right" styleClass="ui-corner-right"
+                                                     disabled="#{paging_to == quickSearchController.total[vals.key]}"
+                                                     actionListener="#{quickSearchController.next(vals.key)}"
+                                                     update="frmQuickSearch" onstart="start()" onsuccess="finish()">
+                                        <f:param name="module_name" value="#{vals.key}"/>
+                                    </p:commandButton>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="panel-body" style="padding-top: 0px;padding-bottom: 0px;">
+                        <table class="table">
+                            <thead>
+                                <tr> <c:forEach items="#{quickSearchController.cols[vals.key]}" var="col"> <td style="width: 10%"> #{msg[col]} </td> </c:forEach> </tr>
+                            </thead>
+                            <tbody>
+                                <c:forEach items="#{vals.value}" var="val">
+                                    <tr> <c:forEach items="#{val}" var="data"> <td style="width: 10%"> #{data} </td> </c:forEach> </tr>
+                                </c:forEach>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </c:if>
+        </c:forEach>
+    </h:form>
+</ui:composition>

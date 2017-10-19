@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+<h:outputScript library="scripts" name="nprogress.js"/>
+<script type="text/javascript">
+    function start() {
+        var cssClass = $("body").attr("class");
+        NProgress.start(cssClass);
+        $.blockUI({ css: { display: 'none'} , message: ''});
+    }
+    function finish() {
+        NProgress.done();
+        $.unblockUI();
+    }
+</script>
+</ui:composition>

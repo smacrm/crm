@@ -1,0 +1,181 @@
+body.security-app {
+    text-align: center;
+    overflow: hidden;
+    height: 100%;
+    width:100%;
+    color: #fff;
+}
+/*
+body.security-app:before {
+    height: 91%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    content: "";
+    z-index: -10;
+    background:#edecec;
+}
+
+body.security-app:after {
+    content: "";
+    vertical-align: middle;
+    display: inline-block;
+    width: 1px;
+    height: 100%;
+}
+*/
+.lc-block {
+    padding: 1.5em;
+    background: #fff;
+    box-shadow: 0 1px 11px rgba(0, 0, 0, 0.27);
+    border-radius: 2px;
+    width: 20%;
+    display: inline-block;
+    position: relative;
+    animation-name: fadeInUp;
+    animation-duration: 300ms;
+    animation-fill-mode: both;
+    z-index: 10;
+    margin-top:15%;
+    text-align: center;
+    vertical-align:middle;
+}
+
+.security-app-footer {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    margin: 0;
+    padding: 0;
+    border: none;
+    width: 100%;
+    padding-top: 0.2em;
+}
+
+.ui-panel-content {
+    width: 80%;
+    margin-left: 5%;
+}
+
+input[type="text"], input[type="password"] {
+    display: block;
+    margin: 0;
+    width: 97%;
+    font-size: 18px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    -ms-border-radius: 0;
+    -o-border-radius: 0;
+    border-radius: 0;
+    border: none;
+    padding-top: 10px;
+    padding-bottom: 5px;
+}
+
+select {
+    display: block;
+    margin: 0;
+    width: 100%;
+    font-size: 18px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    -ms-border-radius: 0;
+    -o-border-radius: 0;
+    border-radius: 0;
+    border: none;
+/*    border: 1px solid #d6d6d6;*/
+    padding-top: 10px;
+    padding-bottom: 5px;
+}
+/*
+button {
+    display:inline-block;
+    text-transform:uppercase;
+    padding:1em 1.5em 0.75em;
+    border-radius:2px;
+    font-weight:bold;
+    border:none !important;
+    text-decoration:none;
+    line-height:1;
+    cursor:pointer;
+    background-color: #c9302c !important;
+    border-color: #ac2925 !important;
+}*/
+
+button:hover{
+    opacity:0.8;
+}
+
+.div-company-logo img {
+    max-height: 4em;
+    min-height: 4em;
+}
+
+.company-logo {
+    margin-bottom: 0;
+}
+
+.company-name {
+    font-size: 150%;
+    font-weight: bold;
+}
+
+.lc-block .input-group-addon {
+    -webkit-border-radius: 0;
+    -khtml-border-radius: 0;
+    -moz-border-radius: 0;
+    -ms-border-radius: 0;
+    -o-border-radius: 0;
+    border-radius: 0;
+    width: 35px;
+    height: 35px;
+    background: #1E1F2F;
+    color: #fff;
+    border: 0;
+}
+
+.lc-block table {
+    width: 100%;
+    border-collapse: collapse;
+    border: none;
+}
+.lc-block table caption {
+    font-size: 150%;
+    line-height: 50px;
+    margin-bottom: 0.2em;
+}
+.lc-block table tr {
+    line-height: 40px;
+}
+.lc-block table th {
+    width: 35px;
+}
+.lc-block table td {
+    border-bottom: solid 2px #c9c9c9;
+    transition: border 0.3s;
+    color: #444;
+}
+.td-none-border {
+    border: none !important;
+}
+.span-label {
+    margin-left: 0.2em;
+}
+.link-pass-lost {
+    float: right;
+    font-size: 80%;
+}

@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+<p:panelGrid style="width: 100%;" styleClass="panelGrid_related_cases" id="panelGrid_related_cases">
+    <f:facet name="header">
+    <p:row>
+        <p:column styleClass="td_minus">
+            <p:commandLink 
+                onstart="start()" onsuccess="finish()"
+                partialSubmit="true"
+                process="@this"
+                actionListener="${issueController.openRelateCaseDialog()}"
+                title="${issue['label.tab_related_cases']}${msg['label.add']}"
+                styleClass="btn btn-xs btn-default">
+                    <span class="fa fa-plus-circle"></span>
+                    <f:param name="openDialogURL" value="/modules/issue/dialog/related_dialog" />
+                    <f:param name="width" value="500" />
+                    <p:ajax event="dialogReturn"
+                        oncomplete="activeCurentTap($.trim($('#issueActiveTab').val()), 'tabViewIssue');"
+                        update="@this:panelGrid_related_cases, @this:tabViewRelatedCasesTitle, :growl" />
+            </p:commandLink>
+        </p:column>
+        <p:column styleClass="td_18">
+            <h:outputLabel value="${issue['label.related_cases_number']}" />            
+        </p:column>
+        <p:column styleClass="td_18">
+            <h:outputLabel value="${issue['label.issue_receive_date']}" />
+        </p:column>
+        <p:column styleClass="td_18">
+            <h:outputLabel value="${issue['label.issue_proposal_name_1']}" />
+        </p:column>
+        <p:column>
+            <h:outputLabel value="${issue['label.related_cases_comment']}" />
+        </p:column>
+    </p:row>
+    </f:facet>
+
+    <c:forEach var="related" items="${issueController.issue.relatedCases}" >
+        <p:row styleClass="panelGrid_related_cases_tr">
+            <p:column>
+                <p:commandLink 
+                    onstart="start()" onsuccess="finish()"
+                    actionListener="${issueController.deleteRelatedCases}"
+                    oncomplete="activeCurentTap($.trim($('#issueActiveTab').val()), 'tabViewIssue');"
+                    title="${issue['label.tab_related_cases']}${msg['label.delete']}"
+                    style="float: right;"
+                    update="@this:panelGrid_related_cases, @this:tabViewRelatedCasesTitle, :growl"
+                    styleClass="btn btn-xs btn-default">
+                        <f:param name="relatedId" value="${related.relatedId}" />
+                        <span class="fa fa-minus-circle"></span>
+                        <p:confirm
+                            header="${msg['label.delete']}"
+                            message="${issue['label.deleteRelatedCases']}"
+                            icon="ui-icon-alert" />
+                </p:commandLink>
+            </p:column>
+            <p:column>
+                <c:set value="#{sec.isMaster() or issueController.hasViewRole(related.issueRelatedId)}" var="hasViewRole"/>
+                <h:commandLink 
+                    target="_blank"
+                    actionListener="#{issueController.show(related.issueRelatedId.issueId)}"
+                    action="#{issueController.outcome(related.issueRelatedId.issueId, '&amp;redirect=true')}"
+                    title="#{msg['label.show']}"
+                    value="#{related.issueRelatedId.issueViewCode}"
+                    disabled="#{!hasViewRole}"
+                    style="#{!hasViewRole ? '': 'font-weight: bold; color: blue;'}">
+                    <f:param name="showPagingNavigator" value="xxxx" />
+                </h:commandLink>
+            </p:column>
+            <p:column>
+            <h:outputLabel value="${related.issueRelatedId.issueReceiveDate}" >
+                <f:convertDateTime type="date" pattern="yyyy/MM/dd" />
+            </h:outputLabel>
+            </p:column>
+            <p:column>
+                <h:outputLabel value="${related.issueRelatedId.getIssueLinkedMenteName('issue_proposal_id', localeController.locale)}" />
+            </p:column>
+            <p:column>
+                <div style="overflow: auto;">
+                    <p:inputTextarea
+                                rows="3"
+                                autoResize="false"
+                                readonly="true"
+                                value="${related.issueRelatedComment}"
+                                style="width: 100%"
+                                styleClass="font_weight_normal inputTextareaNotBorder" />
+                </div>
+            </p:column>
+        </p:row>
+    </c:forEach>
+</p:panelGrid>
+</ui:composition>

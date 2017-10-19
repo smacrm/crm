@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <h:form>
+    <p:menubar id="tbl" styleClass="ui-widget-header ui-corner-all">
+        <p:submenu label="#{msg['label.menu.list']}" icon="fa fa-fw fa-list-ul" styleClass="ui-button ui-state-default ui-corner-all" style="padding:  0.15em;border: solid 0.1em gray">  
+            <p:menuitem value="#{msg['label.menu.recep']}" url="#" icon="fa fa-fw fa-files-o"/>  
+            <p:menuitem value="#{msg['label.menu.maintain']}" url="#" icon="fa fa-fw fa-files-o"/> 
+            <p:submenu label="#{msg['label.menu.report']}" icon="fa fa-fw fa-bar-chart">
+                <p:menuitem value="#{msg['label.menu.report.one']}" url="#" icon="fa fa-fw fa-bar-chart"/>
+                <p:menuitem value="#{msg['label.menu.report.two']}" url="#" icon="fa fa-fw fa-bar-chart"/>
+            </p:submenu>
+            <p:submenu label="#{msg['label.menu.company.infor']}" icon="fa fa-fw fa-building-o">
+                <p:menuitem value="#{msg['label.menu.company.infor']}" url="#" icon="fa fa-fw fa-building-o"/>
+                <p:menuitem value="#{msg['label.menu.group.infor']}" url="#" icon="fa fa-fw fa-users"/>
+                <p:menuitem value="#{msg['label.menu.member.infor']}" url="#" icon="fa fa-fw fa-user"/>
+            </p:submenu>
+            <p:menuitem value="#{msg['label.menu.authority']}" icon="fa fa-fw fa-files-o" actionListener="#{authorityController.loadRoleList()}" 
+                        update="mainContent" >
+            </p:menuitem>
+<!--            <p:menuitem value="権限" icon="fa fa-fw fa-files-o" actionListener="#{authorityController.show}" 
+                        oncomplete="PF('authDlg_Var').show();" ajax="true">
+            </p:menuitem> -->
+            
+        </p:submenu>
+        <f:facet name="options">
+            <!--
+                <h:commandLink>
+                    <img src="/RTCSocket/images/download/excel.png" style="width:1.5em"/>
+                    <p:dataExporter type="xls" target="tbl" fileName="cars" pageOnly="true"/>
+                </h:commandLink>
+                <h:commandLink>
+                        <img src="/RTCSocket/images/download/csv.png" style="width:1.5em"/>
+                    <p:dataExporter type="csv" target="tbl" fileName="cars" pageOnly="true"/>
+                </h:commandLink>
+                <h:commandLink>
+                        <img src="/RTCSocket/images/download/pdf.png" style="width:1.5em"/>
+                    <p:dataExporter type="pdf" target="tbl" fileName="cars" pageOnly="true"/>
+                </h:commandLink>
+            -->
+
+            <p:commandButton icon="fa fa-fw fa-briefcase" value="#{crmcloud['label.setting']}" actionListener="#{settingController.openDialog()}" >
+                <f:param name="paras" value="/modules/schedule/dialog/setting" />
+            </p:commandButton>
+            <p:commandButton icon="fa fa-fw fa-briefcase" value="権限" actionListener="#{authorityController.show}">
+                
+            </p:commandButton>
+            
+        </f:facet>
+    </p:menubar>
+        </h:form>
+</ui:composition>
+

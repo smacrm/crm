@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <!-- LAMP色を取得 -->
+    <div id="pageTitle">#{issueController.issue.issueViewCode} - #{issue['label.page.issue']}#{msg['symbol.paren.left']}#{msg['label.show']}#{msg['symbol.paren.right']}</div>
+    <!--<ui:include src="/modules/issue/common/issue_lamp_script.xhtml" />-->
+    <h:outputStylesheet library="css" name="issue.css"  />
+    <h:form id="form_issue_show" styleClass="form_issue" prependId="false">
+        <!-- 詳細場合使用タイトル部分 -->
+        <ui:include src="/modules/issue/common/show_title.xhtml" />
+        
+        <p:outputPanel id="issuePrintBlock" styleClass="box box-solid box-view-mode">
+            <div class="box-body">
+                <!-- 受付情報トップ部分 -->
+                <ui:include src="/modules/issue/common/show_top_base.xhtml" />
+                <div class="col-md-12 no-padding" style="margin-top: 0.5em;">
+                    <c:set var="hasRoleRCustomer" value="#{sec.isMaster() or sec.hasMethod('CustomerController', 'VIEW')}" />
+                    <div class="#{hasRoleRCustomer ? 'col-md-6 col-lg-7' : 'col-md-12' } col  no-padding">
+                        <!-- 左タップ部分 -->
+                        <h:inputHidden value="#{issueController.issue.issueActiveTab}" id="issueActiveTab" />
+                        <ui:include src="/modules/issue/common/show_left_tab.xhtml" />
+                    </div>
+                    <h:outputFormat rendered="#{hasRoleRCustomer}">
+                        <div class="col col-md-6 col-lg-5 no-padding-right">
+                            <!-- 右タップ部分 -->
+                            <h:inputHidden value="#{issueController.issue.issueCustActiveTab}" id="issueCustActiveTab" />
+                            <ui:include src="/modules/issue/common/show_right_tab.xhtml" />
+                        </div>
+                    </h:outputFormat>
+                </div>
+            </div>
+        </p:outputPanel>
+
+        <h:outputStylesheet library="plugins" name="multipleselect/jquery.multiselect.css"/>
+        <h:outputScript library="plugins" name="multipleselect/jquery.multiselect.min.js"/>
+        <h:outputScript library="plugins" name="multipleselect/jquery.multiselect.#{localeController.locale}.js"/>
+        <h:outputScript library="formbuilder" name="form-render.js"/>
+        <h:outputScript library="js" name="customize-render.js"/>
+        
+        <!-- Javascript関連処理部分 -->
+        <h:outputScript library="js" name="select-level.js"/>
+        <h:outputStylesheet library="css" name="member_dialog.css" />
+        <h:outputScript library="js" name="dialog_tree.js"/>
+        
+        <!--/////////////////////////////////////D I A L O G/////////////////////////////////////-->
+        <ui:include src="/modules/issue/dialog/dialog.xhtml"/>
+    </h:form>
+
+    <script type="text/javascript">
+        jQuery(function ($) {
+            activeCurentTap($.trim($('#issueActiveTab').val()), 'tabViewIssue');
+            activeCurentTap($.trim($('#issueCustActiveTab').val()), 'tabViewCustomer');
+        });
+    </script>
+</ui:composition>

@@ -1,0 +1,170 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <h:outputFormat rendered="#{empty dataController.twilioConfig.twilioId}">
+        <div id="pageTitle">#{sf['label.twilio.setting.title']} #{msg['symbol.paren.left']}#{msg['label.create']}#{msg['symbol.paren.right']}</div>
+    </h:outputFormat>
+    <h:outputFormat rendered="#{not empty dataController.twilioConfig.twilioId}">
+        <div id="pageTitle">#{dataController.twilioConfig.phoneNumber} - #{sf['label.twilio.setting.title']} #{msg['symbol.paren.left']}#{msg['label.edit']}#{msg['symbol.paren.right']}</div>
+    </h:outputFormat>
+    <h:form>
+        <h:panelGrid width="100%" styleClass="page-header">
+            <f:facet name="header">
+                <!-- Content Header (Page header) -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <h1>
+                            #{sf['label.twilio.setting.title']}
+                            <small>#{dataController.twilioConfig.phoneNumber}</small>
+                        </h1>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <p:commandButton actionListener="#{dataController.reload()}"
+                                         value="#{msg['label.back']}" icon="fa fa-chevron-circle-left" process="@this"
+                                         update="mainContent" onstart="start()" onsuccess="finish()">
+                            <p:confirm header="#{msg['label.confirm']}" message="#{msg['label.message.confirm.back']}" icon="ui-icon-alert"/>
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+                        <p:commandButton value="#{msg['label.update']}" actionListener="#{dataController.onUpdate()}"
+                                         update=":growl, mainContent" title="#{msg['label.update']}" icon="fa fa-check-circle" onstart="start()" onsuccess="finish()">
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+                        <p:commandButton actionListener="#{dataController.delete(dataController.twilioConfig)}"
+                                         value="#{msg['label.delete']}" icon="fa fa-trash" process="@this"
+                                         update=":growl, mainContent" onstart="start()" onsuccess="finish()"
+                                         rendered="#{not empty dataController.twilioConfig.twilioId and sec.hasMethod('DataController','delete')}">
+                            <p:confirm header="#{msg['label.confirm']}" message="#{msg['label.confirm.delete']}#{msg['symbol.ideographicperiod']}" icon="ui-icon-alert" />
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+                        <p:outputPanel styleClass="ui-groupbutton" rendered="#{not empty dataController.twilioConfig.twilioId}">
+                            <p:commandButton title="#{msg['label.previous']}" icon="fa fa-angle-left" styleClass="btn btn-default"
+                                             update=":growl, mainContent"
+                                             disabled="#{dataController.itemViewIndex le 0}"
+                                             actionListener="#{dataController.updateByIndex(dataController.itemViewIndex-1)}"/>
+                            <p:commandButton value="#{dataController.itemViewIndex+1}/#{dataController.list.size()}" styleClass="ui-corner-none"/>
+                            <p:commandButton title="#{msg['label.next']}" icon="fa fa-angle-right" styleClass="ui-corner-right" 
+                                             update=":growl, mainContent"
+                                             disabled="#{dataController.itemViewIndex + 1 ge dataController.list.size()}"
+                                             actionListener="#{dataController.updateByIndex(dataController.itemViewIndex+1)}"/>
+                        </p:outputPanel>
+                        <p:commandButton value="#{msg['label.print']}" title="#{msg['label.print']}" icon="fa fa-print" rendered="#{not empty dataController.twilioConfig.twilioId and sec.hasMethod('DataController', 'print')}"/>
+                    </div>
+                </div>
+                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                    <p:commandButton value="#{msg['label.yes']}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                    <p:commandButton value="#{msg['label.no']}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                </p:confirmDialog>
+            </f:facet>
+        </h:panelGrid>
+        <div class="box">
+            <div class="box-body">
+                <p:panelGrid styleClass="crmcloud-panelgrid">
+                    <p:row>
+                        <p:column colspan="2">
+                            <p:panel header="Twilio" styleClass="col-md-6 row">
+                                <div class="col-md-6 form">
+                                    <div class="form-group text-left">
+                                        <label>#{sf['label.twilio.setting.phone']}</label>
+                                        <div class="form-inline">
+                                            <p:inputText placeholder="+81312345678" value="#{dataController.twilioConfig.phoneNumber}" styleClass="form-control phonenumber-format input_tel" required="true" maxlength="15"  label="#{sf['label.twilio.setting.phone']}">
+                                                <p:keyFilter regEx="/[0-9\-\+]/i" preventPaste="false"/>
+                                                <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                                <f:attribute name="max" value="15"/>
+                                                <f:attribute name="title" value="#{sf['label.twilio.setting.phone']}"/>
+                                            </p:inputText>
+                                            <h:selectOneMenu value="#{dataController.twilioConfig.locale}" styleClass="form-control pull-right">
+                                               <f:selectItems value="#{localeController.locales}" />
+                                            </h:selectOneMenu>
+                                        </div>
+                                    </div>
+                                    <div class="form-group text-left">
+                                        <label>API ID</label>
+                                        <p:inputText value="#{dataController.twilioConfig.apiSid}" styleClass="form-control" maxlength="45" required="true" label="API ID">
+                                            <p:keyFilter regEx="/[a-zA-Z0-9]/i" preventPaste="false"/>
+                                            <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                            <f:validator validatorId="gnext.validator.LengthValidator" />
+                                            <f:attribute name="max" value="45"/>
+                                            <f:attribute name="title" value="API ID"/>
+                                        </p:inputText>
+                                    </div>
+                                    <div class="form-group text-left">
+                                        <label>Account SID</label>
+                                        <p:inputText value="#{dataController.twilioConfig.accountSid}" styleClass="form-control" maxlength="45" required="true" label="Account SID">
+                                            <p:keyFilter regEx="/[a-zA-Z0-9]/i" preventPaste="false"/>
+                                            <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                            <f:validator validatorId="gnext.validator.LengthValidator" />
+                                            <f:attribute name="max" value="45"/>
+                                            <f:attribute name="title" value="Account SID"/>
+                                        </p:inputText>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 form">
+                                    <div class="form-group text-left">
+                                        <label>Application SID</label>
+                                        <p:inputText value="#{dataController.twilioConfig.applicationSid}" styleClass="form-control" maxlength="45" required="true" label="Application SID">
+                                            <p:keyFilter regEx="/[a-zA-Z0-9]/i" preventPaste="false"/>
+                                            <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                            <f:validator validatorId="gnext.validator.LengthValidator" />
+                                            <f:attribute name="max" value="45"/>
+                                            <f:attribute name="title" value="Application SID"/>
+                                        </p:inputText>
+                                    </div>
+                                    <div class="form-group text-left">
+                                        <label>API SECRET</label>
+                                        <p:inputText value="#{dataController.twilioConfig.apiSecret}" styleClass="form-control" maxlength="45" required="true" label="API SECRET">
+                                            <p:keyFilter regEx="/[a-zA-Z0-9]/i" preventPaste="false"/>
+                                            <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                            <f:validator validatorId="gnext.validator.LengthValidator" />
+                                            <f:attribute name="max" value="45"/>
+                                            <f:attribute name="title" value="API SECRET"/>
+                                        </p:inputText>
+                                    </div>
+                                    <div class="form-group text-left">
+                                        <label>Account SECRET</label>
+                                        <p:inputText value="#{dataController.twilioConfig.accountAuthToken}" styleClass="form-control" maxlength="45" required="true" label="Account SECRET">
+                                            <p:keyFilter regEx="/[a-zA-Z0-9]/i" preventPaste="false"/>
+                                            <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                            <f:validator validatorId="gnext.validator.LengthValidator" />
+                                            <f:attribute name="max" value="45"/>
+                                            <f:attribute name="title" value="Account SECRET"/>
+                                        </p:inputText>
+                                    </div>
+                                </div>
+                            </p:panel>
+                            <p:panel header="#{companyBundle['label.authority']}" styleClass="col-md-6 row">
+                                <div class="col-md-12 text-left">
+                                    <p:tree value="#{dataController.groups}" var="item" selectionMode="checkbox" selection="#{dataController.selectedGroups}">
+                                        <p:treeNode>
+                                            <h:outputText value="#{item.name}"/>
+                                        </p:treeNode>
+                                        <p:treeNode type="group" collapsedIcon="ui-icon-folder-collapsed" expandedIcon="ui-icon-folder-open">
+                                            <h:outputText value="#{item.name}" />
+                                        </p:treeNode>
+                                        <p:treeNode type="member" icon=" ui-icon-person">
+                                            <h:outputText value="#{item.name}" />
+                                        </p:treeNode>
+                                    </p:tree>
+                                </div>
+                            </p:panel>
+                        </p:column>
+                    </p:row>
+                </p:panelGrid>
+            </div><!-- /.box-body -->
+        </div><!-- /.box -->
+        <h:outputScript library="plugins" name="mask/inputmask.min.js"/>
+        <h:outputScript library="plugins" name="mask/jquery.inputmask.min.js"/>
+        <h:outputScript>
+            $(".phonenumber-format").inputmask({
+                mask: "+[9]{11,12}",
+                greedy: false,
+                jitMasking: true,
+            }); //specifying options
+        </h:outputScript>
+    </h:form>
+</ui:composition>
+

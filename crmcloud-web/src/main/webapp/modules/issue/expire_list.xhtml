@@ -1,0 +1,257 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+    <div id="pageTitle">#{edis.issueExpireTitle}#{msg['symbol.paren.left']}#{msg['label.list']}#{msg['symbol.paren.right']}</div>
+    <h:form id="frmExpireIssueList" prependId="false">
+        <h:panelGrid width="100%" styleClass="page-header" style="margin: 0;padding: 0;">
+            <f:facet name="header">
+                <!-- Content Header (Page header) -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <h1>#{edis.issueExpireTitle}
+                            <c:if test="#{(sec.isMaster() or sec.hasMethod('ProjectController', 'search'))}">
+                                <small>
+                                    <p:inputText id="quicksearch" value="#{edis.keyword}" placeholder="${msg['label.keyword']}" maxlength="100"
+                                                 onkeydown="if(event.keyCode === 13) return false;" 
+                                                 onkeyup="if(event.keyCode === 13){ $('.btn-search').trigger('click'); return false; }"/>
+                                    <!--<span data-toggle="tooltip" data-placement="right" title="${msg['label.quicksearch_hint']}" class="badge bg-default">?</span>-->
+                                </small>
+                            </c:if>
+                        </h1>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <h:outputLabel value="#{issue['label.issue_receive_date.cond']}" style="font-size: 12px;"/>
+                        <font color="red" style="font-size: 12px; font-weight: normal;">*</font>
+                        <p:spacer width="5"/>
+                        <p:calendar id="fromDateSearch" value="#{edis.fromDateSearch}" pattern="yyyy/MM/dd" size="12"
+                                    maxdate="#{edis.toDateSearch}"
+                                    required="true" label="#{issue['label.issue_receive_date.from']}" placeholder="#{issue['label.issue_receive_date.from']}">
+                            <p:ajax event="dateSelect" oncomplete="$('.btn-search').click()" update="toDateSearch" />
+                        </p:calendar>
+                        <h:outputText value="~" style="font-size: 12px; font-weight: normal; display: inline-block; margin: 0 5px;"/>
+                        <p:calendar id="toDateSearch" widgetVar="toDateSearch" maxdate="toDateSearch.today()" size="12" 
+                                    required="true" label="#{issue['label.issue_receive_date.to']}" placeholder="#{issue['label.issue_receive_date.to']}"
+                                    value="#{edis.toDateSearch}" mindate="#{edis.fromDateSearch}" pattern="yyyy/MM/dd">
+                            <p:ajax event="dateSelect" oncomplete="$('.btn-search').click()" update="fromDateSearch"/>
+                        </p:calendar>
+                        <p:spacer width="10"/>
+                        
+                        <p:commandButton
+                            value="${msg['label.create']}"
+                            actionListener="#{issueController.create}"
+                            icon="fa fa-plus-circle"  
+                            update="mainContent"
+                            onstart="start()" onsuccess="finish()">
+                            <f:param name="issueIdx" value="notNext" />
+                            <f:param name="force" value="true" />
+                        </p:commandButton>
+                        
+                        <p:commandButton
+                            ajax="false"
+                            value="${msg['label.download']}"
+                            icon="fa fa-cloud-download"
+                            actionListener="#{edis.dowload()}"
+                            onstart="start()" onsuccess="finish()" />
+                    </div>
+                </div>
+            </f:facet>
+        </h:panelGrid>
+        <p:outputPanel>
+            <div class="box box-solid box-search">
+                <div class="box-header with-border" data-widget="collapse">
+                    <h3 class="box-title">#{msg['label.search.title']}</h3>
+                    #{msg['symbol.colon']}<code></code>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <div id="search-filter"></div>
+                </div>
+                <div class="box-footer text-center">
+                    <h:inputText value="#{edis.searchDataJson}" styleClass="searchDataJson" style="display: none"/>
+
+                    <p:commandLink actionListener="#{edis.search}" 
+                                   style="display:none" styleClass="search-action" 
+                                   onstart="start()" onsuccess="finish()" 
+                                   update="mainContent, :growl"/>
+
+                    <p:commandButton value="#{msg['label.search']}" type="button" icon="fa fa-search" styleClass="btn-search"></p:commandButton>
+                </div>
+            </div>
+        </p:outputPanel>
+
+        <c:set var="rowsPerPageTemplate" value="#{configController.getConfig('DATATABLE_ROW_PER_PAGE')}" scope="session" />
+        <c:set var="rows" value="#{configController.getConfig('DATATABLE_DEFAULT_PER_PAGE')}" scope="session" />
+        <p:dataTable id="issueListData" var="i" value="#{edis.issues}" scrollable="true"
+                     widgetVar="dataTableWidget" rowIndexVar="issueIndex"
+            paginator="true" paginatorTemplate="#{layout.paginatorTemplate}" currentPageReportTemplate="#{layout.currentPageReportTemplate}"
+            rowsPerPageTemplate="#{rowsPerPageTemplate}" rows="#{rows}" pageLinks="5" rowHover="true" emptyMessage="#{msg['label.data.empty']}">
+            <p:column styleClass="table-action td_minus">
+                <c:choose>
+                    <c:when test="#{loginController.member.companyCustomerMode}">
+                    <h:commandLink
+                        target="_blank"
+                        actionListener="${customerController.openTab}"
+                        action="#{customerController.outcome(i['cust_id'])}"
+                        title="#{msg['label.edit']}"
+                        styleClass="ui-icon ui-icon-pencil commandLinkListRemoveScript">
+                        <f:param name="custId" value="#{i['cust_id']}"/>
+                        <f:param name="force" value="true"/>
+                        </h:commandLink>
+                    </c:when>
+                    <c:otherwise>
+                        <h:commandLink 
+                            target="_blank"
+                            actionListener="#{issueController.edit()}"
+                            action="#{issueController.outcome(i['issue_id'])}"
+                            title="#{msg['label.edit']}"
+                            styleClass="ui-icon ui-icon-pencil commandLinkListRemoveScript">
+                            <f:param name="id" value="#{i['issue_id']}" />
+                            <f:param name="issueId" value="#{i['issue_id']}" />
+                            <f:param name="issueIdx" value="#{issueIndex}" />
+                            <f:param name="force" value="true"/>
+                        </h:commandLink>
+                    </c:otherwise>
+                </c:choose>
+            </p:column>
+            <c:forEach items="${edis.liveSearchVisibleColumns}" var="c" varStatus="idx">
+                <p:column headerText="#{c.label}" 
+                          style=" #{empty edis.columnWidth[c.value] ? 'width: 130px;': 'width:'.concat(edis.columnWidth[c.value]).concat('px')}"
+                          id="#{c.value}_#{idx.index}"
+                          sortBy="${idx.index == 0 ? i['issue_view_code'] : i[c.value]}">
+                    <c:choose>
+                        <c:when test="#{c.value eq 'cust_status'}">
+                            <h:outputText value="${msg['label.correction_application']}" rendered="#{i[c.value] eq '1'}" />
+                            <h:outputText value="${msg['label.apply_deletion']}" rendered="#{i[c.value] eq '2'}" />
+                            <h:outputText value="${msg['label.pending']}" rendered="#{i[c.value] eq '3'}" />
+                            <h:outputText value="${msg['label.approval']}" rendered="#{i[c.value] eq '4'}" />
+                            <h:outputText value="${msg['label.not_show']}" rendered="#{i[c.value] eq '5'}" />
+                        </c:when>
+                        <c:otherwise>
+                            <c:choose>
+                                <c:when test="${idx.index == 0}">
+                                    <c:choose>
+                                        <!-- công ty là khách hàng đặc biệt. -->
+                                        <c:when test="#{loginController.member.companyCustomerMode}">
+                                            <p:selectBooleanCheckbox value="${i[c.value] eq 'on'}" rendered="${i[c.value] eq 'on'}" disabled="true"/>
+                                            <h:outputText escape="false" value="${customerController.breakDataToNewLine(i[c.value])}" rendered="${i[c.value] ne 'on'}"/>
+                                        </c:when>
+                                        <!-- công ty là loại bình thường. -->
+                                        <c:otherwise>
+                                            <h:commandLink 
+                                                target="_blank"
+                                                actionListener="#{issueController.show()}"
+                                                action="#{issueController.outcome(i['issue_id'])}"
+                                                title="#{msg['label.show']}"
+                                                value="${i['issue_view_code']}"
+                                                style="font-weight: bold; color: blue;">
+                                                <f:param name="id" value="#{i['issue_id']}" />
+                                                <f:param name="issueId" value="#{i['issue_id']}" />
+                                                <f:param name="issueIdx" value="#{issueIndex}" />
+                                                <f:param name="force" value="true"/>
+                                            </h:commandLink>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </c:when>
+                                <c:otherwise>
+                                    <c:choose>
+                                        <c:when test="#{!empty c.description and (c.description eq 'view_text_area')}">
+                                            <p:inputTextarea
+                                                rows="2"
+                                                autoResize="false"
+                                                readonly="true"
+                                                value="${customerController.breakDataToNewLine(i[c.value])}"
+                                                styleClass="font_weight_normal inputTextareaNotBorder" />
+                                        </c:when>
+                                        <c:otherwise>
+                                            <p:selectBooleanCheckbox value="${i[c.value] eq 'on'}" rendered="${i[c.value] eq 'on'}" disabled="true"/>
+                                            <h:outputText escape="false" value="${customerController.breakDataToNewLine(i[c.value])}" rendered="${i[c.value] ne 'on'}"/>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </c:otherwise>
+                            </c:choose>
+                        </c:otherwise>
+                    </c:choose>
+                </p:column>
+            </c:forEach>
+        </p:dataTable>
+    </h:form>
+     <h:outputScript id="issueListDataScript">
+        $(document).ready(function(){
+            //Check first sort column
+            // Giam dan: ui-icon-triangle-1-s
+            // Tang dan: ui-icon-triangle-1-n
+            if($('#issueListData th.ui-state-active').length === 0){
+                var th = $('#issueListData th#issueListData\\:issue_receive_date');
+                th.addClass('ui-state-active');
+                th.find('span.ui-sortable-column-icon').addClass('ui-icon-triangle-1-s');
+            }
+        });
+        try{
+            mojarra.jsfcljs = function(f, pvp, t){
+                mojarra.apf(f, pvp);
+                var ft = f.target;
+                var fa = f.action;
+                if(t){
+                    f.target = t;
+                }
+
+                //customize for action "open issue as new tab"
+                if(t === '_blank' &amp;&amp; pvp.hasOwnProperty('issueId') &amp;&amp; !isNaN(pvp.issueId)){
+                    var href = window.location.href;
+                    var url  = href.split('?s=');
+                    f.action = url[0];
+                }
+
+                f.submit();
+                f.target = ft;
+                f.action = fa;
+
+                mojarra.dpf(f);
+            };
+        }catch(e){
+            // mojarra is not work at the first time login of new member
+        }
+    </h:outputScript>
+    <h:outputScript library="js" name="search-filter.js"/>
+    <script type="text/javascript">
+        var searchFilterOpts = {
+            fields: [
+                {
+                    "type": "string",
+                    "label": "#{issue['label.issue_view_code']}",
+                    "name": 'issue_view_code',
+                    'operator': ['EQ', 'LIKE', 'BLANK']
+                }
+            ],
+            data: $('.searchDataJson').val(),
+            displayQuery: true,
+            queryContainer: $("#search-filter").closest('.box.box-search').find('.box-header code'),
+            langs: {
+                AND: '#{msg['label.condition.and']}',
+                OR: '#{msg['label.condition.or']}',
+                LIKE: '#{msg['label.condition.like']}',
+                LIKE_START: '#{msg['label.condition.like_start']}',
+                LIKE_END: '#{msg['label.condition.like_end']}',
+                NOT_LIKE: '#{msg['label.condition.not_like']}',
+                BLANK: '#{msg['label.condition.blank']}',
+                NOT_BLANK: '#{msg['label.condition.not_blank']}'
+            }
+        };
+        jQuery(document).ready(function ($) {
+            var sf = $("#search-filter").searchFilter(searchFilterOpts);
+            $(".btn-search").click(function (event) {
+                event.preventDefault();
+                var data = sf.data('searchFilter').getData();
+                $('.searchDataJson').val(data);
+                $(".search-action").trigger('click');
+            });
+        });
+    </script>
+</ui:composition>

@@ -1,0 +1,143 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+                xmlns:a="http://xmlns.jcp.org/jsf/passthrough">
+<p:panelGrid id="panelSendComment" styleClass="panelGridDialogMailSupport">
+    <p:row>
+        <p:column colspan="4" style="text-align: center !important;padding: 0.3em;">
+            <c:choose>
+                <c:when test="${issueCommentController.escalation.escalationId > 0}">
+                    <p:commandButton
+                        onstart="start()" onsuccess="finish()"
+                        actionListener="${issueCommentController.update()}"
+                        icon="fa fa-send-o"
+                        value="${msg['label.register']}"
+                        update="@(.toggleablePanelEscalation), :growl"
+                        process="@this:panelSendComment"
+                        oncomplete="handleCloseDialog(xhr, status, args, 'dlgCommentMail')">
+                        <f:param name="issueId" value="${issueController.issue.issueId}" />
+                    </p:commandButton>
+                </c:when>
+                <c:otherwise>
+                    <p:commandButton
+                        onstart="start()" onsuccess="finish()"
+                        actionListener="${issueCommentController.save()}"
+                        icon="fa fa-send-o"
+                        value="${msg['label.register']}"
+                        update="@(.toggleablePanelEscalation), :growl"
+                        process="@this:panelSendComment"
+                        oncomplete="handleCloseDialog(xhr, status, args, 'dlgCommentMail')">
+                        <f:param name="issueId" value="${issueController.issue.issueId}" />
+                    </p:commandButton>
+                </c:otherwise>
+            </c:choose>
+        </p:column>
+    </p:row>
+
+    <p:row>
+        <p:column styleClass="td_15">
+            <h:outputLabel value="#{issue['label.escalationSendDateName_3']}" />
+            <font>*</font>
+        </p:column>
+        <p:column styleClass="td_35">
+            <p:calendar
+                locale="#{loginController.member.locale}"
+                label="#{issue['label.escalationSendDateName_3']}"
+                value="#{issueCommentController.comment.date}"
+                pattern="yyyy/MM/dd HH:mm"
+                showOn="button"
+                styleClass="input_datetime">
+            </p:calendar>
+        </p:column>
+        <p:column styleClass="td_15">
+            <h:inputHidden value="#{issueCommentController.commentCreateId}" id="issue_comment_person_id" />
+            <h:outputLabel value="#{issue['label.entry_person']}" />
+            <font>*</font>
+            <p:commandButton id="issueCommentPersonList" type="button" icon="fa fa-th" styleClass="menu-toggle" />
+            <p:tieredMenu
+                overlay="true"
+                trigger="issueCommentPersonList"
+                widgetVar="widgetIssueCommentPersonList"
+                my="left top"
+                at="left bottom"
+                model="#{issueCommentController.selects.get('issue_comment_person_id')}"
+                styleClass="tieredMenu_issue_comment_person_id"
+                a:ref="#label_issue_comment_person_id"
+                a:target="#issue_comment_person_id"/>
+        </p:column>
+        <p:column styleClass="td_35">
+            <label id="label_issue_comment_person_id" class="font_weight_normal" >${issueCommentController.commentCreateName}</label>
+        </p:column>
+    </p:row>
+    <p:row>
+        <p:column colspan="4">
+            <p:inputTextarea
+                rows="23"
+                autoResize="false"
+                value="#{issueCommentController.comment.sendMail.message}">
+            </p:inputTextarea>
+        </p:column>
+    </p:row>
+    <p:row rendered="#{sec.isMaster() or sec.hasMethod('IssueCommentController', 'upload')}">
+        <p:column colspan="4" styleClass="verticalAlignTop">
+            <div class="flex flex_row">
+                <div class="flex_1" style="width: 130px">
+                    <p:fileUpload
+                        onstart="start()" oncomplete="finish()"
+                        auto="true"
+                        label="#{msg['label.add.file']}"
+                        fileUploadListener="#{issueCommentController.upload}"
+                        id="fileUploadContent"
+                        process="@this"
+                        mode="advanced"
+                        dragDropSupport="true"
+                        multiple="true"
+                        update="panelDataTableCommentFileList, :growl"
+                        sizeLimit="10000000"
+                        allowTypes="/(\.|\/)(gif|jpe?g|png|zip|csv|xls|xlsx|pdf)$/"
+                        styleClass="fileUploadContentBackground">
+                        <small>#{msg['label.drop.in.here']}</small>
+                    </p:fileUpload>
+                </div>
+                <div class="flex_1_1">
+                    <p:panel id="panelDataTableCommentFileList" styleClass="panelDataTableEmailFileList">
+                        <table class="table table-responsive table-bordered table-hover" id="table-attachments">
+                            <thead>
+                                <tr>
+                                    <td>#</td>
+                                    <td>#{msg['label.file.name']}</td>
+                                    <td>#{msg['label.size']}</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ui:repeat value="#{issueCommentController.comment.attachs}" var="file" varStatus="commentFileIdx">
+                                    <tr>
+                                        <td>
+                                            <p:commandLink
+                                                onstart="start()" onsuccess="finish()"
+                                                actionListener="#{issueCommentController.deleteFile}"
+                                                update="panelDataTableCommentFileList"
+                                                process="@this"
+                                                disabled="#{!(sec.isMaster() or sec.hasMethod('IssueCommentController', 'DELETEFILE'))}"
+                                                styleClass="btn btn-xs btn-default">
+                                                <f:param name="idx" value="#{commentFileIdx.index}" />
+                                                <span class="fa fa-minus-circle"></span>
+                                            </p:commandLink>
+                                        </td>
+                                        <td><h:outputLabel value="#{file.file.fileName}" /></td>
+                                        <td><h:outputLabel value="#{file.sizeView}" /></td>
+                                    </tr>
+                                </ui:repeat>
+                            </tbody>
+                        </table>
+                    </p:panel>
+                </div>
+            </div>
+        </p:column>
+    </p:row>
+</p:panelGrid>
+</ui:composition>

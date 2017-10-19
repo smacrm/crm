@@ -1,0 +1,1 @@
+ALTER TABLE crm_mail_folder AUTO_INCREMENT = 6;

@@ -1,0 +1,83 @@
+.search-filter{
+	white-space: nowrap;
+	overflow: auto;
+	padding: 10px;
+	background: #FFF;
+}
+.search-filter::-webkit-scrollbar,
+.search-filter ul::-webkit-scrollbar{
+	height: 8px;
+	width: 8px;
+}
+.search-filter::-webkit-scrollbar-track,
+.search-filter ul::-webkit-scrollbar-track{
+    border-radius: 10px;
+    background: #EEEEEE;
+}
+.search-filter::-webkit-scrollbar-thumb,
+.search-filter ul::-webkit-scrollbar-thumb{
+	border-radius: 10px;
+	background: #757575;
+}
+.search-filter .group{
+	width: 440px; height: 140px;
+	display: inline-block;
+	position: relative;
+}
+.search-filter .group.ui-state-highlight{
+	background: #FFFDE7;
+	border: 1px dashed #FFF59D;
+}
+.search-filter .group ul{
+	position: absolute;
+	overflow: hidden;
+	overflow-y: auto;
+	background: #f5f5f5;
+	width: 385px; height: 100%;
+	top: 0; left: 0;
+	display: inline-block;
+	padding: 10px;
+	margin: 0;
+	border: 1px solid #E0E0E0;
+}
+.search-filter .group:last-child .extra [href="#add-group"]{
+	display: inline;
+}
+.search-filter .group ul li [href="#add-field"]{
+	display: none;
+}
+.search-filter .group ul li:last-child [href="#add-field"]{
+	display: inline;
+}
+.search-filter .group ul li > *{
+	height: 23px;
+	margin-bottom: 5px;
+}
+.search-filter .group ul li .value{
+	width: 160px;
+}
+.search-filter .group ul li .value.date{
+	background-image: url(data:image/gif;base64,R0lGODdhEAAPAPQAAHdTUalbV7xeWd1jXO1lXu5tZe9zbPB6c/GDfTFpzjlx3lqK53Oe7/KIgvKNh/OYkvSblvSinfWrp/awq/e1sYyq7/vh3/3r6v3y8f729f/8/P///wAAAAAAAAAAAAAAACwAAAAAEAAPAAAFh+AEiCQAjehUIFvRvu6wCbM1TZIURY/jIECDgUCYXI7IW24ZKSp1j6gvOJRsNo9rFqvRPDKZgHXTuJbJ5oxFLGkcHm54hbFQwMXa/IbRVVwmARBmZl0LGhgJf4Ftb3ENCgoJCT2BeV5gD0cPFhSVZBpkYA1HDZyLDwcSqKqpqBMNgQGys7S1IQA7);
+	background-repeat: no-repeat;
+	background-position: right center;
+}
+.search-filter .group ul li.ui-state-highlight{
+	background: #FFFDE7;
+	height: 23px;
+	border: 1px dashed #FFF59D;
+}
+.search-filter .group .extra{
+	position: absolute;
+	right: 0; top: 0;
+	width: 54px; height: 100%;
+	text-align: center;
+	white-space: normal;
+	display: table;
+}
+.search-filter .group .extra span{
+	display: table-cell;
+    vertical-align: middle;
+}
+.search-filter .group .extra [href="#add-group"]{
+	display: none;
+}

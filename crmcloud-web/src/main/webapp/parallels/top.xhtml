@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:p="http://primefaces.org/ui">
+    <table width="100%" class="section-navigation" cellpadding="0" cellspacing="0">
+        <td width="30">
+            <a href="#" class="toggle-sidebar" onclick="PF('pageLayout').toggle('west')" title="Collapse">
+                <i class="fa fa-chevron-circle-left" aria-hidden="true"></i>
+            </a>
+        </td>
+        <td width="90">
+            <h:form>
+                <p:commandButton id="moduleBtn" value="Modules" type="button" icon="fa fa-th-list" styleClass="moduleBtn"></p:commandButton>
+                <p:tieredMenu
+                    overlay="true"
+                    trigger="moduleBtn"
+                    styleClass="moduleMenu"
+                    my="left top" at="left bottom"
+                    model="#{authorityController.moduleMenuModel}" />
+            </h:form>
+        </td>
+        <td>
+            <h:form>
+                <h:outputText value="${msg['label.method.receive']}"/>
+            </h:form>
+        </td>
+        <td width="350" align="right">
+            <h:form>
+                <p:commandButton type="button" icon="fa fa-search"/>
+                <p:commandButton id="phoneBtn" type="button" icon="fa fa-phone"/>
+                <p:overlayPanel id="phonePanel" for="phoneBtn" hideEffect="fade" dynamic="true">
+                    <h:outputText value="Phone panel"/>
+                </p:overlayPanel>
+                <span class="badge-wrap">
+                    <p:commandButton id="mailBtn" type="button" icon="fa fa-envelope-o" />
+                    <span class="badge">8</span>
+                </span>
+<!--                <p:themeSwitcher effectSpeed="normal" effect="fade" style="width:165px" 
+                                 id="themeSwitcher" var="t" value="#{layout.selectedTheme}" styleClass="themeSwitcher">
+                    <f:selectItem itemLabel="Choose Theme" itemValue="" />
+                    <f:selectItems value="#{layout.themes}" />
+                    <p:ajax global="false" listener="#{layout.saveTheme}" />
+                </p:themeSwitcher> -->
+                <p:overlayPanel id="mailPanel" for="mailBtn" hideEffect="fade" dynamic="true">
+                    <h:outputText value="Mail panel"/>
+                </p:overlayPanel>
+                <p:commandButton id="profileBtn" type="button" icon="fa fa-wrench"></p:commandButton>
+                <p:menu overlay="true" trigger="profileBtn" styleClass="profileMenu" my="left top" at="left bottom">
+                    <p:menuitem value="Setup" icon="fa fa-cog"/>
+                    <p:menuitem value="Help" icon="fa fa-question-circle"/>
+                    <p:menuitem>
+                        <p:graphicImage value="https://placeholdit.imgix.net/~text?txtsize=5&amp;txt=&amp;w=40&amp;h=40" styleClass="avatar"/>
+                        <p:commandLink value="CRMCloud" styleClass="name"/>
+                        <p:commandLink value="GNEXT" styleClass="quiet"/>
+                    </p:menuitem>
+                    <p:separator />
+                    <p:menuitem value="My Account" icon="fa fa-user"/>
+                    <p:menuitem value="Logout" icon="fa fa-sign-out" action="#{loginController.doLogout}" ajax="false"/>
+                </p:menu>
+            </h:form>
+        </td>
+    </table>
+</ui:composition>

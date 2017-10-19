@@ -1,0 +1,30 @@
+#!/bin/bash
+
+CONTAINER_VERSION=1.0
+SOURCECODE_VERSION=1.0
+
+docker stop crmcloud_db
+docker rm crmcloud_db
+docker build -t gnext_crmcloud_db:$CONTAINER_VERSION .
+
+DOCKER_DIR=$(pwd)
+ROOT_DIR=${DOCKER_DIR}/../..
+MYSQL_DATA_DIR=$DOCKER_DIR/../.cache/data
+sudo rm -rf $MYSQL_DATA_DIR
+mkdir -p $MYSQL_DATA_DIR
+
+echo "First run CRMCloud DB"
+pid=$( docker run -it --name crmcloud_db \
+		--restart=always \
+		-e CLUSTER=STANDALONE \
+		-e MYSQL_ROOT_PASSWORD=password \
+		-e MYSQL_DATABASE=crmcloud \
+		-e MYSQL_USER=crmcloud \
+		-e MYSQL_PASSWORD=123456 \
+		-e MYSQL_CHARACTER_SET=utf8mb4 \
+		-e MYSQL_COLLATE=utf8mb4_general_ci \
+		-v $MYSQL_DATA_DIR:/var/lib/mysql \
+		-p 3308:3306 -p 6379:6379 \
+		-d gnext_crmcloud_db:$CONTAINER_VERSION )
+
+echo "crmcloud_db" > .pid

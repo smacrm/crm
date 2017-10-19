@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <li class="dropdown speedapi" id="speechapi" style="display: none"> <!-- Mac dinh la display: none, khi nao vao man hinh issue thi moi hien thi ra -->
+        <p:commandLink
+            styleClass="dropdown-toggle"
+            onclick="speechStart('#{localeController.locale}')"
+            actionListener="#{speechController.speechApi}"
+            update=":growl"
+            ajax="true"
+            title="#{msg['label.speech.search']}">
+            <span class="fa fa-microphone"></span>
+        </p:commandLink>
+    </li>
+
+</ui:composition>

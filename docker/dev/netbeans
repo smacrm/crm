@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Start netbeans
+if [ ! -f .pid ]; then
+
+	CONTAINER_VERSION=1.0
+	SOURCECODE_VERSION=1.0
+
+	DOCKER_DIR=$(pwd)
+	ROOT_DIR=${DOCKER_DIR}/../..
+
+	#pid=$( docker run -it --link crmcloud_db --name crmcloud_web -v $EAR_DIR:/crmcloud/crmcloud-ear/ -v $LOG_DIR:/opt/glassfish4/glassfish/domains/domain1/logs -p 4848:4848 -p 8080:8080 -p 9009:9009 -e GLASSFISH_PASS="admin" -e DEBUG="true" -d gnext_crmcloud_web:$CONTAINER_VERSION /etc/service/glassfish/run )
+	
+	pid=$( docker run -it \
+			--link crmcloud_db \
+			--name crmcloud_web \
+			--privileged \
+			-e XMODIFIERS="@im=fcitx" \
+			-e GTK_IM_MODULE=fcitx \
+			-e QT_IM_MODULE=fcitx \
+			-e XIMPROGRAM=fcitx \
+			-e LC_CTYPE=ja_JP.UTF-8 \
+			-e DISPLAY=$DISPLAY \
+			-e XAUTHORITY=$XAUTH  \
+			-e LOCAL_USER_ID=`id -u $USER` \
+			-v /tmp/.X11-unix:/tmp/.X11-unix \
+			-v $ROOT_DIR:/home/workspace/crmcloud \
+			-v $DOCKER_DIR/.cache/user:/home/workspace/.netbeans \
+			-v $DOCKER_DIR/.cache/ide:/home/workspace/.cache/netbeans \
+			-v $DOCKER_DIR/.cache/repository:/root/.m2/repository \
+			-p 4848:4848 -p 8080:8080 -p 9009:9009 -e GLASSFISH_PASS="admin" -e DEBUG="true" \
+			-d gnext_crmcloud_web:$CONTAINER_VERSION /usr/local/bin/netbeans )
+
+	if [[ ! "x${pid}" = "x" ]]; then
+		echo $pid > .pid
+	fi
+	echo "CRMCloud DEV is started: $pid"
+else
+	echo "CRMCloud DEV is ready running!"
+	docker stop `cat .pid`
+	docker rm crmcloud_web
+	rm -f .pid
+	sh netbeans
+fi
+#  

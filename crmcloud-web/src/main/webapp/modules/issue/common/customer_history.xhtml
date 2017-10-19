@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <p:panelGrid style="width: 100%;" id="panelGrid_historyCustomers" styleClass="dataTable_history_customer panelGrid_related_cases">
+        <f:facet name="header">
+            <p:row>
+                <p:column width="200">
+                    <h:outputLabel value="${issue['label.issue_code']}" />
+                </p:column>
+                <p:column>
+                    <h:outputLabel value="${issue['label.issue_status_name']}" />
+                </p:column>
+                <p:column>
+                    <h:outputLabel value="${issue['label.issue_receive_date']}" />
+                </p:column>
+                <p:column>
+                    <h:outputLabel value="${issue['label.issue_receive_person_name']}" />
+                </p:column>
+            </p:row>
+            <p:row>
+                <p:column colspan="4">
+                    <h:outputLabel value="${issue['label.issue_proposal_name']}" />
+                </p:column>
+            </p:row>
+            <p:row>
+                <p:column colspan="4">
+                    <h:outputLabel value="${issue['label.issue_product_name']}" />
+                </p:column>
+            </p:row>
+            <p:row>
+                <p:column colspan="4">
+                    <h:outputLabel value="${issue['label.issue_content_ask']}" />
+                </p:column>
+            </p:row>
+        </f:facet>
+        <c:forEach var="issueHistory" items="#{issueController.issue.historyCustomers}" varStatus="hIndex">
+            <p:row>
+                <p:column width="200">
+                    <h:outputFormat rendered="#{renderButton ne 'no' and (sec.isMaster() or sec.hasMethod('CustomerController', 'CREATE'))}">
+                        <p:commandButton icon="fa fa-arrow-circle-left" update="tabViewCustomer"
+                                         actionListener="#{issueController.copyCustomerFrom(issueHistory)}"
+                                         oncomplete="$('#tabViewCustomer li:first').click();"/>
+                        <p:spacer width="5"/>
+                    </h:outputFormat>
+                    <h:commandLink 
+                        target="_blank"
+                        actionListener="#{issueController.show(issueHistory.issueId)}"
+                        action="#{issueController.outcome(issueHistory.issueId, '&amp;redirect=true')}"
+                        title="#{msg['label.show']}" value="${issueHistory.issueViewCode}">
+                        <f:param name="id" value="#{issueHistory.issueId}" />
+                        <f:param name="issueIdx" value="notNext" />
+                        <f:param name="force" value="true"/>
+                    </h:commandLink>
+                </p:column>
+                <p:column>
+                    <h:outputLabel value="${issueHistory.issueStatusId.getItemViewData(localeController.locale)}" styleClass="font_weight_normal"/>
+                </p:column>
+                <p:column>
+                    <h:outputLabel value="${issueHistory.issueReceiveDate}" styleClass="font_weight_normal">
+                        <f:convertDateTime type="date" pattern="yyyy/MM/dd HH:mm"/>
+                    </h:outputLabel>
+                </p:column>
+                <p:column>
+                    <h:outputLabel value="${issueHistory.issueReceivePerson.memberNameFull}" styleClass="font_weight_normal"/>
+                </p:column>
+            </p:row>
+            <p:row>
+                <p:column colspan="4">
+                    <h:outputLabel value="${issueHistory.getIssueLinkedMenteName('issue_proposal_id', localeController.locale)}" styleClass="font_weight_normal"/>
+                </p:column>
+            </p:row>
+            <p:row>
+                <p:column colspan="4">
+                    <h:outputLabel value="${issueHistory.getIssueProductName(localeController.locale)}" styleClass="font_weight_normal"/>
+                </p:column>
+            </p:row>
+            <p:row>
+                <p:column colspan="4">
+                    <p:inputTextarea
+                        rows="3"
+                        autoResize="false"
+                        readonly="true"
+                        value="${issueHistory.issueInfoList[0].issueContentAsk}"
+                        style="width: 100%"
+                        styleClass="font_weight_normal inputTextareaNotBorder" />
+                </p:column>
+            </p:row>
+        </c:forEach>
+    </p:panelGrid>
+</ui:composition>

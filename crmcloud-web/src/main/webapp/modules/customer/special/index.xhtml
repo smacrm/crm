@@ -1,0 +1,307 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+                xmlns:crm="http://gnext.co.jp/facelets"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+    <div id="pageTitle">#{issue['label.cust_special']}#{msg['symbol.paren.left']}#{msg['label.show']}#{msg['symbol.paren.right']}</div>
+    <h:form id="frmSpecialCustomer" prependId="true">
+        <p:remoteCommand name="setCustomerClick" actionListener="#{customerController.create}" />
+        <p:remoteCommand name="callQuickSearch" actionListener="#{customerController.quickSearch}" onstart="start()" onsuccess="finish()" update="mainContent, :growl"/>
+        
+        <!-- //////////////////////////////////////////////// HEADER -->
+        <h:panelGrid width="100%" styleClass="page-header">
+            <f:facet name="header">
+                <div class="row">
+                    <div class="col-md-1">
+                        <h1> #{issue['label.cust_special']} </h1>
+                    </div>
+                    <div class="col-md-5">
+                        <table>
+                            <tr>
+                                <td><p:outputLabel value="#{msg['label.easy_search']}"/></td>
+                                <td>
+                                    <p:inputText value="#{customerController.keyqord}" id="txtKeyWord"
+                                                 onkeydown="if(event.keyCode === 13) return false;" 
+                                                 onkeyup="if(event.keyCode === 13){ callQuickSearch(); return false; }">
+                                    </p:inputText>
+				    <p:commandButton icon="fa fa-search" style="width: 2em;height: 2em;margin-right: 1em;margin-bottom: 0.2em !important;" onclick="callQuickSearch();" />
+                                </td>
+                                <td>
+                                    <p:selectOneRadio value="#{customerController.operator}">
+                                        <f:selectItem itemLabel="#{msg['label.and']}" itemValue="and" />
+                                        <f:selectItem itemLabel="#{msg['label.or']}" itemValue="or" />
+                                    </p:selectOneRadio>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <p:commandButton id="btnCreateCustSpecial" value="#{msg['label.create']}" title="#{msg['label.create']}" icon="fa fa-plus-circle"
+                                         actionListener="#{dialogController.openCustDialog(0, false)}" process="@this"
+                                         onclick="setCustomerClick([{name: 'custId', value: 0}]);"
+                                         onstart="start()" onsuccess="finish()"
+                                         oncomplete="setTimeout(function () {CRMCLOUD.dialogFrameWorkTop('frmSpecialCustomer', 'btnCreateCustSpecial');}, 50);"
+                                         rendered="${sec.hasMethod('CustomerController', 'create')}">
+                            <f:param name="top" value="35" />
+                            <f:param name="width" value="900" />
+                            <f:param name="height" value="620" />
+                            <f:param name="custId" value="0" />
+                            <p:ajax event="dialogReturn" listener="#{customerController.onInsertSuccess}" update="mainContent :growl" />
+                        </p:commandButton>
+                        <p:commandButton value="#{msg['label.download']}" title="#{msg['label.download']}" icon="fa fa-cloud-download"
+                                         action="#{customerController.export('customer_special')}" ajax="false"
+                                         rendered="${sec.hasMethod('CustomerController', 'download')}">
+                        </p:commandButton>
+                        <p:commandButton value="${msg['label.import']}" title="${msg['label.import']}" icon="fa fa-cloud-upload"
+                                         rendered="${sec.hasMethod('CustomerController', 'upload')}"
+                                         onclick="PF('uploadCustomerPanel').show();">
+                        </p:commandButton>
+                    </div>
+                </div>
+            </f:facet>
+        </h:panelGrid>
+
+        <!-- //////////////////////////////////////////////// SEARCHBOX -->
+        <p:outputPanel rendered="${sec.hasMethod('CustomerController', 'search')}">
+            <div class="box box-solid box-search">
+                <div class="box-header with-border" data-widget="collapse">
+                    <h3 class="box-title">#{msg['label.search.title']}</h3> #{msg['symbol.colon']}<code></code>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <div id="search-filter"></div>
+                </div>
+                <div class="box-footer text-center">
+                    <h:inputText value="#{customerController.searchDataJson}" styleClass="searchDataJson" style="display: none"/>
+                    <p:commandLink actionListener="#{customerController.search}" update="mainContent, :growl"
+                                   onstart="start()" onsuccess="finish()" style="display:none" styleClass="search-action" />
+                    <p:commandButton value="#{companyBundle['label.search']}" type="button" icon="fa fa-search" styleClass="btn-search"></p:commandButton>
+                </div>
+            </div>
+        </p:outputPanel>
+        <pe:blockUI target="tblSpecialCustomer" content="blockUIContent" widgetVar="blockUIWidget"/>  
+        <ui:include src="/blocks/infile/blockui.xhtml"/>
+
+        <!-- //////////////////////////////////////////////// RESULTS -->
+        <c:set var="rowsPerPageTemplate" value="#{configController.getConfig('DATATABLE_ROW_PER_PAGE')}" scope="session" />
+        <c:set var="rows" value="#{configController.getConfig('DATATABLE_DEFAULT_PER_PAGE')}" scope="session" />
+        <p:dataTable var="cust" value="#{customerController.specialCustomers}"
+                     styleClass="crmcloud_datatable" scrollable="true" id="tblSpecialCustomer"
+                     lazy="true" paginator="true" paginatorTemplate="#{layout.paginatorTemplate}" currentPageReportTemplate="#{layout.currentPageReportTemplate}"
+                     rowsPerPageTemplate="#{rowsPerPageTemplate}" rows="#{rows}" pageLinks="5" rowHover="true" emptyMessage="#{msg['label.data.empty']}">
+            <p:ajax event="sort" onstart="PF('blockUIWidget').block()" onsuccess="PF('blockUIWidget').unblock()"/>
+            
+            <!-- ACTION EDIT -->
+            <p:column style="width:30px" styleClass="table-action" exportable="false">
+                <p:commandLink actionListener="#{dialogController.openCustDialog(cust['cust_id'], false)}" process="@this"
+                               onclick="setCustomerClick([{name: 'custId', value: #{cust['cust_id']}}]);" 
+                               title="#{msg['label.edit']}" styleClass="ui-icon ui-icon-pencil" id="lnkCreateCustSpecial"
+                               oncomplete="setTimeout(function () {CRMCLOUD.dialogFrameWorkTop('frmSpecialCustomer', 'lnkCreateCustSpecial');}, 50);"
+                               onstart="start()" onsuccess="finish()">
+                    <f:param name="custId" value="#{cust['cust_id']}" />
+                    <f:param name="width" value="900" />
+                    <f:param name="height" value="600" />
+                    <f:param name="top" value="35" />
+                    <p:ajax event="dialogReturn" oncomplete="$('#frmSpecialCustomer').attr('action', '/index.xhtml');"
+                            listener="#{customerController.onEditSucess}" update="mainContent :growl" />
+                </p:commandLink>
+            </p:column>
+            
+            <!--cust_cooperation_name-->
+            <p:column headerText="${issue['label.cust_cooperation_name']}" sortBy="#{cust_cooperation_name}">
+                <h:outputText value="#{stringController.showIfNullOrEmpty(cust['cust_cooperation_name'])}" />
+            </p:column>
+            
+            <!--cust_code-->
+            <p:column headerText="${issue['label.cust_code']}" sortBy="#{cust_code}">
+                <h:outputText value="#{stringController.showIfNullOrEmpty(cust['cust_code'])}" />
+            </p:column>
+            
+            <!--cust_special_name-->
+            <p:column headerText="${issue['label.cust_special_name']}" sortBy="#{cust_special_name}">
+                <h:outputText value="#{stringController.showIfNullOrEmpty(customer['cust_special_name'])}" />
+            </p:column>
+            
+            <!--cust_name_kana-->
+            <p:column headerText="${issue['label.name_kana']}" sortBy="#{cust_name_kana}">
+                <p:inputTextarea
+                    rows="2"
+                    autoResize="false"
+                    readonly="true"
+                    value="#{customerController.breakDataToNewLine(cust, 'cust_name_kana', 'name_kana')}"
+                    styleClass="font_weight_normal inputTextareaNotBorder" />
+            </p:column>
+            
+            <!--cust_name_hira-->
+            <p:column headerText="${issue['label.name_hira']}" sortBy="#{cust_name_hira}">
+                <p:inputTextarea
+                    rows="2"
+                    autoResize="false"
+                    readonly="true"
+                    value="#{customerController.breakDataToNewLine(cust, 'cust_name_hira', 'name_kanji')}"
+                    styleClass="font_weight_normal inputTextareaNotBorder" />
+            </p:column>
+            
+            <!--cust_sex_name-->
+            <p:column headerText="${issue['label.sex']}" sortBy="#{cust_sex_name}">
+                <h:outputText value="#{stringController.showIfNullOrEmpty(cust['cust_sex_name'])}" />
+            </p:column>
+            
+            <!--cust_age_name-->
+            <p:column headerText="${issue['label.age']}" sortBy="#{cust_age_name}">
+                <h:outputText value="#{stringController.showIfNullOrEmpty(cust['cust_age_name'])}" />
+            </p:column>
+
+            <!--cust_post-->
+            <p:column headerText="${issue['label.post']}" sortBy="#{cust_post}">
+                <p:inputTextarea
+                    rows="2"
+                    autoResize="false"
+                    readonly="true"
+                    value="#{customerController.breakDataToNewLine(cust, 'cust_post', 'address_post')}"
+                    styleClass="font_weight_normal inputTextareaNotBorder" />
+            </p:column>
+            
+            <!--cust_city-->
+            <p:column headerText="${issue['label.city']}" sortBy="#{cust_city}">
+                <p:inputTextarea
+                    rows="2"
+                    autoResize="false"
+                    readonly="true"
+                    value="#{customerController.breakDataToNewLine(cust, 'cust_city', 'address_city')}"
+                    styleClass="font_weight_normal inputTextareaNotBorder" />
+            </p:column>
+            
+            <!--cust_address-->
+            <p:column headerText="${issue['label.address_kana']}" sortBy="#{cust_address}">
+                <p:inputTextarea
+                    rows="2"
+                    autoResize="false"
+                    readonly="true"
+                    value="#{customerController.breakDataToNewLine(cust, 'cust_address', 'cust_address')}"
+                    styleClass="font_weight_normal inputTextareaNotBorder" />
+            </p:column>
+            
+            <!--cust_address_kana-->
+            <p:column headerText="${issue['label.address']}" sortBy="#{cust_address_kana}">
+                <p:inputTextarea
+                    rows="2"
+                    autoResize="false"
+                    readonly="true"
+                    value="#{customerController.breakDataToNewLine(cust, 'cust_address_kana', 'cust_address_kana')}"
+                    styleClass="font_weight_normal inputTextareaNotBorder" />
+            </p:column>
+            
+            <!-- cust_tel -->
+            <p:column headerText="${issue['label.tel']}" sortBy="#{cust_tel}">
+                <p:inputTextarea
+                    rows="2"
+                    autoResize="false"
+                    readonly="true"
+                    value="#{customerController.breakDataToNewLine(cust, 'cust_tel', 'tel')}"
+                    styleClass="font_weight_normal inputTextareaNotBorder" />
+            </p:column>
+            
+            <!-- cust_mobile -->
+            <p:column headerText="${issue['label.mobile']}" sortBy="#{cust_mobile}">
+                <p:inputTextarea
+                    rows="2"
+                    autoResize="false"
+                    readonly="true"
+                    value="#{customerController.breakDataToNewLine(cust, 'cust_mobile', 'mobile')}"
+                    styleClass="font_weight_normal inputTextareaNotBorder" />
+            </p:column>
+            
+            <!-- cust_mail -->
+            <p:column headerText="${issue['label.mail']}" sortBy="#{cust_mail}">
+                <p:inputTextarea
+                    rows="2"
+                    autoResize="false"
+                    readonly="true"
+                    value="#{customerController.breakDataToNewLine(cust, 'cust_mail', 'mail')}"
+                    styleClass="font_weight_normal inputTextareaNotBorder" />
+            </p:column>
+
+            <!--cust_memo-->
+            <p:column headerText="${issue['label.memo']}" sortBy="#{cust_memo}">
+                <p:inputTextarea
+                    rows="2"
+                    autoResize="false"
+                    readonly="true"
+                    value="#{stringController.showIfNullOrEmpty(cust['cust_memo'])}"
+                    styleClass="font_weight_normal inputTextareaNotBorder" />
+            </p:column>
+            
+            <!-- history -->
+            <p:column headerText="${issue['label.cust_history_memo']}" sortBy="#{cust_history_memo}" rendered="#{customerController.specialCompanyFlag}">
+                <p:inputTextarea
+                    rows="2"
+                    autoResize="false"
+                    readonly="true"
+                    value="#{customerController.breakDataToNewLine(cust, 'cust_history_memo', 'history')}"
+                    styleClass="font_weight_normal inputTextareaNotBorder" />
+            </p:column>
+            
+            <!--histoty_last_update-->
+            <p:column headerText="${issue['label.cust_history_last_update']}" sortBy="#{cust_history_last_update}" rendered="#{customerController.specialCompanyFlag}">
+                <p:inputTextarea
+                    rows="2"
+                    autoResize="false"
+                    readonly="true"
+                    value="#{customerController.breakDataToNewLine(cust, 'cust_history_last_update', 'history')}"
+                    styleClass="font_weight_normal inputTextareaNotBorder" />
+            </p:column>
+        </p:dataTable>
+
+        <!--  //////////////////////////////////////////////// SEARCH-ACTION-->
+        <h:outputScript library="js" name="search-filter.js"/>
+        <script type="text/javascript">
+            jQuery(document).ready(function ($) {
+                //alert('123');
+                var sf = $("#search-filter").searchFilter({
+                    fields: #{customerController.customerSpecialFieldJson},
+                    data: $('.searchDataJson').val(),
+                    displayQuery: true,
+                    queryContainer: $("#search-filter").closest('.box.box-search').find('.box-header code'),
+                    langs: {
+                        AND: '#{msg['label.condition.and']}',
+                        OR: '#{msg['label.condition.or']}',
+                        LIKE: '#{msg['label.condition.like']}',
+                        LIKE_START: '#{msg['label.condition.like_start']}',
+                        LIKE_END: '#{msg['label.condition.like_end']}',
+                        NOT_LIKE: '#{msg['label.condition.not_like']}',
+                        BLANK: '#{msg['label.condition.blank']}',
+                        NOT_BLANK: '#{msg['label.condition.not_blank']}'
+                    },
+                    hiddenSearchPanel: #{customerController.renderScriptHiddenSearchPanel}        
+                });
+                $(".btn-search").click(function (event) {
+                    event.preventDefault();
+                    var data = sf.data('searchFilter').getData();
+                    $('.searchDataJson').val(data);
+                    $(".search-action").trigger('click');
+                });
+            });
+        </script>
+    </h:form>
+    <p:dialog widgetVar="uploadCustomerPanel" header="${msg['label.upload']}" showEffect="fade" hideEffect="fade" dynamic="true" responsive="true" resizable="false" modal="true" width="450">
+        <p:ajax event="close" update="mainContent, :growl" listener="#{customerController.handleCloseDialog}" />
+        <h:form>
+            ${msg['label.upload_file']}：
+            <p:outputLabel value="#{customerController.uploadedFile.fileName}" id="file-name"/>
+            <p:fileUpload fileUploadListener="#{customerController.fileUploadListener}" auto="true" skinSimple="true"  label="${msg['label.import']}" multiple="false" sizeLimit="3072000" allowTypes="/(\.|\/)(xls|xlsx)$/" update="file-name :growl"/>
+            <p:remoteCommand name="uploadCustomerData" actionListener="#{customerController.importData()}" update="mainContent,file-name :growl" onstart="start()" onsuccess="finish()"/>
+        </h:form>
+        <f:facet name="footer">
+            <p:outputPanel styleClass="text-right">
+                <p:commandButton value="${msg['label.import']}" type="button" update="mainContent, :growl" onclick="PF('uploadCustomerPanel').hide(); uploadCustomerData();" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" onstart="start()" onsuccess="finish()"/>
+                <p:commandButton value="${msg['label.cancel']}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" onclick="PF('uploadCustomerPanel').hide();"/>
+            </p:outputPanel>
+        </f:facet>
+    </p:dialog>
+</ui:composition>

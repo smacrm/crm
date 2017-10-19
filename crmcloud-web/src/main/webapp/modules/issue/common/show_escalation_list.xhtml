@@ -1,0 +1,447 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <p:panel id="toggleablePanelEscalation" styleClass="toggleablePanelEscalation panelEscalationList" style="border: none;margin-top: 0.3em;">
+        <h:outputScript>
+            var ISSUE_STATUS_FLOW = {
+                <c:forEach items="#{issueController.select.get('issue_status_id')}" var="item">
+                    <h:outputText value="#{item.value.itemId}"/>:{step: #{item.value.issueStatusStep}, data_required: #{item.value.issueStatusDataRequired}, end_time_required: #{item.value.issueStatusEndDateRequired}},
+                </c:forEach>
+            };
+            var ISSUE_ESCALATION_EXISTS = [
+                <c:forEach items="${issueController.issue.escalations}" var="item">
+                    <h:outputText value="#{item.escalationSendType}"/>,
+                </c:forEach>
+            ];
+        </h:outputScript>
+        <p:panel
+            toggleable="true"
+            toggleSpeed="500"
+            closeSpeed="500"
+            toggleOrientation="horizontal"
+            widgetVar="panel"
+            styleClass="panelEscalationList"
+            rendered="${!empty issueController.issue.escalations}">
+            <f:facet name="header">
+                <p:row>
+                    <p:column>
+                        <h:outputLabel value="#{issue['label.tab_response_request']}" />
+                        <h:outputText
+                            value=" (${issueController.issue.escalations.size()}${issue['label.count']})"
+                            rendered="${!empty issueController.issue.escalations}" />
+                    </p:column>
+                </p:row>
+            </f:facet>
+
+            <p:row>
+                <p:column>
+                    <c:forEach var="escalationList" items="${issueController.issue.escalations}" varStatus="idx" >
+                        <p:panel
+                            id="toggleable_${idx.index}"
+                            toggleable="true"
+                            toggleSpeed="500"
+                            closeSpeed="500"
+                            widgetVar="panel_${idx.index}"
+                            styleClass="panelEscalationList">
+                            <c:set var="showHistoryTitle" value="none"/>
+                            <c:choose>
+                                <c:when test="${escalationList.escalationSendType eq 1}">
+                                    <c:set var="showHistoryTitle" value="mail-reply"/>
+                                </c:when>
+                                <c:when test="${escalationList.escalationSendType eq 2}">
+                                    <c:set var="showHistoryTitle" value="paper-plane-o"/>
+                                </c:when>
+                                <c:when test="${escalationList.escalationSendType eq 3}">
+                                    <c:set var="showHistoryTitle" value="pencil"/>
+                                </c:when>
+                                <c:when test="${escalationList.escalationSendType eq 4}">
+                                    <c:set var="showHistoryTitle" value="user-md"/>
+                                </c:when>
+                                <c:when test="${escalationList.escalationSendType eq 5}">
+                                    <c:set var="showHistoryTitle" value="inbox"/>
+                                </c:when>
+                            </c:choose>
+                            
+                            <c:if test="#{showHistoryTitle ne 'none'}">
+                                <f:facet name="header">
+                                    <p:column>
+                                        <c:choose>
+                                            <c:when test="${escalationList.escalationSendType eq 1}">
+                                                <p:commandLink
+                                                    actionListener="#{issueSupportController.edit('1')}"
+                                                    oncomplete="PF('dlgSendSupportReplyMail').show();"
+                                                    update=":panelSendSupportReplyMail"
+                                                    process="@this"
+                                                    disabled="#{!(sec.isMaster() or sec.hasMethod('IssueSupportController', 'SUPPORTMAIL'))}"
+                                                    style="float: left;margin-right: 0.5em;" >
+                                                    <i class="fa fa-#{showHistoryTitle}" />
+                                                    <h:outputLabel
+                                                        value="[ #{issue[escalationList.escalationSendTypeName]} ]"
+                                                        style="margin-left: 0.5em;margin-right: 1em;color: #{issue[escalationList.escalationBackground]} !important;cursor: inherit;" />
+                                                    <f:param name="escId" value="#{escalationList.escalationId}" />
+                                                </p:commandLink>
+                                            </c:when>
+                                            <c:when test="${escalationList.escalationSendType eq 2}">
+                                                <p:commandLink
+                                                    process="@this"
+                                                    style="float: left;margin-right: 0.5em;cursor: default;" >
+                                                    <i class="fa fa-#{showHistoryTitle}" />
+                                                    <h:outputLabel
+                                                        value="[ #{issue[escalationList.escalationSendTypeName]} ]"
+                                                        style="margin-left: 0.5em;margin-right: 1em;color: #{issue[escalationList.escalationBackground]} !important;" />
+                                                      <!--<f:param name="escId" value="#{escalationList.escalationId}" />-->
+                                                </p:commandLink>
+                                            </c:when>
+                                            <c:when test="${escalationList.escalationSendType eq 3}">
+                                                <p:commandLink
+                                                    actionListener="#{issueCommentController.create()}"
+                                                    disabled="#{!(sec.isMaster() or sec.hasMethod('IssueCommentController', 'UPDATE'))}"
+                                                    oncomplete="PF('dlgCommentMail').show();"
+                                                    update=":panelSendComment"
+                                                    process="@this"
+                                                    style="float: left;margin-right: 0.5em;" >
+                                                    <i class="fa fa-#{showHistoryTitle}" />
+                                                    <h:outputLabel
+                                                        value="[ #{issue[escalationList.escalationSendTypeName]} ]"
+                                                        style="margin-left: 0.5em;margin-right: 1em;color: #{issue[escalationList.escalationBackground]} !important;cursor: inherit;" />
+                                                    <f:param name="escId" value="#{escalationList.escalationId}" />
+                                                </p:commandLink>
+                                            </c:when>
+                                            <c:when test="${escalationList.escalationSendType eq 4}">
+                                                <p:commandLink
+                                                    actionListener="#{issueCustSupportController.create()}"
+                                                    disabled="#{!(sec.isMaster() or sec.hasMethod('IssueCustSupportController', 'CREATE'))}"
+                                                    oncomplete="PF('dlgCustomerSupportMail').show();"
+                                                    update=":panelCustomerSupportMail"
+                                                    process="@this"
+                                                    style="float: left;margin-right: 0.5em;" >
+                                                    <i class="fa fa-#{showHistoryTitle}" />
+                                                    <h:outputLabel
+                                                        value="[ #{issue[escalationList.escalationSendTypeName]} ]"
+                                                        style="margin-left: 0.5em;margin-right: 1em;color: #{issue[escalationList.escalationBackground]} !important;cursor: inherit;" />
+                                                    <f:param name="escId" value="#{escalationList.escalationId}" />
+                                                </p:commandLink>
+                                            </c:when>
+                                            <c:when test="${escalationList.escalationSendType eq 5}">
+                                                <i class="fa fa-#{showHistoryTitle}" style="float: left;margin-right: 0.5em;"  />
+                                                <h:outputLabel
+                                                    value="[ #{issue[escalationList.escalationSendTypeName]} ]"
+                                                    style="margin-left: 0.5em;margin-right: 1em;color: #{issue[escalationList.escalationBackground]} !important;cursor: inherit;" />
+                                            </c:when>
+                                        </c:choose>
+                                        <span>
+                                            <h:outputLabel value="#{issue[escalationList.escalationSendDateName]}#{msg['symbol.colon']}" />
+                                            <h:outputLabel value="${escalationList.escalationSendDate}" >
+                                                <f:convertDateTime type="date" pattern="yyyy/MM/dd HH:mm" />
+                                            </h:outputLabel>
+                                        </span>
+                                    </p:column>
+                                </f:facet>
+                            </c:if>
+                            <p:panelGrid style="width: 100%;" styleClass="ui-panelgrid-color">
+                                <c:choose>
+                                    <!-- 顧客へメール対応場合 -->
+                                    <c:when test="${escalationList.escalationSendType eq 1}">
+                                        <p:row>
+                                            <p:column styleClass="td_15">
+                                                <h:outputText value="#{issue['label.send_person']}" />
+                                            </p:column>
+                                            <p:column styleClass="td_35">
+                                                <h:outputText value="#{escalationList.escalationMemberId.memberNameFirst}" />
+                                                <h:outputText value=" #{escalationList.escalationMemberId.memberNameLast}" rendered="#{!empty escalationList.escalationMemberId.memberNameLast}" />
+                                            </p:column>
+                                            <p:column styleClass="td_15">
+                                                <h:outputText value="#{msg['label.mail.to']}" />
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="#{escalationList.escalationTo}" />
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <h:outputText value="#{msg['label.mail.subject']}" />
+                                            </p:column>
+                                            <p:column colspan="3">
+                                                <h:outputText value="#{escalationList.escalationTitle}" />
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <h:outputText value="#{msg['label.mail.comment']}" />
+                                            </p:column>
+                                            <p:column colspan="3">
+                                                <c:choose>
+                                                    <c:when test="${!empty escalationList.escalationBodyReply}">
+                                                        <p:inputTextarea
+                                                            rows="3"
+                                                            autoResize="false"
+                                                            readonly="true"
+                                                            value="${escalationList.escalationBodyReply}"
+                                                            styleClass="font_weight_normal inputTextareaNotBorder" />
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <p:inputTextarea
+                                                            rows="3"
+                                                            autoResize="false"
+                                                            readonly="true"
+                                                            value="${escalationList.escalationBody}"
+                                                            styleClass="font_weight_normal inputTextareaNotBorder" />
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </p:column>
+                                        </p:row>
+                                        <c:if test="#{not empty escalationList.attachs and escalationList.attachs.size() > 0}">
+                                            <p:row>
+                                                <p:column>
+                                                    <h:outputText value="#{msg['label.add.file']}" />
+                                                </p:column>
+                                                <p:column colspan="3">
+                                                    <c:forEach var="attach" items="#{escalationList.attachs}" varStatus="idx">
+                                                        <small>
+                                                            <i class="fa fa-cloud-download" aria-hidden="true"></i>
+                                                            <p:commandLink
+                                                                ajax="false"
+                                                                onclick="PrimeFaces.monitorDownload(start, finish);"
+                                                                process="@this"
+                                                                disabled="#{!(sec.isMaster() or sec.hasMethod('IssueCommentController', 'DOWNLOAD'))}"
+                                                                value="#{attach.attachmentViewName}"
+                                                                actionListener="#{issueCommentController.download(attach.attachmentId)}">
+                                                                <p:fileDownload value="#{issueCommentController.fileDownload}" />
+                                                            </p:commandLink>
+                                                        </small>
+                                                        <br />
+                                                    </c:forEach>
+                                                </p:column>
+                                            </p:row>
+                                        </c:if>
+                                    </c:when>
+
+                                    <!-- 依頼メール場合 -->
+                                    <c:when test="${escalationList.escalationSendType eq 2}">
+                                        <p:row>
+                                            <p:column styleClass="td_15">
+                                                <h:outputText value="#{issue['label.send_person']}" />
+                                            </p:column>
+                                            <p:column styleClass="td_35">
+                                                <h:outputText value="#{escalationList.escalationMemberId.memberNameFirst}" />
+                                                <h:outputText value=" #{escalationList.escalationMemberId.memberNameLast}" rendered="#{!empty escalationList.escalationMemberId.memberNameLast}" />
+                                            </p:column>
+                                            <p:column styleClass="td_15">
+                                                <h:outputText value="#{msg['label.mail.to']}" />
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="#{escalationList.escalationTo}" />
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <h:outputText value="#{msg['label.mail.subject']}" />
+                                            </p:column>
+                                            <p:column colspan="3">
+                                                <h:outputText value="#{escalationList.escalationTitle}" />
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <h:outputText value="#{msg['label.mail.comment']}" />
+                                            </p:column>
+                                            <p:column colspan="3">
+                                                <p:inputTextarea
+                                                    rows="3"
+                                                    autoResize="false"
+                                                    readonly="true"
+                                                    value="${escalationList.escalationBody}"
+                                                    styleClass="font_weight_normal inputTextareaNotBorder" />
+                            <!--                    <h:outputText value="#{escalationList.escalationBody}" />-->
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <h:outputText value="#{mailBundle['label.mail.footer']}" />
+                                            </p:column>
+                                            <p:column colspan="3">
+                                                <p:inputTextarea
+                                                    rows="2"
+                                                    autoResize="false"
+                                                    readonly="true"
+                                                    value="${escalationList.escalationFooter}"
+                                                    styleClass="font_weight_normal inputTextareaNotBorder" />
+                                            </p:column>
+                                        </p:row>
+                                        <c:if test="#{not empty escalationList.attachs and escalationList.attachs.size() > 0}">
+                                            <p:row>
+                                                <p:column>
+                                                    <h:outputText value="#{msg['label.add.file']}" />
+                                                </p:column>
+                                                <p:column colspan="3">
+                                                    <c:forEach var="attach" items="#{escalationList.attachs}" varStatus="idx">
+                                                        <small>
+                                                            <i class="fa fa-cloud-download" aria-hidden="true"></i>
+                                                            <p:commandLink
+                                                                ajax="false"
+                                                                onclick="PrimeFaces.monitorDownload(start, finish);"
+                                                                process="@this"
+                                                                disabled="#{!(sec.isMaster() or sec.hasMethod('IssueCommentController', 'DOWNLOAD'))}"
+                                                                value="#{attach.attachmentViewName}"
+                                                                actionListener="#{issueCommentController.download(attach.attachmentId)}">
+                                                                <p:fileDownload value="#{issueCommentController.fileDownload}" />
+                                                            </p:commandLink>
+                                                        </small>
+                                                        <br />
+                                                    </c:forEach>
+                                                </p:column>
+                                            </p:row>
+                                        </c:if>
+                                    </c:when>
+
+                                    <!-- コメント場合 -->
+                                    <c:when test="${escalationList.escalationSendType eq 3}">
+                                        <p:row>
+                                            <p:column styleClass="td_15">
+                                                <h:outputText value="#{issue['label.entry_person']}" />
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="#{escalationList.escalationMemberId.memberNameFirst}" />
+                                                <h:outputText value=" #{escalationList.escalationMemberId.memberNameLast}" rendered="#{!empty escalationList.escalationMemberId.memberNameLast}" />
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <h:outputText value="#{msg['label.mail.comment']}" />
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputTextarea
+                                                    rows="3"
+                                                    autoResize="false"
+                                                    readonly="true"
+                                                    value="${escalationList.escalationBody}"
+                                                    styleClass="font_weight_normal inputTextareaNotBorder" />
+                                            </p:column>
+                                        </p:row>
+
+                                        <c:if test="#{not empty escalationList.attachs and escalationList.attachs.size() > 0}">
+                                            <p:row>
+                                                <p:column>
+                                                    <h:outputText value="#{msg['label.add.file']}" />
+                                                </p:column>
+                                                <p:column>
+                                                    <c:forEach var="attach" items="#{escalationList.attachs}" varStatus="idx">
+                                                        <small>
+                                                            <i class="fa fa-cloud-download" aria-hidden="true"></i>
+                                                            <p:commandLink
+                                                                ajax="false"
+                                                                onclick="PrimeFaces.monitorDownload(start, finish);"
+                                                                process="@this"
+                                                                value="#{attach.attachmentViewName}"
+                                                                disabled="#{!(sec.isMaster() or sec.hasMethod('IssueCommentController', 'DOWNLOAD'))}"
+                                                                actionListener="#{issueCommentController.download(attach.attachmentId)}">
+                                                                <p:fileDownload value="#{issueCommentController.fileDownload}" />
+                                                            </p:commandLink>
+                                                        </small>
+                                                        <br />
+                                                    </c:forEach>
+                                                </p:column>
+                                            </p:row>
+                                        </c:if>
+                                    </c:when>
+
+                                    <!-- 顧客対応場合 -->
+                                    <c:when test="${escalationList.escalationSendType eq 4}">
+                                        <p:row>
+                                            <p:column>
+                                                <h:outputText value="#{issue['label.support_person']}" />
+                                            </p:column>
+                                            <p:column colspan="3">
+                                                <h:outputText value="#{escalationList.escalationMemberId.memberNameFirst}" />
+                                                <h:outputText value=" #{escalationList.escalationMemberId.memberNameLast}" rendered="#{!empty escalationList.escalationMemberId.memberNameLast}" />
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column styleClass="td_15">
+                                                <h:outputText value="#{issue['label.support_method']}" />
+                                            </p:column>
+                                            <p:column styleClass="td_35">
+                                                <h:outputText value="#{escalationList.label1}" />
+                                            </p:column>
+                                            <p:column styleClass="td_15">
+                                                <h:outputText value="#{issue['label.support_class']}" />
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="#{escalationList.label2}" />
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <h:outputText value="#{msg['label.mail.comment']}" />
+                                            </p:column>
+                                            <p:column colspan="3">
+                                                <p:inputTextarea
+                                                    rows="3"
+                                                    autoResize="false"
+                                                    readonly="true"
+                                                    value="${escalationList.escalationBody}"
+                                                    styleClass="font_weight_normal inputTextareaNotBorder" />
+                            <!--                    <h:outputText value="#{escalationList.escalationBody}" />-->
+                                            </p:column>
+                                        </p:row>
+                                        <c:if test="#{not empty escalationList.attachs and escalationList.attachs.size() > 0}">
+                                            <p:row>
+                                                <p:column>
+                                                    <h:outputText value="#{msg['label.add.file']}" />
+                                                </p:column>
+                                                <p:column colspan="3">
+                                                    <c:forEach var="attach" items="#{escalationList.attachs}" varStatus="idx">
+                                                        <small>
+                                                            <i class="fa fa-cloud-download" aria-hidden="true"></i>
+                                                            <p:commandLink
+                                                                ajax="false"
+                                                                onclick="PrimeFaces.monitorDownload(start, finish);"
+                                                                process="@this"
+                                                                value="#{attach.attachmentViewName}"
+                                                                disabled="#{!(sec.isMaster() or sec.hasMethod('IssueCommentController', 'DOWNLOAD'))}"
+                                                                actionListener="#{issueCommentController.download(attach.attachmentId)}">
+                                                                <p:fileDownload value="#{issueCommentController.fileDownload}" />
+                                                            </p:commandLink>
+
+                                                        </small>
+                                                        <br />
+                                                    </c:forEach>
+                                                </p:column>
+                                            </p:row>
+                                        </c:if>
+                                    </c:when>
+                                </c:choose>
+                            </p:panelGrid>
+                        </p:panel>
+                    </c:forEach>
+                </p:column>
+            </p:row>
+        </p:panel>
+    </p:panel>
+
+    <!--    <h:outputScript>
+            var pos = $("#tabViewIssue").offset();
+            var divHeight;
+            if(pos !== undefined) {
+                var divTop = Math.ceil(pos.top);
+                var screenHeight = screen.height;
+                if(screenHeight > 1080) {
+                    divTop += 210;
+                } else if(screenHeight > 960) {
+                    divTop += 250;
+                } else {
+                    divTop += 140;
+                }
+                var divObj = $('#tabViewIssue').get(0);
+                if(divObj !== undefined) {
+                    var height = divObj.offsetHeight;
+                    divHeight = screenHeight - (divTop + height);
+                }
+            }
+            $('.divEscalationList').css('height', divHeight + 'px');
+        </h:outputScript>-->
+</ui:composition>

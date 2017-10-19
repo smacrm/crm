@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html">
+    <p:panelGrid styleClass="panelGridMenteSample" columns="2" columnClasses="verticalAlignTop,verticalAlignTop">
+        <f:facet name="header">
+            <p:column style="width: 15%;text-align: center;">
+                <p:outputLabel value="#{issue['label.escalation.type']}" />
+            </p:column>
+            <p:column id="columnSelectOneMenuMailRequestList" style="text-align: center;">
+                <p:outputLabel value="#{issue['label.escalation.setting']}" />
+                <span style="float: right;">
+                    <p:selectOneMenu
+                        id="selectOneMenuEscalaionSampleList"
+                        value="#{maintenanceController.escalationTargetId}"
+                        disabled="${empty maintenanceController.staticColumnsDataLvl2}">
+                        <f:selectItems
+                            value="#{maintenanceController.staticColumnsDataLvl2}"
+                            var="itemMailRequest"
+                            itemValue="#{itemMailRequest.itemId}"
+                            itemLabel="#{itemMailRequest.getItemViewData(maintenanceController.locale)}"/>
+                        <p:ajax
+                            event="change"
+                            update=":mainContent" listener="#{maintenanceController.onSelectionChanged}" />
+                    </p:selectOneMenu>
+                </span>
+            </p:column>
+        </f:facet>
+        <p:column>
+            <table class="tableCommandLinkList">
+                <tbody class="ui-datatable-data ui-widget-content">
+                    <tr class="ui-widget-content ui-datatable-even #{maintenanceController.currentStaticParent eq 'mail_request_id' ? 'active' : null}">
+                        <td class="active">
+                            <p:commandLink
+                                value="#{issue['label.escalation_2']}"
+                                actionListener="#{maintenanceController.showSampleStaticColumnLvl2('mail_request_id')}"
+                                rendered="#{!loginController.member.companyCustomerMode}"
+                                process="@this"
+                                update=":mainContent, :growl" />
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-content ui-datatable-odd #{maintenanceController.currentStaticParent eq 'cust_support_method_id' ? 'active' : null}">
+                        <td class="active">
+                            <p:commandLink
+                                value="#{issue['label.escalation_4']}"
+                                actionListener="#{maintenanceController.showSampleStaticColumnLvl2('cust_support_method_id')}"
+                                rendered="#{!loginController.member.companyCustomerMode}"
+                                process="@this"
+                                update=":mainContent, :growl" />
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-content ui-datatable-even #{maintenanceController.currentStaticParent eq 'mail_signature_id' ? 'active' : null}">
+                        <td class="active">
+                            <p:commandLink
+                                value="#{issue['label.mail_signature_name']}"
+                                actionListener="#{maintenanceController.showSampleStaticColumnLvl2('mail_signature_id')}"
+                                rendered="#{!loginController.member.companyCustomerMode}"
+                                process="@this"
+                                update=":mainContent, :growl" />
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-content ui-datatable-odd #{maintenanceController.currentStaticParent eq 'project_pass_days' ? 'active' : null}">
+                        <td class="active">
+                            <p:commandLink
+                                value="#{issue['label.project.pass.days']}"
+                                actionListener="#{issueLampController.search()}"
+                                process="@this"
+                                update=":mainContent, :growl" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </p:column>
+        <p:column>
+            <ui:include src="escalation_type.xhtml" />
+        </p:column>
+    </p:panelGrid>
+</ui:composition>

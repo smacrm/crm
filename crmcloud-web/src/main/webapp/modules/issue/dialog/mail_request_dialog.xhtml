@@ -1,0 +1,172 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+<p:panelGrid id="panelSendRequestMail" styleClass="panelGridDialogMailSupport">
+    <p:row>
+        <p:column colspan="4" styleClass="td_center td_padding">
+            <p:commandButton
+                onstart="start()" onsuccess="finish()"
+                actionListener="${issueSupportController.sendRequest()}"
+                icon="fa fa-send-o"
+                value="${msg['label.send']}"
+                update="@(.toggleablePanelEscalation), :growl, :panelChildMailRequestUserName"
+                process="@this:panelSendRequestMail"
+                oncomplete="handleCloseDialog(xhr, status, args, 'dlgSendRequestMail');" >
+                <f:param name="issueId" value="${issueController.issue.issueId}" />
+            </p:commandButton>
+        </p:column>
+    </p:row>
+    <p:row>
+        <p:column>
+            <h:outputLabel value="#{msg['label.mail.from']}" />
+            <font>*</font>
+        </p:column>
+        <p:column>
+            <p:selectOneMenu
+                value="#{issueSupportController.requestMail.sendMail.from}" >
+                <f:selectItems
+                    var="mail"
+                    value="${issueSupportController.froms}"
+                    itemLabel="${mail.accountMailAddress}"
+                    itemValue="${mail.accountMailAddress}"/>
+            </p:selectOneMenu>
+        </p:column>
+        <!-- style="border-left: 1px solid #d5d5d5 !important;" -->
+        <p:column rowspan="2">
+            <h:outputLabel value="#{msg['label.mail.to']}" />
+            <font>*</font>
+            <br />
+            <p:commandButton
+                id="sendMailTo"
+                icon="fa fa-th"
+                actionListener="#{issueSupportController.onTargetMailFlag('to')}"
+                oncomplete="PF('dlgMailMembers').show()"
+                update="pickMembers"
+                rendered="${!empty issueController.select.get('d_o_user')}"
+                styleClass="menu-toggle commandButtonMarginLeft_05" />
+        </p:column>
+        <p:column rowspan="2">
+            <p:panel id="panel_to_d_o_users" styleClass="divSpanText ui-corner-all">
+                <div class="divSpanText ui-corner-all">
+                    <c:forEach var="eachTos" items="${issueSupportController.requestMail.tos}" >
+                        <h:outputLabel value="${eachTos.label}" title="${eachTos.description}" /><br />
+                    </c:forEach>
+                </div>
+            </p:panel>
+        </p:column>
+    </p:row>
+
+    <p:row>
+        <p:column>
+            <h:outputLabel value="#{mailBundle['label.mail.request.type']}" />
+            <font>*</font>
+        </p:column>
+        <p:column>
+            <p:selectOneMenu value="#{issueSupportController.requestType}" >
+                <f:selectItems
+                    var="req"
+                    value="${issueSupportController.requestTypes}"
+                    itemLabel="${req.label}"
+                    itemValue="${req.value}" />
+                <p:ajax
+                    event="change"
+                    update=":inputTextRequestMailSubject, :inputTextareaRequestMailBody, :inputTextareaRequestMailFooter"
+                    listener="#{issueSupportController.onChangeRequestType}" />
+            </p:selectOneMenu>
+        </p:column>
+    </p:row>
+
+    <p:row>
+        <p:column styleClass="td_15">
+            <h:outputLabel value="#{msg['label.mail.cc']}" />
+            <br />
+            <p:commandButton
+                id="sendMailCc"
+                icon="fa fa-th"
+                actionListener="#{issueSupportController.onTargetMailFlag('cc')}"
+                oncomplete="PF('dlgMailMembers').show()"
+                update="pickMembers"
+                rendered="${!empty issueController.select.get('d_o_user')}"
+                styleClass="menu-toggle commandButtonMarginLeft_05" />
+        </p:column>
+        <p:column styleClass="td_35">
+            <p:panel id="panel_cc_d_o_users" styleClass="divSpanText ui-corner-all">
+                <div class="divSpanText ui-corner-all">
+                    <c:forEach var="eachCcs" items="${issueSupportController.requestMail.ccs}" >
+                        <h:outputLabel value="${eachCcs.label}" title="${eachCcs.description}" /><br />
+                    </c:forEach>
+                </div>
+           </p:panel>
+        </p:column>
+        <p:column styleClass="td_15">
+            <h:outputLabel value="#{msg['label.mail.bcc']}" />
+            <br />
+            <p:commandButton
+                id="sendMailBcc"
+                icon="fa fa-th"
+                actionListener="#{issueSupportController.onTargetMailFlag('bcc')}"
+                oncomplete="PF('dlgMailMembers').show()"
+                update="pickMembers"
+                rendered="${!empty issueController.select.get('d_o_user')}"
+                styleClass="menu-toggle commandButtonMarginLeft_05" />
+        </p:column>
+        <p:column>
+            <p:panel id="panel_bcc_d_o_users">
+                <div class="divSpanText ui-corner-all">
+                    <c:forEach var="eachBccs" items="${issueSupportController.requestMail.bccs}" >
+                        <h:outputLabel value="${eachBccs.label}" title="${eachBccs.description}" /><br />
+                    </c:forEach>
+                </div>
+            </p:panel>
+        </p:column>
+    </p:row>
+    <p:row>
+        <p:column>
+            <h:outputLabel value="#{msg['label.mail.subject']}" />
+            <font>*</font>
+        </p:column>
+        <p:column colspan="3">
+            <p:inputText
+                id="inputTextRequestMailSubject"
+                value="#{issueSupportController.requestMail.sendMail.subject}"
+                style="width: 50%">
+<!--                <f:validator validatorId="gnext.validator.RequiredValidator" />
+                <f:validator validatorId="gnext.validator.LengthValidator" />
+                <f:attribute name="max" value="100"/>
+                <f:attribute name="title" value="#{msg['label.mail.subject']}"/>-->
+            </p:inputText>
+        </p:column>
+    </p:row>
+    <p:row>
+        <p:column colspan="4">
+            <p:inputTextarea
+                id="inputTextareaRequestMailBody"
+                rows="18"
+                autoResize="false"
+                value="#{issueSupportController.requestMail.sendMail.message}"
+                styleClass="input_text_99">
+<!--                <f:validator validatorId="gnext.validator.RequiredValidator" />
+                <f:validator validatorId="gnext.validator.LengthValidator" />
+                <f:attribute name="max" value="20000"/>
+                <f:attribute name="title" value="#{msg['label.mail.comment']}"/>-->
+            </p:inputTextarea>
+        </p:column>
+    </p:row>
+    <p:row>
+        <p:column colspan="4">
+            <p:inputTextarea
+                id="inputTextareaRequestMailFooter"
+                readonly="true"
+                rows="5"
+                autoResize="false"
+                value="#{issueSupportController.requestMail.footer}"/>
+        </p:column>
+    </p:row>
+</p:panelGrid>
+</ui:composition>

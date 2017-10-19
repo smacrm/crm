@@ -1,0 +1,276 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:a="http://xmlns.jcp.org/jsf/passthrough"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <style>
+        .attachmentFinderDialog .ui-calendar input {
+            width: 70px !important
+        }
+    </style>
+    <p:panelGrid style="width: 100%;" styleClass="panelGrid_related_cases" id="panelGrid_attachments">
+        <f:facet name="header">
+            <p:row>
+                <p:column styleClass="td_minus">
+                    <p:commandLink process="@this" onsuccess="PF('attachmentDialog').show()"
+                                   onstart="start()" oncomplete="finish()"
+                                   actionListener="${issueAttachmentController.showForm(null, 0)}"
+                                   rendered="#{sec.isMaster() or sec.hasMethod('IssueAttachmentController', 'create')}"
+                                   update="@this:attachmentDialogContent"
+                                   title="${issue['label.attachment.title']}${msg['label.add']}"
+                                   styleClass="btn btn-xs btn-default">
+                        <span class="fa fa-plus-circle"></span>
+                    </p:commandLink>
+                </p:column>
+                <p:column styleClass="td_18">
+                    <h:outputLabel value="${issue['label.attachment.category']}" />
+                </p:column>
+                <p:column>
+                    <h:outputLabel value="${issue['label.attachment.name']}" />
+                </p:column>
+                <p:column styleClass="td_10">
+                    <h:outputLabel value="${issue['label.attachment.expired']}" />
+                </p:column>
+                <p:column styleClass="td_10">
+                    <h:outputLabel value="${issue['label.attachment.public']}" />
+                </p:column>
+            </p:row>
+        </f:facet>
+
+        <c:forEach var="item" items="${issueController.issue.issueAttachmentList}" varStatus="loop">
+            <p:row styleClass="panelGrid_related_cases_tr">
+                <p:column styleClass="td_minus">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-success btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                            <span class="fa fa-cog"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <p:commandLink process="@this" onsuccess="PF('attachmentDialog').show()"
+                                               onstart="start()" oncomplete="finish()"
+                                               rendered="#{sec.isMaster() or sec.hasMethod('IssueAttachmentController', 'update')}"
+                                               actionListener="${issueAttachmentController.showForm(item, loop.index)}"
+                                               value="${msg['label.update']}" />
+                            </li>
+                            <li>
+                                <p:commandLink process="@this" onstart="start()" onsuccess="finish()"
+                                               actionListener="${issueAttachmentController.delete(item, loop.index)}"
+                                               rendered="#{sec.isMaster() or sec.hasMethod('IssueAttachmentController', 'delete')}"
+                                               update="@this:panelGrid_attachments :growl" value="${msg['label.delete']}">
+                                    <p:confirm header="#{msg['label.confirm']}" message="#{msg['label.confirm.delete']}" icon="ui-icon-alert"/>
+                                </p:commandLink>
+                            </li>
+                        </ul>
+                    </div>
+                </p:column>
+                <p:column>
+                    <h:outputLabel value="${item.category.getItemViewData(localeController.locale)}" rendered="#{not empty item.category}"/>
+                    <h:outputLabel value="#{sf['label.receivecall']}" rendered="#{empty item.category}"/>
+                </p:column>
+                <p:column>
+                    <h:outputLabel value="#{item.attachment.attachmentName}" rendered="#{not empty item.attachment}"/>
+                    <h:outputLabel value="#{item.twilio.conferenceId}.mp3" rendered="#{empty item.attachment and not empty item.twilio}"/>
+                    <h:outputLabel value="#{item.uploadedFile.fileName}" rendered="#{empty item.attachment and empty item.twilio and not empty item.uploadedFile}"/>
+                </p:column>
+                <p:column styleClass="text-center">
+                    <p:selectBooleanCheckbox value="#{item.expireFlag}" disabled="true"/>
+                </p:column>
+                <p:column styleClass="text-center">
+                    <p:selectBooleanCheckbox value="#{item.shareFlag}" disabled="true"/>
+                </p:column>
+            </p:row>
+        </c:forEach>
+    </p:panelGrid>
+    <p:dialog id="attachmentDialog" widgetVar="attachmentDialog" styleClass="attachmentDialog" onShow="PF('attachmentDialog').initPosition()" 
+              header="#{issue['label.attachment.dialog']}"
+              width="500" height="170" modal="true" dynamic="true" responsive="true" resizable="false" position="center center"
+              rendered="#{sec.isMaster() or sec.hasMethod('IssueAttachmentController', 'create') or sec.hasMethod('IssueAttachmentController', 'update')}">
+        <p:outputPanel id="attachmentDialogContent">
+            <p:panelGrid styleClass="popupGrid" rendered="#{not empty issueAttachmentController.issueAttachment}">
+                <p:row>
+                    <p:column styleClass="label-field"><p:outputLabel value="#{issue['label.attachment.category']}"/></p:column>
+                    <p:column>
+                        <p:selectOneMenu value="#{issueAttachmentController.issueAttachment.category}" converter="gnext.picklist.converter.menteitem">
+                            <f:selectItem itemLabel="#{sf['label.receivecall']}" itemValue="0"/>
+                            <f:selectItems value="#{issueAttachmentController.categoryList}" var="cat" 
+                                           itemLabel="#{cat.getItemViewData(localeController.locale)}" itemValue="#{cat}"/>
+                            <p:ajax update="attachmentOutputPanelNotice, attachmentOutputPanel" partialSubmit="true" event="valueChange"/>
+                        </p:selectOneMenu>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column styleClass="label-field">
+                        <p:outputLabel value="#{issue['label.attachment.name']}"/>
+                        <p:outputPanel id="attachmentOutputPanelNotice">
+                            <h:outputText rendered="#{not empty issueAttachmentController.issueAttachment.category}" 
+                                          value="#{issue['label.attachment.file.notice']}" styleClass="text-warning" style="font-weight: normal; font-size: .8em; display: block; text-align: right"/>
+                        </p:outputPanel>
+                    </p:column>
+                    <p:column>
+                        <p:outputPanel id="attachmentOutputPanel">
+                            <p:outputPanel rendered="#{empty issueAttachmentController.issueAttachment.category}">
+                                <p:outputPanel rendered="#{not empty issueAttachmentController.issueAttachment.twilio}" styleClass="inline">
+                                    <p:link styleClass="recording-download" 
+                                            href="rest/twilio/record/#{issueAttachmentController.issueAttachment.twilio.conferenceId}"
+                                            target="_blank">
+                                        <i class="fa fa-download"></i>
+                                    </p:link>
+                                    <p:spacer width="10"/>|<p:spacer width="10"/>
+                                </p:outputPanel>
+                                <p:commandLink type="button" onclick="PF('attachmentFinderDialog').show()">
+                                    <i class="fa fa-cloud-upload"></i>
+                                </p:commandLink>
+                            </p:outputPanel>
+                            <p:outputPanel rendered="#{not empty issueAttachmentController.issueAttachment.category}">
+                                <p:fileUpload fileUploadListener="#{issueAttachmentController.fileUploadListener}" auto="true" skinSimple="true" label="${msg['label.import']}"
+                                              multiple="false" sizeLimit="3072000" allowTypes="/(\.|\/)(mp3)$/" update="@parent" styleClass="inline-block"/>
+                                <h:outputText value="#{issueAttachmentController.issueAttachment.uploadedFile.fileName}"/>
+                            </p:outputPanel>
+                        </p:outputPanel>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column styleClass="label-field"><p:outputLabel value="#{issue['label.attachment.expired']}"/></p:column>
+                    <p:column>
+                        <p:selectBooleanCheckbox value="#{issueAttachmentController.issueAttachment.expireFlag}"/>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column styleClass="label-field"><p:outputLabel value="#{issue['label.attachment.public']}"/></p:column>
+                    <p:column>
+                        <p:selectBooleanCheckbox value="#{issueAttachmentController.issueAttachment.shareFlag}"/>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column colspan="2" styleClass="text-right">
+                        <p:commandButton type="button" value="#{msg['label.cancel']}" onclick="PF('attachmentDialog').hide()"></p:commandButton>
+                        <p:commandButton actionListener="#{issueAttachmentController.insert(mode)}" update="@this:panelGrid_attachments :growl" value="#{msg['label.insert']}" 
+                                         onerror="alert('error insert')"
+                                         rendered="#{empty issueAttachmentController.currentItemIndex}"></p:commandButton>
+                        <p:commandButton actionListener="#{issueAttachmentController.update()}" value="#{msg['label.update']}"
+                                         onerror="alert('error update')"
+                                         update="@this:panelGrid_attachments :growl"
+                                         rendered="#{not empty issueAttachmentController.currentItemIndex}"></p:commandButton>
+                    </p:column>
+                </p:row>
+            </p:panelGrid>
+        </p:outputPanel>
+    </p:dialog>
+
+    <p:dialog id="attachmentFinderDialog" widgetVar="attachmentFinderDialog" styleClass="attachmentFinderDialog" onShow="PF('attachmentFinderDialog').initPosition()" header="#{issue['label.attachment.finderDialog']}"
+              width="900" height="500" modal="true" dynamic="true" responsive="true" resizable="false" position="center center" closeOnEscape="true"
+              rendered="#{sec.isMaster() or sec.hasMethod('IssueAttachmentController', 'create') or sec.hasMethod('IssueAttachmentController', 'update')}">
+        <div class="container-fluid">
+            <p:spacer height="5"/>
+            <p:outputPanel id="attachmentFinderDialogSearchForm" styleClass="form-inline">
+                <div class="form-group">
+                    <p:outputLabel value="#{issue['label.attachment.id']}"/>
+                    <p:spacer width="5"/>
+                    <p:inputText value="#{issueAttachmentController.idSearch}" style="width: 60px" maxlength="10" styleClass="input_number">
+                        <p:keyFilter regEx="/[0-9]/i" preventPaste="false"/>
+                    </p:inputText>
+                </div>
+                <p:spacer width="10"/>
+                <div class="form-group">
+                    <p:outputLabel value="#{issue['label.attachment.category']}"/>
+                    <p:spacer width="5"/>
+                    <p:selectOneMenu value="#{issueAttachmentController.categoryIdSearch}" style="vertical-align: middle; width: 120px">
+                        <f:selectItem itemValue="" itemLabel="" noSelectionOption="true"/>
+                        <f:selectItem itemValue="1" itemLabel="#{sf['label.receivecall']}"/>
+                        <f:selectItem itemValue="2" itemLabel="#{sf['label.docall']}"/>
+                    </p:selectOneMenu>
+                </div>
+                <p:spacer width="10"/>
+                <div class="form-group">
+                    <p:outputLabel value="#{issue['label.attachment.date']}"/>
+                    <p:spacer width="5"/>
+                    <p:calendar id="fromDateSearch" value="#{issueAttachmentController.fromDateSearch}" pattern="yyyy/MM/dd">
+                        <p:ajax event="dateSelect" listener="#{issueAttachmentController.onDateSelect}" update="toDateSearch" />
+                    </p:calendar>
+                    <p:spacer width="5"/>
+                    <p:calendar id="toDateSearch" value="#{issueAttachmentController.toDateSearch}" mindate="#{issueAttachmentController.fromDateSearch}" pattern="yyyy/MM/dd"/>
+                </div>
+                <p:spacer width="10"/>
+                <div class="form-group">
+                    <p:outputLabel value="#{issue['label.attachment.creator']}"/>
+                    <p:spacer width="5"/>
+                    <p:selectOneMenu value="#{issueAttachmentController.creatorIdSearch}" style="vertical-align: middle; width: 130px">
+                        <f:selectItem itemValue="" itemLabel="" noSelectionOption="true"/>
+                        <f:selectItems value="#{issueAttachmentController.creatorAvailableListSearch}" var="creator" 
+                                       itemLabel="#{creator.memberNameFirst} #{creator.memberNameLast}" itemValue="#{creator.memberLoginId}"/>
+                    </p:selectOneMenu>
+                </div>
+                <p:spacer width="10"/>
+                <div class="form-group">
+                    <p:outputLabel value="#{issue['label.attachment.caller.phone']}"/>
+                    <p:spacer width="5"/>
+                    <p:inputText value="#{issueAttachmentController.callerPhoneSearch}" style="width: 120px" maxlength="15" styleClass="input_tel">
+                        <p:keyFilter regEx="/[0-9\-]/i" preventPaste="false"/>
+                    </p:inputText>
+                </div>
+            </p:outputPanel>
+            <p:spacer height="5"/>
+            <div class="row text-center">
+                <p:commandButton id="attachmentFinderDialogSearchButton" 
+                                 value="#{msg['label.search']}" actionListener="#{issueAttachmentController.search()}" 
+                                 icon="fa fa-search" styleClass="btn-search" update="@this:attachmentFinderDialogDatatable"
+                                 onstart="$('#tabViewIssue\\:attachmentFinderDialogDatatable').block({message: ''})"
+                                 onsuccess="$('#tabViewIssue\\:attachmentFinderDialogDatatable').unblock()"/>
+                <p:commandButton value="#{msg['label.search.clear']}" update="attachmentFinderDialogSearchForm" process="@this" icon="fa fa-eraser" styleClass="btn-search">
+                    <p:resetInput target="attachmentFinderDialogSearchForm" />
+                </p:commandButton>
+            </div>
+            <p:spacer height="10"/>
+            <div class="row text-center">
+                <c:set var="rowsPerPageTemplate" value="#{configController.getConfig('DATATABLE_ROW_PER_PAGE')}" scope="session" />
+                <c:set var="rows" value="#{configController.getConfig('DATATABLE_DEFAULT_PER_PAGE')}" scope="session" />
+                <p:dataTable id="attachmentFinderDialogDatatable" widgetVar="attachmentFinderDialogDatatable" 
+                             value="#{issueAttachmentController.list}" var="item" scrollable="true" scrollHeight="303"
+                             lazy="true" paginator="true" paginatorTemplate="#{layout.paginatorTemplate}" currentPageReportTemplate="#{layout.currentPageReportTemplate}"
+                             rowsPerPageTemplate="#{rowsPerPageTemplate}" rows="#{rows}" pageLinks="5" rowHover="true" emptyMessage="#{msg['label.data.empty']}">
+                    <p:column headerText="#{issue['label.attachment.id']}">                
+                        <p:commandButton value="#{item.twilioId}" icon="fa fa-check" 
+                                         actionListener="#{issueAttachmentController.issueAttachment.setTwilio(item)}" 
+                                         process="@this" update="@form:tabViewIssue:attachmentDialog:attachmentOutputPanel"
+                                         oncomplete="PF('attachmentFinderDialog').hide()"/>
+                    </p:column>
+                    <p:column headerText="#{issue['label.issue_view_code']}">
+                        <h:outputText value="#{item.issue.issueViewCode}"/>
+                    </p:column>
+                    <p:column headerText="#{issue['label.attachment.date']}">                
+                        <h:outputText value="#{item.receivedTime}">
+                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="#{issue['label.attachment.timerange']}">                
+                        <h:outputText value="#{item.callStartTime}" rendered="#{not empty item.callStartTime}">
+                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                        </h:outputText>
+                        <h:outputText value="#{item.receivedTime}" rendered="#{empty item.callStartTime}">
+                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                        </h:outputText>
+                        ~ 
+                        <h:outputText value="#{item.callFinishTime}">
+                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="#{issue['label.attachment.time']}">                
+                        <h:outputText value="#{item.calledTime}"/>
+                    </p:column>
+                    <p:column headerText="#{issue['label.attachment.creator']}">                
+                        <h:outputText value="#{issueAttachmentController.getCreatorName(item.fullAgentId)}"/>
+                    </p:column>
+                    <p:column headerText="#{issue['label.attachment.caller.phone']}">                
+                        <h:outputText value="#{item.from}"/>
+                    </p:column>
+                    <p:column headerText="#{issue['label.attachment.receiver.phone']}">                
+                        <h:outputText value="#{item.to}"/>
+                    </p:column>
+                </p:dataTable>
+            </div>
+        </div>
+    </p:dialog>
+</ui:composition>

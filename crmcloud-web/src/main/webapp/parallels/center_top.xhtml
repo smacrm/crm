@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html">
+    <p:commandButton action="#{loginController.doLogout}" ajax="false" icon="fa fa-fw fa-sign-out" styleClass="pull-right"/>
+    <p:selectOneMenu value="#{localeController.locale}" styleClass="form-control" onchange="submit()" 
+                     valueChangeListener="#{localeController.localeChanged}">
+        <f:selectItems value="#{localeController.locales}" />
+        
+        <!-- Test lai reload form -->
+<!--        <p:ajax global="false" listener="#{localeController.localeChanged}" />-->
+    </p:selectOneMenu>
+<!--    <p:themeSwitcher effectSpeed="normal" effect="fade" style="width:165px" id="themeSwitcher" var="t" value="#{layout.selectedTheme}">
+        <f:selectItem itemLabel="Choose Theme" itemValue="" />
+        <f:selectItems value="#{layout.themes}" />
+        <p:ajax global="false" listener="#{layout.saveTheme}" />
+    </p:themeSwitcher>-->
+
+
+ <script type="text/javascript">
+ var recognition;
+var nowRecognition = false;
+function start () {
+    recognition = new webkitSpeechRecognition();
+    recognition.lang = "ja-JP";//document.querySelector('#select1').value; // en-US or ja-JP
+    recognition.onresult = function (e) {
+        if (e.results.length > 0) {
+            var value = e.results[0][0].transcript;
+            alert(value);
+        }
+    };
+    recognition.start();
+    nowRecognition = true;
+};
+function stop () {
+    recognition.stop();
+    nowRecognition = false;
+}
+ </script>
+
+    <p:inputTextarea id="area1" ></p:inputTextarea>
+    <p:commandButton title="#{msg['label.trash']}" icon="fa fa-microphone" onclick="start()" ajax="true" id="speechApi" />
+
+</ui:composition>
+

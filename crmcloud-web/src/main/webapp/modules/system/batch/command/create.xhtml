@@ -1,0 +1,99 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <div id="pageTitle">#{quartzBundle['label.command.header']} #{msg['symbol.paren.left']}#{quartzBundle['label.command.header.create']}#{msg['symbol.paren.right']}</div>
+    <h:form id="frmCommand">
+        <h:panelGrid width="100%" styleClass="page-header">
+            <f:facet name="header">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h1>#{quartzBundle['label.command.header']}<small>#{quartzBundle['label.command.header.create']}</small></h1>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <p:commandButton value="#{msg['label.back']}" icon="fa fa-chevron-circle-left" title="#{msg['label.back']}" 
+                                         actionListener="#{commandController.load}" process="@this" update="mainContent"
+                                         onstart="start()" onsuccess="finish()">
+                            <p:confirm header="#{msg['label.confirm']}" message="#{msg['label.message.confirm.back']}" icon="ui-icon-alert"/>
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+                        <p:commandButton value="#{msg['label.save']}" icon="fa fa-check-circle" title="#{msg['label.save']}"
+                                         actionListener="#{commandController.save}"
+                                         rendered="${sec.hasMethod('CommandController', 'create')}"
+                                         update="mainContent :growl"
+                                         onstart="start()" onsuccess="finish()">
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+                    </div>
+                </div>
+            </f:facet>
+        </h:panelGrid>
+        <div class="box">
+            <div class="box-body">
+                <p:panelGrid styleClass="crmcloud-panelgrid">
+                    <p:row rendered="#{sec.master}">
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{quartzBundle['label.command.company']}" styleClass="required"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:selectOneMenu value="#{commandController.command.companyId}" filter="true" filterMatchMode="startsWith">
+                                <f:selectItems value="#{commandController.companys}" var="c" itemValue="#{c.companyId}" itemLabel="#{c.companyName}"/>
+                            </p:selectOneMenu>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{quartzBundle['label.command.type']}" styleClass="required"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:selectOneMenu value="#{commandController.command.commandType}" filter="true" filterMatchMode="startsWith">
+                                <p:ajax event="change" listener="#{commandController.commandTypeSelectionChanged}" update="dynamicContentValue"/>
+                                <f:selectItems value="#{commandController.commandTypes}" var="type" itemValue="#{type.id}" itemLabel="#{type.name}"/>
+                            </p:selectOneMenu>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{quartzBundle['label.command.name']}" styleClass="required"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:inputText value="#{commandController.command.commandName}" styleClass="input_text" maxlength="100">
+                                <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:attribute name="max" value="100"/>
+                                <f:attribute name="title" value="name"/>
+                            </p:inputText>
+                        </p:column>
+                    </p:row>
+                </p:panelGrid>
+                <p:panelGrid styleClass="crmcloud-panelgrid" id="dynamicContentValue">
+                    <c:choose>
+                        <c:when test="#{commandController.isStandardScreen()}">
+                            <ui:include src="/modules/system/batch/command/standard/create.xhtml"/>
+                        </c:when>
+                        <c:when test="#{commandController.isReadEmailScreen()}">
+                            <ui:include src="/modules/system/batch/command/mail/read/create.xhtml"/>
+                        </c:when>
+                    </c:choose>
+                </p:panelGrid>
+                <p:panelGrid styleClass="crmcloud-panelgrid">
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{msg['label.memo']}"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:inputTextarea value="#{commandController.command.commandMemo}" styleClass="input_memo" maxlength="500">
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:attribute name="max" value="500"/>
+                                <f:attribute name="title" value="#{msg['label.memo']}"/>
+                            </p:inputTextarea>
+                        </p:column>
+                    </p:row>
+                </p:panelGrid>
+            </div>
+        </div>
+    </h:form>
+</ui:composition>

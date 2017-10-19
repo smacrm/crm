@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <div id="pageTitle">#{quartzBundle['label.command.header']} #{msg['symbol.paren.left']}#{msg['label.show']}#{msg['symbol.paren.right']}</div>
+    <h:form id="frmCommand">
+        
+        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" id="cfmCommandDel">
+            <p:commandButton value="#{msg['label.yes']}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+            <p:commandButton value="#{msg['label.no']}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+        </p:confirmDialog>
+        
+        <p:confirmDialog message="#{msg['label.dialog.confirm']}" header="#{msg['label.dialog.header']}" widgetVar="confirmDeleteCommand" id="confirmDeleteCommand">  
+            <p:commandButton value="#{msg['label.dialog.yes']}" onclick="PF('confirmDeleteCommand').hide();" update="mainContent :growl" actionListener="#{commandController.delete}" title="accept" icon="ui-icon-check">
+                <f:param name="commandId" value="#{commandController.selectedCommandId}"/>
+                <f:param name="force" value="true"/>
+            </p:commandButton>
+            <p:commandButton value="#{msg['label.dialog.no']}" onclick="PF('confirmDeleteCommand').hide();" type="button" title="close" icon="ui-icon-close"/>   
+        </p:confirmDialog>
+        
+        <h:panelGrid width="100%" styleClass="page-header">
+            <f:facet name="header">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h1>#{quartzBundle['label.command.header']}<small>#{msg['label.show']}</small></h1>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <p:commandButton value="#{msg['label.back']}" icon="fa fa-chevron-circle-left" title="#{msg['label.back']}" 
+                                         actionListener="#{commandController.load}" process="@this" update="mainContent"
+                                         onstart="start()" onsuccess="finish()">
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+                        <p:commandButton value="#{msg['label.delete']}" title="#{msg['label.delete']}" icon="fa fa-trash" id="btnDelete"
+                                         actionListener="#{commandController.onChangeSelectCommandId}" update="mainContent"
+                                         oncomplete="PF('confirmDeleteCommand').show();"
+                                         rendered="${sec.hasMethod('CommandController', 'delete')}">
+                            <f:param name="commandId" value="#{commandController.command.commandId}"/>
+                        </p:commandButton>
+                        <p:commandButton id="btnEdit" value="#{msg['label.edit']}" icon="fa fa-pencil fa-fw" title="#{msg['label.edit']}" 
+                                         actionListener="#{commandController.show}" update="mainContent" 
+                                         rendered="${sec.hasMethod('CommandController', 'update')}"
+                                         onstart="start()" onsuccess="finish()">
+                            <f:param name="showType" value="edit"/>
+                            <f:param name="commandId" value="#{commandController.command.commandId}"/>
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+                    </div>
+                </div>
+            </f:facet>
+        </h:panelGrid>
+        <div class="box">
+            <div class="box-body">
+                <p:panelGrid styleClass="crmcloud-panelgrid">
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{quartzBundle['label.command.company']}" styleClass="required"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:outputLabel value="#{commandController.command.company.companyName}"/>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{quartzBundle['label.command.type']}" styleClass="required"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:outputLabel value="#{commandController.getCommandTypeLabel(commandController.command.commandType)}"/>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{quartzBundle['label.command.name']}" styleClass="required"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:outputLabel value="#{commandController.command.commandName}"/>
+                        </p:column>
+                    </p:row>
+                </p:panelGrid>
+                <p:panelGrid styleClass="crmcloud-panelgrid" id="dynamicContentValue">
+                    <c:choose>
+                        <c:when test="#{commandController.isStandardScreen()}">
+                            <ui:include src="/modules/system/batch/command/standard/view.xhtml"/>
+                        </c:when>
+                        <c:when test="#{commandController.isReadEmailScreen()}">
+                            <ui:include src="/modules/system/batch/command/mail/read/view.xhtml"/>
+                        </c:when>
+                    </c:choose>
+                </p:panelGrid>
+                <p:panelGrid styleClass="crmcloud-panelgrid">
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{msg['label.memo']}"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:outputLabel value="#{commandController.command.commandMemo}"/>
+                        </p:column>
+                    </p:row>
+                </p:panelGrid>
+            </div>
+        </div>
+    </h:form>
+</ui:composition>
