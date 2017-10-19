@@ -41,7 +41,7 @@ public class MenteItemServiceImpl extends AbstractService<MenteItem> implements 
         EntityManager em_slave = null;
         try {
             em_slave = JPAUtils.getSlaveEntityManager(tenantHolder);
-            String sql = "SELECT m_item FROM MenteItem m_item INNER JOIN m_item.langs m_option ON m_item.itemId = m_option.menteOptionDataValuePK.itemId WHERE m_item.itemName = :itemName AND m_item.itemDeleted=0 ";
+            String sql = "SELECT m_item FROM MenteItem m_item INNER JOIN m_item.langs m_option ON m_item.itemId = m_option.menteOptionDataValuePK.itemId WHERE m_item.itemName = :itemName AND m_item.itemDeleted = :itemDeleted ";
             
             Integer level = 0;
             if(itemName.startsWith("issue_proposal_id") || itemName.startsWith("issue_product_id")){
@@ -55,7 +55,11 @@ public class MenteItemServiceImpl extends AbstractService<MenteItem> implements 
                 q.setParameter("level", level);
                 itemName = itemName.substring(0, itemName.lastIndexOf("_"));
             }
-            q.setParameter("itemName", itemName).setParameter("language",language).setParameter("itemData",itemData).setParameter("companyId", companyId);
+            q.setParameter("itemName", itemName
+            ).setParameter("itemDeleted", false
+            ).setParameter("language", language
+            ).setParameter("itemData", itemData
+            ).setParameter("companyId", companyId);
             
             List<MenteItem> result = q.getResultList();
             if(result != null & ! result.isEmpty()) return result;

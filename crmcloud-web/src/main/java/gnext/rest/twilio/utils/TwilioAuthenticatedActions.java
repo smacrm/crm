@@ -53,8 +53,7 @@ public class TwilioAuthenticatedActions implements Serializable{
         TwilioRestClient restClient = getTwilioRestClient(accountSid, accountToken);
         List<WaitingCall> validQueueList = new ArrayList<>();
         
-        ResourceSet<Queue> queues = Queue.reader()
-                .read(restClient);
+        ResourceSet<Queue> queues = Queue.reader().read(restClient);
         for (Queue queue : queues) {
             if(listContaints.contains(queue.getFriendlyName())){
                 WaitingCall wc =  new WaitingCall();
@@ -62,8 +61,7 @@ public class TwilioAuthenticatedActions implements Serializable{
                     wc.setPrivateCall(true);
                 }
                 wc.setSize(queue.getCurrentSize());
-                ResourceSet<Member> memberList = Member.reader(queue.getSid())
-                        .read(restClient);
+                ResourceSet<Member> memberList = Member.reader(queue.getSid()).read(restClient);
                 for(Member member: memberList){
                     Call call = Call.fetcher(member.getCallSid()).fetch(restClient);
                     String from = call.getFrom();

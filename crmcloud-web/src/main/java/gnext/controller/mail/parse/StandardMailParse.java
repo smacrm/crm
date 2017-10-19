@@ -63,6 +63,10 @@ public class StandardMailParse {
     public Issue parse(String content, List<MailExplode> explodes) throws Exception {
         ServiceResolved serviceResolved = JsfUtil.getManagedBean("serviceResolved", ServiceResolved.class);
         ProjectService projectService = serviceResolved.getProjectService();
+        
+        // gọi hàm phân cắt mail(chỉ dùng để debug-testing) sẽ comment lại sau khi hoàn thành.
+//        parseMailContent2Issue("daind", content, null, true);
+        
         return parse(mapping(content, explodes), new ArrayList<>(), projectService, new HashMap<>());
     }
     

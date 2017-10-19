@@ -40,12 +40,13 @@ public interface IssueCustomerService extends EntityService<Customer> {
     /**
      * Tim kiem cac khach hang trung ten & dia chi, phuc vu cho viec import, tim kiem nhung khach hang tuong tu nhau
      * @param companyId
+     * @param custCode
      * @param custFullHira
      * @param custAddress
      * @param custCity
      * @return 
      */
-    public List<Customer> findNearSameCustomer(Integer companyId, String custFullHira, String custAddress, String custCity);
+    public List<Customer> findNearSameCustomer(Integer companyId, String custCode, String custFullHira, String custFullKana, String custAddress, String custCity);
     
     /**
      * Remove customer update cust_deleted = 1

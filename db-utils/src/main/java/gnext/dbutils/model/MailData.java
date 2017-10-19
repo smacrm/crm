@@ -15,6 +15,9 @@ import java.util.Date;
  * @author daind
  */
 @Table(name = "crm_mail_data")
+// **************************************************
+// ALTER TABLE `crmcloud`.`crm_mail_data` ADD COLUMN `mail_data_body_plain_text` LONGTEXT NULL AFTER `updated_time`;
+// **************************************************
 public class MailData implements Serializable {
     private static final long serialVersionUID = 2069557919610978198L;
 
@@ -71,6 +74,9 @@ public class MailData implements Serializable {
     
     @Column(name = "mail_data_body")
     private String mail_data_body;
+    
+    @Column(name = "mail_data_body_plain_text")
+    private String mail_data_body_plain_text;
     
     @Column(name = "mail_data_attach_display")
     private String mail_data_attach_display;
@@ -275,6 +281,14 @@ public class MailData implements Serializable {
 
     public void setMail_data_body(String mail_data_body) {
         this.mail_data_body = mail_data_body;
+    }
+
+    public String getMail_data_body_plain_text() {
+        return mail_data_body_plain_text;
+    }
+
+    public void setMail_data_body_plain_text(String mail_data_body_plain_text) {
+        this.mail_data_body_plain_text = mail_data_body_plain_text;
     }
 
     public String getMail_data_attach_display() {

@@ -27,6 +27,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Entity
 @Table(name = "crm_mail_data")
 @XmlRootElement
+// **************************************************
+// ALTER TABLE `crm_mail_data` ADD COLUMN `mail_data_body_plain_text` LONGTEXT NULL;
+// **************************************************
 public class MailData  extends BaseEntity {
     private static final long serialVersionUID = -793594377357678694L;
     public static final String[] SEARCH_FIELDS = new String[]{ "mail_data_subject", "mail_data_from", "mail_data_body"};
@@ -109,6 +112,12 @@ public class MailData  extends BaseEntity {
     @Column(name = "mail_data_body")
     private String mailDataBody;
     
+    @Basic(optional = false)
+    @NotNull
+    @Lob
+    @Column(name = "mail_data_body_plain_text")
+    private String mailDataBodyPlainText;
+    
     @Lob
     @Column(name = "mail_data_attach_display")
     private String mailDataAttachDisplay;
@@ -119,8 +128,7 @@ public class MailData  extends BaseEntity {
     @Column(name = "mail_data_attach_file_type")
     private String mailDataAttachFileType;
     
-    @JoinColumn(name = "mail_data_person_id", referencedColumnName = "mail_person_id",
-            nullable = true, insertable = true, updatable = true)
+    @JoinColumn(name = "mail_data_person_id", referencedColumnName = "mail_person_id", nullable = true, insertable = true, updatable = true)
     @ManyToOne(optional = false)
     private MailPerson mailPerson; // người phụ trách issue liên quan tới mail này.
     
@@ -185,22 +193,22 @@ public class MailData  extends BaseEntity {
     private Company company;
     
     public MailData() { }
-    public MailData(Integer mailDataId) { this.mailDataId = mailDataId; }
-    public MailData(Integer mailDataId, String mailDataUniqueId,
-            String mailDataSubject, String mailDataFrom, String mailDataTo,
-            Date mailDataDatetime, int mailDataSize, String mailDataBody,
-            int creatorId, Date createdTime) {
-        this.mailDataId = mailDataId;
-        this.mailDataUniqueId = mailDataUniqueId;
-        this.mailDataSubject = mailDataSubject;
-        this.mailDataFrom = mailDataFrom;
-        this.mailDataTo = mailDataTo;
-        this.mailDataDatetime = mailDataDatetime;
-        this.mailDataSize = mailDataSize;
-        this.mailDataBody = mailDataBody;
-        this.creatorId = creatorId;
-        this.createdTime = createdTime;
-    }
+//    public MailData(Integer mailDataId) { this.mailDataId = mailDataId; }
+//    public MailData(Integer mailDataId, String mailDataUniqueId,
+//            String mailDataSubject, String mailDataFrom, String mailDataTo,
+//            Date mailDataDatetime, int mailDataSize, String mailDataBody,
+//            int creatorId, Date createdTime) {
+//        this.mailDataId = mailDataId;
+//        this.mailDataUniqueId = mailDataUniqueId;
+//        this.mailDataSubject = mailDataSubject;
+//        this.mailDataFrom = mailDataFrom;
+//        this.mailDataTo = mailDataTo;
+//        this.mailDataDatetime = mailDataDatetime;
+//        this.mailDataSize = mailDataSize;
+//        this.mailDataBody = mailDataBody;
+//        this.creatorId = creatorId;
+//        this.createdTime = createdTime;
+//    }
 
     public Integer getMailDataId() {
         return mailDataId;
@@ -336,6 +344,14 @@ public class MailData  extends BaseEntity {
 
     public void setMailDataBody(String mailDataBody) {
         this.mailDataBody = mailDataBody;
+    }
+
+    public String getMailDataBodyPlainText() {
+        return mailDataBodyPlainText;
+    }
+
+    public void setMailDataBodyPlainText(String mailDataBodyPlainText) {
+        this.mailDataBodyPlainText = mailDataBodyPlainText;
     }
 
     public String getMailDataAttachDisplay() {

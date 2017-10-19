@@ -535,6 +535,10 @@ public final class MailClient {
         mailData.setMail_data_datetime(sentDate);
         mailData.setMail_data_size(dataSize);
         mailData.setMail_data_body(body.getContent());
+        
+        // lấy plain-text tư email phục vụ cho việc phân cắt mail.
+        mailData.setMail_data_body_plain_text(body.getPlainContent());
+        
         mailData.setMail_data_delete_flag(0);
         mailData.setMail_data_is_read(false);
         mailData.setMail_data_reply_return_path(returnPath);

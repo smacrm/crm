@@ -101,16 +101,36 @@ public class IssueCustomerServiceImpl extends AbstractService<Customer> implemen
     }
 
     @Override
-    public List<Customer> findNearSameCustomer(Integer companyId, String custFullHira, String custAddress, String custCity) {
+    public List<Customer> findNearSameCustomer(Integer companyId, String custCode, String custFullHira, String custFullKana, String custAddress, String custCity) {
         EntityManager em_slave = null;
         try {
-            em_slave = JPAUtils.getSlaveEntityManager(tenantHolder);
-            
-            Query q = em_slave.createQuery("SELECT DISTINCT c FROM Customer c, c.custCity city WHERE c.company.companyId = :companyId AND (CONCAT(c.custFirstHira, c.custLastHira) = :custFullHira OR CONCAt(c.custFirstKana, c.custLastKana) = :custFullHira) AND (c.custAddress = :custAddress OR c.custAddressKana = :custAddress) AND city.prefectureName = :custCity");
+            StringBuilder sql = new StringBuilder();
+            sql.append(" SELECT DISTINCT c FROM Customer c, c.custCity city ");
+            sql.append(" WHERE c.company.companyId = :companyId ");
+            if(!StringUtils.isEmpty(custCode)) {
+                sql.append(" AND (c.custCode = :custCode ");
+                sql.append(" AND (CONCAT(c.custFirstHira, c.custLastHira) = :custFullHira ");
+                if(!StringUtils.isEmpty(custFullKana)) sql.append(" OR CONCAt(c.custFirstKana, c.custLastKana) = :custFullKana ");
+                sql.append(" ) ");
+                sql.append(" ) OR ( ");
+            } else {
+                sql.append(" AND ");
+            }
+            sql.append(" (CONCAT(c.custFirstHira, c.custLastHira) = :custFullHira ");
+            if(!StringUtils.isEmpty(custFullKana)) sql.append(" OR CONCAt(c.custFirstKana, c.custLastKana) = :custFullKana ");
+            sql.append(" ) ");
+            sql.append(" AND (c.custAddress = :custAddress OR c.custAddressKana = :custAddress) ");
+            sql.append(" AND city.prefectureName = :custCity ");
+            if(!StringUtils.isEmpty(custCode)) sql.append(" ) ");
+
+            em_slave = JPAUtils.getSlaveEntityManager(tenantHolder);            
+            Query q = em_slave.createQuery(sql.toString());
+            q.setParameter("companyId", companyId);
+            if(!StringUtils.isEmpty(custCode)) q.setParameter("custCode", custCode);
             q.setParameter("custFullHira", custFullHira);
+            if(!StringUtils.isEmpty(custFullKana)) q.setParameter("custFullKana", custFullKana);
             q.setParameter("custAddress", custAddress);
             q.setParameter("custCity", custCity);
-            q.setParameter("companyId", companyId);
 
             return q.getResultList();
         } catch (Exception e) {

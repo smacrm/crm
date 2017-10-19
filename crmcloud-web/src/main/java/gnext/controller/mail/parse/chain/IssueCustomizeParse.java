@@ -11,6 +11,7 @@ import gnext.model.authority.UserModel;
 import gnext.rest.customize.bean.KeyValueBean;
 import gnext.service.customize.AutoFormItemService;
 import gnext.util.JsfUtil;
+import gnext.util.StringUtil;
 import gnext.utils.InterfaceUtil.FIELDS;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +53,6 @@ public class IssueCustomizeParse implements MailParse {
                 Integer itemId = 0;
                 if(NumberUtils.isNumber(strItemId)) itemId = Integer.parseInt(strItemId);
                 if(itemId > 0 && v != null && !StringUtils.isEmpty(v)){
-                    
                     issue.getCustomizeDataMapping().put(itemId, getItemValueKeyByLabel(itemId, v));
                 }
             }
@@ -62,7 +62,7 @@ public class IssueCustomizeParse implements MailParse {
     private String getItemValueKeyByLabel(Integer itemId, String label){
         if(isLogin == null) return StringUtils.EMPTY;
         SelectItem si = autoFormItemService.getItemGlobal(isLogin.getCompanyId(), itemId, "ja");
-        if(si != null){
+        if(si != null && !StringUtil.isNullOrEmpty(si.getLabel())){
             try{
                 List<LinkedTreeMap> defaultValues = new Gson().fromJson(si.getLabel(), List.class);
                 for(LinkedTreeMap kv : defaultValues){

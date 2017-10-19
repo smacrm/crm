@@ -17,6 +17,7 @@ import java.util.Calendar;
 import javax.mail.Multipart;
 import javax.mail.Part;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -79,9 +80,12 @@ public class AttachmentUtil {
         String ct = part.getContentType().toLowerCase();
         if(ct.contains(TEXT_HTML)) {
             String html = String.valueOf(part.getContent().toString());
-            body.setHtml(html);
+            if(!StringUtils.isEmpty(html))
+                body.setHtml(html);
         } else if(ct.contains(TEXT_PLAIN)) {
-            body.setText(part.getContent().toString());
+            String plain_text = part.getContent().toString();
+            if(!StringUtils.isEmpty(plain_text))
+                body.setText(plain_text);
         }
     }
 }

@@ -26,6 +26,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 /**
  *
@@ -54,7 +55,11 @@ public class Mail2IssueController extends AbstractController<MailDataModel> {
                 select = issueController.getSelect();
             }
             
-            Issue issue =  new StandardMailParse().parse(_md.getMailDataBody(), explodes);
+            String content = _md.getMailDataBodyPlainText();
+            if(StringUtils.isEmpty(content))
+                content = _md.getMailDataBody();
+            
+            Issue issue =  new StandardMailParse().parse(content, explodes);
             issue.setMailData(_md);
             issueController.createIssueEmail(issue);
         } catch (Exception e) {

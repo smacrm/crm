@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.util.StringUtils;
@@ -88,7 +89,7 @@ public class MenteItemValueParse implements MailParse, MailCustParse {
         lang.setUpdatedTime(new Date());
         lang.setMenteItem(item);
         
-        item.getLangs().add(lang);        
+        item.getLangs().add(lang);      
         return item;
     }
     
@@ -102,6 +103,18 @@ public class MenteItemValueParse implements MailParse, MailCustParse {
             }
         }
         return null;
+    }
+
+    private Integer getMaxList(Issue issue, MenteItem inItem){
+        int idx = 0;
+        for(MenteItem item : issue.getIssueInfoList().get(0).getMenteItem()){
+            if(item.getItemName().equals(inItem.getItemName())
+                    && (Objects.equals(item.getItemLevel(), inItem.getItemLevel()))
+                    && item.getItemDeleted() == EXISTS){
+                idx++;
+            }
+        }
+        return idx;
     }
     
     private boolean doParseMenteItemValue(Issue issue,String lang, String itemData, String itemName, Integer companyId, Map<String, String> mappings) {
@@ -117,6 +130,7 @@ public class MenteItemValueParse implements MailParse, MailCustParse {
     }
     
     private void processObject(Issue issue, MenteItem item, Map<String, String> mappings){
+        item.setItemOrder(getMaxList(issue, item));
         switch(item.getItemName()){
             case "issue_receive_id":
                 issue.setIssueReceiveId(item);

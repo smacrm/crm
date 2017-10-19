@@ -19,8 +19,17 @@ public class MailBody implements Serializable {
     @Getter @Setter private String text;
     @Getter @Setter private String html;
     
+    /**
+     * trả về nội dung mail, nếu không có html thì lấy plain-text.
+     * @return 
+     */
     public String getContent() {
         if(!StringUtils.isEmpty(this.html)) return this.html;
         return this.text;
+    }
+    
+    public String getPlainContent() {
+        if(!StringUtils.isEmpty(this.text)) return this.text;
+        return StringUtils.EMPTY;
     }
 }
