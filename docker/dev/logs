@@ -1,7 +1,0 @@
-#!/bin/bash
-
-if [ -f .pid ]; then
-	docker logs `cat .pid`
-else
-	echo "CRMCloud WEB is not running!"
-fi
