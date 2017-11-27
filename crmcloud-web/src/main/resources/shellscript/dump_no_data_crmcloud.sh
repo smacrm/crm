@@ -1,0 +1,1 @@
+mysqldump --routines --no-data --opt --user=root --password=123456 --host=127.0.0.1 --port=3306 crmcloud > "/mnt/script/daind5.sql"

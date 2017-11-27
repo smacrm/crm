@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:composition>
+        <c:set var="baseInfoList" value="#{issueController.issue.issueInfoList}"/>
+        <c:set var="display_max_customer" value="3" />
+        <c:forEach var="baseInfo" items="#{baseInfoList}" varStatus="tabIndex" begin="0" end="#{display_max_customer}">
+            <p:tab title="${issue['label.tab_base_info']}" id="tabViewIssueBase">
+                <p:panelGrid style="width: 100%;" styleClass="panelGrid_td_line_height ui-panelgrid-color">
+                    <p:row>
+                        <p:column styleClass="td_15">
+                            <h:outputLabel value="${issue['label.issue_proposal_name']}" />
+                        </p:column>
+                        <p:column colspan="4">
+                            <h:outputLabel value="${issueController.issue.issueInfoList.get(tabIndex.index).getIssueLinkedMenteName('issue_proposal_id', localeController.locale)}" styleClass="font_weight_normal" />
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column><h:outputLabel value="${issue['label.issue_keyword_name']}" /></p:column>
+                        <p:column colspan="4" style="white-space: normal !important;word-break: break-word !important;">
+                            <h:outputLabel value="${issueController.issue.issueInfoList.get(tabIndex.index).getIssueLinkedMenteName('issue_keyword_id', localeController.locale)}" styleClass="font_weight_normal" />
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column><h:outputLabel value="${issue['label.issue_product_name']}" /></p:column>
+                        <p:column colspan="4">
+                            <h:outputLabel value="${issueController.issue.issueInfoList.get(tabIndex.index).getIssueProductName(localeController.locale)}" styleClass="font_weight_normal" />
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column><h:outputLabel value="${issue['label.issue_product_memo']}" /></p:column>
+                        <p:column colspan="4">
+                            <p:inputTextarea
+                                rows="3"
+                                autoResize="false"
+                                readonly="true"
+                                value="${issueController.issue.issueInfoList.get(tabIndex.index).issueProductMemo}"
+                                style="width: 100%"
+                                styleClass="font_weight_normal inputTextareaNotBorder issueContentAskId" />
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column>
+                            <h:outputLabel value="${issue['label.issue_content_ask']}" />
+                        </p:column>
+                        <p:column colspan="4">
+                            <p:inputTextarea
+                                rows="3"
+                                autoResize="false"
+                                readonly="true"
+                                value="${issueController.issue.issueInfoList.get(tabIndex.index).issueContentAsk}"
+                                style="width: 100%"
+                                styleClass="font_weight_normal inputTextareaNotBorder issueContentAskId" />
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column><h:outputLabel value="${issue['label.issue_risk_sensor']}" /></p:column>
+                        <p:column style="width: 5em;">
+                            <h:outputLabel value="${issue['label.issue_within_one_month']}" styleClass="font_weight_normal" />
+                        </p:column>
+                        <p:column style="text-align: left; line-height: 31px !important">
+                            <h:outputText value="#{issueController.issue.riskSensorOneMonth}#{issue['label.count']}" rendered="#{!empty issueController.issue.riskSensorOneMonth}"/>
+                            <h:outputFormat rendered="#{!empty issueController.issue.riskSensorOneMonth and issueController.issue.riskSensorOneMonth gt 0}">
+                                <p:spacer width="5"/>
+                                <p:commandButton value="${issue['label.btn.ref']}" oncomplete="PF('dlgRiskSensor').show()" 
+                                                 actionListener="#{issueController.showRiskSensor(issueController.issue.riskSensorOneMonthList)}"
+                                                 update="dlgRiskSensor" onstart="start()" onsuccess="finish()"/>
+                            </h:outputFormat>
+                        </p:column>
+                        <p:column style="width: 5em;">
+                            <h:outputLabel value="${issue['label.issue_within_three_month']}" styleClass="font_weight_normal" />
+                        </p:column>
+                        <p:column style="text-align: left; line-height: 31px !important">
+                            <h:outputText value="#{issueController.issue.riskSensorThreeMonth}#{issue['label.count']}" rendered="#{!empty issueController.issue.riskSensorThreeMonth}"/>
+                            <h:outputFormat rendered="#{!empty issueController.issue.riskSensorThreeMonth and issueController.issue.riskSensorThreeMonth gt 0}">
+                                <p:spacer width="5"/>
+                                <p:commandButton value="${issue['label.btn.ref']}" oncomplete="PF('dlgRiskSensor').show()" 
+                                                 actionListener="#{issueController.showRiskSensor(issueController.issue.riskSensorThreeMonthList)}"
+                                                 update="dlgRiskSensor" onstart="start()" onsuccess="finish()"/>
+                            </h:outputFormat>
+                        </p:column>
+                    </p:row>
+                </p:panelGrid>
+            </p:tab>
+        </c:forEach>
+    </ui:composition>
+</html>

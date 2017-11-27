@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:a="http://xmlns.jcp.org/jsf/passthrough"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <li class="search dropdown">
+        <div class="inline">
+            <h:commandLink styleClass="quick-search-action hide" target="_blank" action="#{issueController.show(quickSearchController.matchIssueId)}"/>
+            <p:inputText styleClass="hide quick-search-match-id" value="#{quickSearchController.matchIssueId}"/>
+            <p:inputText autocomplete="off" styleClass="form-control txt-quick-search input_number" value="#{quickSearchController.searchKey}" a:placeholder="#{issue['label.search.issue.code']}" maxlength="11">
+                <p:keyFilter regEx="/[0-9]/i" preventPaste="false"/>
+            </p:inputText>
+        </div>
+        <a href="#" title="#{issue['label.search.issue.code']}" class="dropdown-toggle" data-toggle="dropdown">
+            <i class="fa fa-search"></i>
+        </a>
+        <div class="dropdown-menu suggest-issue-list">
+            <ul class="list-group"></ul>
+        </div>
+    </li>
+
+</ui:composition>

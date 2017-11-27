@@ -1,0 +1,15 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <ui:composition>
+        <h:outputFormat rendered="#{state['class'].simpleName eq 'Boolean'}">
+            <h:outputText value="#{msg['label.state.deleted']}" rendered="#{state!=null and state}" styleClass="label label-warning"/>
+            <h:outputText value="#{msg['label.state.using']}" rendered="#{state==null or not state}" styleClass="label label-success"/>
+        </h:outputFormat>
+        <h:outputFormat rendered="#{state['class'].simpleName eq 'Short'}">
+            <h:outputText value="#{msg['label.state.deleted']}" rendered="#{state!=null and state!=0}" styleClass="label label-warning"/>
+            <h:outputText value="#{msg['label.state.using']}" rendered="#{state==null or state==0}" styleClass="label label-success"/>
+        </h:outputFormat>
+    </ui:composition>
+</html>

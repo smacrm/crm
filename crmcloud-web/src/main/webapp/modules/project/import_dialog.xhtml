@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <p:dialog widgetVar="uploadPanel" header="${msg['label.import']}" 
+              showEffect="fade" hideEffect="fade" resizable="false" modal="true" width="500" dynamic="true" responsive="true"
+              rendered="#{(sec.isMaster() or sec.hasMethod('IssueController', 'upload'))}">
+        ${msg['label.upload_file']}#{msg['symbol.colon']}<p:fileUpload fileUploadListener="#{issueImportController.fileUploadListener}" auto="true" skinSimple="true" 
+                       label="${msg['label.select']}"
+                       multiple="false" sizeLimit="3072000" allowTypes="/(\.|\/)(xls|csv)$/"/>
+        <f:facet name="footer">
+            <p:outputPanel styleClass="text-right">
+                <p:commandButton value="${msg['label.import']}" actionListener="#{issueImportController.importData()}" 
+                                 update="mainContent" onclick="PF('uploadPanel').hide();" 
+                                 styleClass="ui-confirmdialog-yes" icon="ui-icon-check"
+                                 onstart="start()" onsuccess="finish();"/>
+                <p:commandButton value="${msg['label.cancel']}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" onclick="PF('uploadPanel').hide();"/>
+            </p:outputPanel>
+        </f:facet>
+    </p:dialog>
+</ui:composition>
+

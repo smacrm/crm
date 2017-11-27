@@ -1,0 +1,323 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:a="http://xmlns.jcp.org/jsf/passthrough"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <c:if test="#{empty renderTitle or renderTitle eq 'true'}">
+        <f:facet name="title">
+            <h:outputText value="#{issue['label.page.customer']}" rendered="#{tabIndex.index eq 0}"/>
+            <h:outputText value="(#{tabIndex.index})" rendered="#{tabIndex.index ne 0}"/>
+            <c:if test="#{!loginController.member.companyStoreMode}">
+                <p:commandLink
+                    actionListener="#{issueController.addCustomer()}"
+                    onstart="start()" onsuccess="finish()"
+                    update="tabViewCustomer, :growl"
+                    process="tabViewCustomer"
+                    oncomplete="callInputKeyUp(false, 'callInputGridTel_');callInputKeyUp(true, 'callInputGridTel_');callInputKeyUp(false, 'callInputGridMobile_');callInputKeyUp(true, 'callInputGridMobile_');"
+                    styleClass="btn btn-xs btn-default fa fa-plus-circle link-add-icon"
+                    rendered="#{tabIndex.index == 0 and (sec.isMaster() or sec.hasMethod('CustomerController', 'CREATE'))}"/>
+                <p:commandLink
+                    onstart="start()" onsuccess="finish()"
+                    actionListener="#{issueController.removeCustomer(customer.tabIdx)}" update="tabViewCustomer, :growl"
+                    process="tabViewCustomer"
+                    style="padding: .7em; cursor: pointer"
+                    styleClass="fa fa-times"
+                    rendered="#{tabIndex.index gt 0 and (sec.isMaster() or sec.hasMethod('CustomerController', 'DELETE'))}">
+                    <p:confirm
+                        header="${msg['label.delete']}"
+                        message="${issue['label.delete_customer']}"
+                        icon="ui-icon-alert" />
+                </p:commandLink>
+            </c:if>
+        </f:facet>
+    </c:if>
+    <c:set var="panelId" value="panelGridCust_#{customerIndex}"/>
+    <c:set var="tabId" value="#{loginController.member.companyStoreMode ? 'tabViewIssue' : 'tabViewCustomer'}"/>
+    <c:if test="#{!loginController.member.companyStoreMode}">
+        <c:set var="updateElms" value="tabViewCustomer:tabCustomerSpecialTitle, tabViewCustomer:panelGrid_customerSpecials, tabViewCustomer:tabCustomerHistoryTitle, tabViewCustomer:panelGrid_historyCustomers"/>
+    </c:if>
+    <p:panelGrid style="width: 100%;" id="#{panelId}" styleClass="panelGrid_td_line_height tabViewCustomerLoadCallButton ui-panelgrid-color">
+        <p:row>
+            <p:column styleClass="td_15">
+                <h:outputText value="${issue['label.cust_cooperation_name']}" />
+            </p:column>
+            <p:column styleClass="td_35" style="#{(loginController.member.companyBusinessFlag eq 1) ? 'width: 35%;': ''}">
+                <p:selectOneMenu value="#{customer.custCooperationId}" converter="gnext.converter.smart" >
+                    <f:selectItem itemLabel="--" itemValue="" />
+                    <f:selectItems value="#{issueController.select.get('cust_cooperation_id')}"/>
+                </p:selectOneMenu>
+            </p:column>
+            <p:column styleClass="td_15">
+                <h:outputText value="${issue['label.cust_special_name']}" />
+            </p:column>
+            <p:column>
+                <h:outputText value="#{customer.custSpecialId.getItemViewData(localeController.locale)}" styleClass="outputText_custSpecial" rendered="#{!empty customer.custSpecialId}" />
+                <p:commandButton
+                    actionListener="${issueController.resertCustomer(customer)}"
+                    process="#{panelId}"
+                    rendered="#{sec.isMaster() or sec.hasMethod('CustomerController', 'DELETE')}"
+                    oncomplete="callInputKeyUp(false, 'callInputGridTel_');callInputKeyUp(true, 'callInputGridTel_');callInputKeyUp(false, 'callInputGridMobile_');callInputKeyUp(true, 'callInputGridMobile_');"
+                    update="#{tabId}:#{panelId}, #{updateElms}, :growl"
+                    title="${issue['label.issue.customer.reset']}"
+                    style="float: right;"
+                    icon="fa fa-eraser"
+                    styleClass="commandButton_trash_small_button" />
+            </p:column>
+        </p:row>
+        <p:row>
+            <p:column>
+                <h:outputText value="${issue['label.cust_code']}" />
+            </p:column>
+            <p:column colspan="3">
+                <p:inputText value="#{customer.custCode}" maxlength="20">
+                    <p:ajax event="blur" listener="#{issueController.reloadCustomer()}" update="#{updateElms}" />
+                </p:inputText>
+            </p:column>
+        </p:row>
+        <p:row>
+            <p:column>
+                <h:outputText value="${issue['label.name_kana']}" />
+            </p:column>
+            <p:column colspan="3">
+                <p:inputText value="#{customer.custFirstKana}" maxlength="70"/> - 
+                <p:inputText value="#{customer.custLastKana}" maxlength="70"/>
+            </p:column>
+        </p:row>
+        <p:row>
+            <p:column>
+                <h:outputText value="${issue['label.name_hira']}" />
+            </p:column>
+            <p:column colspan="3">
+                <p:inputText value="#{customer.custFirstHira}" maxlength="70"/> - 
+                <p:inputText value="#{customer.custLastHira}" maxlength="70"/>
+            </p:column>
+        </p:row>
+        <p:row>
+            <p:column>
+                <h:outputText value="${issue['label.cust_sex_name']}" />
+            </p:column>
+            <p:column>
+                <p:selectOneButton value="#{customer.custSexId}" converter="gnext.converter.smart">
+                    <f:selectItems value="#{issueController.select.get('cust_sex_id')}"/>
+                </p:selectOneButton>
+            </p:column>
+            <p:column>
+                <h:outputText value="${issue['label.cust_age_name']}" />
+            </p:column>
+            <p:column>
+                <p:selectOneMenu value="#{customer.custAgeId}" converter="gnext.converter.smart">
+                    <f:selectItem itemLabel="--" itemValue="" />
+                    <f:selectItems value="#{issueController.select.get('cust_age_id')}"/>
+                </p:selectOneMenu>
+            </p:column>
+        </p:row>
+        <p:row>
+            <p:column>
+                <h:outputText value="${issue['label.post']}" />
+            </p:column>
+            <p:column>
+                <p:inputText value="#{customer.custPost}" styleClass="input_post" maxlength="8">
+                    <p:keyFilter regEx="/[0-9]/i" preventPaste="false"/>
+                    <p:ajax event="blur" update="customer_#{customerIndex}_input_city, customer_#{customerIndex}_input_address_hira, customer_#{customerIndex}_input_address_kana" listener="#{issueController.onBlurPost(customer)}"/>
+                </p:inputText>
+            </p:column>
+            <p:column>
+                <h:outputText value="${issue['label.city']}" />
+            </p:column>
+            <p:column>
+                <p:selectOneMenu value="#{customer.custCity}" converter="gnext.converter.prefecture" id="customer_#{customerIndex}_input_city">
+                    <f:selectItem itemLabel="--" itemValue="" noSelectionOption="true"/>
+                    <f:selectItems value="#{issueController.prefectures}" var="prefecture"
+                                   itemLabel="#{prefecture.prefectureName}"
+                                   itemValue="#{prefecture}"/>
+                </p:selectOneMenu>
+            </p:column>
+        </p:row>
+        <p:row>
+            <p:column>
+                <h:outputText value="${issue['label.address']}" />
+            </p:column>
+            <p:column colspan="3">
+                <p:inputText value="#{customer.custAddress}" styleClass="input_memo" id="customer_#{customerIndex}_input_address_hira" maxlength="150"/>
+            </p:column>
+        </p:row>
+        <p:row>
+            <p:column>
+                <h:outputText value="${issue['label.address_kana']}" />
+            </p:column>
+            <p:column colspan="3">
+                <p:inputText value="#{customer.custAddressKana}" styleClass="input_memo" id="customer_#{customerIndex}_input_address_kana" maxlength="200"/>
+            </p:column>
+        </p:row>
+
+        <c:forEach var="tel" items="#{customer.tel}" varStatus="telStatus">
+            <p:row>
+                <p:column styleClass="td_15">
+                    <h:outputText value="${issue['label.tel']}" rendered="${(telStatus.index == 0)}" />
+                    <h:outputText value="${issue['label.tel']} ${(telStatus.index+1)}" rendered="${(telStatus.index > 0)}" />
+                </p:column>
+                <p:column styleClass="td_35">
+                    <p:inputText value="#{tel.custTargetData}" styleClass="input_tel auto_blur" 
+                                 a:ref=".callButtonGridTel_${customer.tabIdx}_${(telStatus.index+1)}" 
+                                 onkeyup="if ($(this).val().length >= 9)
+                                            $($(this).attr('ref')).removeClass('hide');
+                                        else
+                                            $($(this).attr('ref')).addClass('hide');" maxlength="15">
+                         <p:keyFilter regEx="/[0-9\-\+]/i" preventPaste="false"/>
+                        <p:ajax event="blur" listener="#{issueController.reloadCustomer()}" update="#{updateElms}" />
+                    </p:inputText>
+                    <p:commandButton
+                        style="float: right;"
+                        icon="fa fa-phone"
+                        styleClass="commandButton_small_button bt_margin_top_03 callButtonGridTel_#{customerIndex}_#{(telStatus.index+1)} #{not empty tel.custTargetData ? '': 'hide'}"
+                        onclick="CRMCloudTwilio.startCallToNumber($.trim($(this).closest('td').find('.input_tel').val()))"
+                        rendered="#{not empty softphone_mode and softphone_mode eq 'twilio' }"/>
+                    <p:commandButton
+                        style="float: right;"
+                        icon="fa fa-phone"
+                        styleClass="commandButton_small_button bt_margin_top_03 callButtonGridTel_#{customerIndex}_#{(telStatus.index+1)} #{not empty tel.custTargetData ? '': 'hide'}"
+                        actionListener="#{issueController.call()}"
+                        rendered="#{not empty softphone_mode and softphone_mode eq 'itelpy' }"/>
+                </p:column>
+                <p:column styleClass="td_15">
+                    <h:outputText value="${issue['label.session']}" />
+                </p:column>
+                <p:column style="white-space: nowrap">
+                    <p:selectOneMenu value="${tel.custTargetClass}" converter="gnext.converter.smart">
+                        <f:selectItems value="#{issueController.select.get('cust_tel_session_id')}"/>
+                    </p:selectOneMenu>
+                    <p:commandLink 
+                        style="float: right;"
+                        actionListener="#{issueController.addTarget(customer, 2)}"
+                        update="#{tabId}:#{panelId}, #{updateElms}"
+                        process="#{panelId}"
+                        oncomplete="callInputKeyUp(false, 'callInputGridTel_');callInputKeyUp(true, 'callInputGridTel_');"
+                        rendered="${telStatus.index == 0}"
+                        disabled="#{customer.tel.size() gt 4}"
+                        styleClass="btn btn-xs btn-default bt_margin_top_03">
+                        <span class="fa fa-plus-circle"></span>
+                    </p:commandLink>
+                    <p:commandLink
+                        style="float: right;"
+                        actionListener="#{issueController.removeTarget(customer, tel)}"
+                        update="#{tabId}:#{panelId}, #{updateElms}"
+                        process="#{panelId}"
+                        oncomplete="callInputKeyUp(false, 'callInputGridTel_');callInputKeyUp(true, 'callInputGridTel_');"
+                        rendered="${telStatus.index > 0}"
+                        styleClass="btn btn-xs btn-default bt_margin_top_03">
+                        <span class="fa fa-minus-circle"></span>
+                    </p:commandLink>
+                </p:column>
+            </p:row>
+        </c:forEach>
+
+        <c:forEach var="mobile" items="#{customer.mobile}" varStatus="mobileStatus">
+            <p:row>
+                <p:column styleClass="td_15">
+                    <h:outputText value="${issue['label.mobile']}" rendered="${(mobileStatus.index == 0)}" />
+                    <h:outputText value="${issue['label.mobile']} ${(mobileStatus.index+1)}" rendered="${(mobileStatus.index > 0)}" />
+                </p:column>
+                <p:column styleClass="td_35">
+                    <p:inputText value="#{mobile.custTargetData}" styleClass="input_tel auto_blur"
+                                 a:ref=".callButtonGridMobile_${customer.tabIdx}_${(mobileStatus.index+1)}" 
+                                 onkeyup="if ($(this).val().length >= 9)
+                                            $($(this).attr('ref')).removeClass('hide');
+                                        else
+                                            $($(this).attr('ref')).addClass('hide');" maxlength="15">
+                        <p:keyFilter regEx="/[0-9\-\+]/i" preventPaste="false"/>
+                        <p:ajax event="blur" listener="#{issueController.reloadCustomer()}" update="#{updateElms}" />
+                    </p:inputText>
+                    <p:commandButton
+                        style="float: right;"
+                        icon="fa fa-phone"
+                        styleClass="commandButton_small_button callButtonGridMobile_#{customerIndex}_#{(mobileStatus.index+1)} #{not empty mobile.custTargetData ? '': 'hide'}"
+                        onclick="CRMCloudTwilio.startCallToNumber($.trim($(this).closest('td').find('.input_tel').val()))"
+                        rendered="#{not empty softphone_mode and softphone_mode eq 'twilio' }"/>
+                    <p:commandButton
+                        style="float: right;"
+                        icon="fa fa-phone"
+                        styleClass="commandButton_small_button callButtonGridMobile_#{customerIndex}_#{(mobileStatus.index+1)} #{not empty mobile.custTargetData ? '': 'hide'}"
+                        actionListener="#{issueController.call()}"
+                        rendered="#{not empty softphone_mode and softphone_mode eq 'itelpy' }"/>
+
+                </p:column>
+                <p:column styleClass="td_15">
+                    <h:outputText value="${issue['label.session']}" />
+                </p:column>
+                <p:column style="white-space: nowrap">
+                    <p:selectOneMenu value="${mobile.custTargetClass}" converter="gnext.converter.smart">
+                        <f:selectItems value="#{issueController.select.get('cust_tel_session_id')}"/>
+                    </p:selectOneMenu>
+                    <p:commandLink 
+                        style="float: right;"
+                        actionListener="#{issueController.addTarget(customer, 3)}"
+                        update="#{tabId}:#{panelId}, #{updateElms}"
+                        process="#{panelId}"
+                        oncomplete="callInputKeyUp(false, 'callInputGridMobile_');callInputKeyUp(true, 'callInputGridMobile_');"
+                        rendered="#{mobileStatus.index == 0}"
+                        disabled="#{customer.mobile.size() gt 4}"
+                        styleClass="btn btn-xs btn-default bt_margin_top_03">
+                        <span class="fa fa-plus-circle"></span>
+                    </p:commandLink>
+                    <p:commandLink
+                        style="float: right;"
+                        actionListener="#{issueController.removeTarget(customer, mobile)}"
+                        update="#{tabId}:#{panelId}, #{updateElms}"
+                        process="#{panelId}"
+                        oncomplete="callInputKeyUp(false, 'callInputGridMobile_');callInputKeyUp(true, 'callInputGridMobile_');"
+                        rendered="#{mobileStatus.index > 0}"
+                        styleClass="btn btn-xs btn-default bt_margin_top_03">
+                        <span class="fa fa-minus-circle"></span>
+                    </p:commandLink>
+                </p:column>
+            </p:row>
+        </c:forEach>
+
+        <c:forEach var="mail" items="#{customer.mail}" varStatus="mailStatus">
+            <p:row>
+                <p:column styleClass="td_15">
+                    <h:outputText value="${issue['label.mail']}" rendered="${(mailStatus.index == 0)}" />
+                    <h:outputText value="${issue['label.mail']} ${(mailStatus.index+1)}" rendered="${(mailStatus.index > 0)}" />
+                </p:column>
+                <p:column colspan="3">
+                    <p:inputText value="#{mail.custTargetData}" styleClass="input_mail auto_blur" maxlength="50">
+                        <p:keyFilter regEx="/[a-z0-9_\.\-@]/i" preventPaste="false"/>
+                        <f:validator validatorId="gnext.validator.EmailValidator" />
+                        <f:attribute name="title" value="#{issue['label.mail']}#{mailStatus.index + 1}"/>
+                        <p:ajax event="blur" listener="#{issueController.reloadCustomer()}" update="#{updateElms}" />
+                    </p:inputText>
+                    <p:commandLink 
+                        actionListener="#{issueController.addTarget(customer, 1)}"
+                        update="#{tabId}:#{panelId}, #{updateElms}"
+                        process="#{panelId}"
+                        rendered="#{mailStatus.index == 0 }"
+                        disabled="#{customer.mail.size() gt 4}"
+                        styleClass="btn btn-xs btn-default">
+                        <span class="fa fa-plus-circle"></span>
+                    </p:commandLink>
+                    <p:commandLink
+                        actionListener="#{issueController.removeTarget(customer, mail)}"
+                        update="#{tabId}:#{panelId}, #{updateElms}"
+                        process="#{panelId}"
+                        rendered="#{mailStatus.index > 0}"
+                        styleClass="btn btn-xs btn-default">
+                        <span class="fa fa-minus-circle"></span>
+                    </p:commandLink>
+                </p:column>
+            </p:row>
+        </c:forEach>
+
+        <p:row>
+            <p:column>
+                <h:outputText value="${issue['label.memo']}" />
+            </p:column>
+            <p:column colspan="3">
+                <p:inputTextarea value="#{customer.custMemo}" rows="3" styleClass="input_text_area" maxlength="2000" />
+            </p:column>
+        </p:row>
+    </p:panelGrid>
+            
+</ui:composition>

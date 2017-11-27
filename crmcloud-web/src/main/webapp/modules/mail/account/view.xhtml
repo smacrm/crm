@@ -1,0 +1,209 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html">
+    <div id="pageTitle">#{mailBundle['label.mail.account.title']} #{msg['symbol.paren.left']}#{mailBundle['label.mail.account.title.detail']}#{msg['symbol.paren.right']}</div>
+    <h:form id="frmMailAccount">
+        <p:confirmDialog message="#{mailBundle['label.mail.account.confirm.delete.message']}" header="#{msg['label.dialog.header']}"
+                         widgetVar="confirmDeleteMailAccount" id="confirmDeleteMailAccount">  
+            <p:commandButton value="#{msg['label.dialog.yes']}" onclick="PF('confirmDeleteMailAccount').hide();"
+                             update="mainContent :growl"
+                             actionListener="#{mailAccountController.delete}"
+                             icon="ui-icon-check">
+                <f:param name="accountId" value="#{mailAccountController.model.mailAccount.accountId}"/>
+                <f:param name="force" value="true"/>
+            </p:commandButton>
+            <p:commandButton value="#{msg['label.dialog.no']}"
+                             onclick="PF('confirmDeleteMailAccount').hide();"
+                             type="button" title="close" icon="ui-icon-close"/>   
+        </p:confirmDialog>
+        <h:panelGrid width="100%" styleClass="page-header">
+            <f:facet name="header">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h1>
+                            #{mailBundle['label.mail.account.title']} 
+                            <small>#{mailBundle['label.mail.account.title.detail']}</small>
+                        </h1>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <p:commandButton value="#{msg['label.back']}"
+                                         icon="fa fa-chevron-circle-left"
+                                         actionListener="#{mailAccountController.load}"
+                                         title="#{msg['label.back']}"
+                                         update="mainContent" process="@this"
+                                         onstart="start()" onsuccess="finish()">
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+
+                        <p:commandButton value="#{msg['label.edit']}" icon="fa fa-pencil fa-fw"
+                                         title="#{msg['label.edit']}"
+                                         update="mainContent" actionListener="#{mailAccountController.show}"
+                                         id="btnEdit"
+                                         onstart="start()" onsuccess="finish()"
+                                         rendered="${sec.hasMethod('MailAccountController', 'update')}">
+                            <f:param name="showType" value="edit"/>
+                            <f:param name="accountId" value="#{mailAccountController.model.mailAccount.accountId}"/>
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+
+                        <p:commandButton value="#{msg['label.delete']}"
+                                         title="#{msg['label.delete']}"
+                                         icon="fa fa-trash"
+                                         id="btnDelete"
+                                         onclick="PF('confirmDeleteMailAccount').show();"
+                                         type="button"
+                                         rendered="${sec.hasMethod('MailAccountController', 'delete')}"/>
+
+                        <p:commandButton title="#{msg['label.previous']}"
+                                         icon="fa fa-angle-left" styleClass="ui-corner-left"
+                                         actionListener="#{mailAccountController.previousOne}"
+                                         update="pgMailAccount,btnNext,lblNextPre,btnPrevious,confirmDeleteMailAccount,btnEdit,btnDelete"
+                                         disabled="#{mailAccountController.currentRowNum == 0}" id="btnNext"
+                                         onstart="start()" onsuccess="finish()"
+                                         rendered="#{sec.master}"/>
+                        <p:commandButton value="#{mailAccountController.currentRowNum + 1}/#{mailAccountController.models.rowCount}"
+                                         styleClass="ui-corner-none" id="lblNextPre"
+                                         rendered="#{sec.master}"/>
+                        <p:commandButton title="#{msg['label.next']}"
+                                         icon="fa fa-angle-right" styleClass="ui-corner-right"
+                                         id="btnPrevious"
+                                         actionListener="#{mailAccountController.nextOne}"
+                                         update="pgMailAccount,btnNext,lblNextPre,btnPrevious,confirmDeleteMailAccount,btnEdit,btnDelete"
+                                         disabled="#{mailAccountController.currentRowNum == mailAccountController.models.rowCount -1 }"
+                                         onstart="start()" onsuccess="finish()"
+                                         rendered="#{sec.master}"/>
+
+                        <p:commandButton value="#{msg['label.print']}"
+                                         title="#{msg['label.print']}"
+                                         icon="ui-icon-print" type="button"
+                                         rendered="#{sec.hasMethod('MailAccountController','print')}"
+                                         onstart="start()" onsuccess="finish()">
+                            <p:printer target="pgMailAccount"/>
+                        </p:commandButton>
+                    </div>
+                </div>
+            </f:facet>
+        </h:panelGrid>
+        <div class="box box-solid box-view-mode">
+            <div class="box-body" >
+                <p:panelGrid id="pgMailAccount" styleClass="crmcloud-panelgrid">
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{mailBundle['label.mail.account.server.name']}" styleClass="required"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:outputLabel value="#{mailAccountController.model.mailAccount.mailServer.serverName}"/>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{mailBundle['label.mail.account.name']}" styleClass="required"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:outputLabel value="#{mailAccountController.model.mailAccount.accountName}"
+                                           style="width: 100%;"/>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{mailBundle['label.mail.account.receive.flag']}" />
+                        </p:column>
+                        <p:column colspan="3">
+                            <h:selectBooleanCheckbox value="#{mailAccountController.model.accountReceiveFlag}" disabled="true"/>
+                            <p:outputLabel value="#{mailBundle['label.mail.account.receive.flag.message']}"/>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{mailBundle['label.mail.account.send.flag']}" />
+                        </p:column>
+                        <p:column colspan="3">
+                            <h:selectBooleanCheckbox value="#{mailAccountController.model.accountSendFlag}" disabled="true"/>
+                            <p:outputLabel value="#{mailBundle['label.mail.account.send.flag.message']}"/>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{mailBundle['label.mail.account.support']}" />
+                        </p:column>
+                        <p:column colspan="3">
+                            <h:selectBooleanCheckbox value="#{mailAccountController.model.accountSupport}" disabled="true"/>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{mailBundle['label.mail.account.request']}" />
+                        </p:column>
+                        <p:column colspan="3">
+                            <h:selectBooleanCheckbox value="#{mailAccountController.model.accountRequest}" disabled="true"/>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{mailBundle['label.mail.account.user.email']}" styleClass="required"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:outputLabel value="#{mailAccountController.model.mailAccount.accountMailAddress}" style="width: 100%;"/>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{mailBundle['label.mail.account.user.name']}" styleClass="required"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:outputLabel value="#{mailAccountController.model.mailAccount.accountUserName}" style="width: 100%;"/>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{mailBundle['label.mail.account.user.password']}" styleClass="required"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:password value="#{mailAccountController.model.mailAccount.accountPassword}" style="width: 100%; border: none;" redisplay="true" disabled="true"/>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{mailBundle['label.mail.account.delete.receive']}" />
+                        </p:column>
+                        <p:column colspan="3">
+                            <h:panelGrid style="width: 101%; margin-left: -6px; margin-top: -2px; margin-bottom: -2px;">
+                                <p:row>
+                                    <p:column style="text-align: left;">
+                                        <h:selectBooleanCheckbox disabled="true" value="#{mailAccountController.model.accountDeleteReceivedDays}"/>
+                                        <p:outputLabel value="#{mailBundle['label.mail.account.delete.message']}"/>
+                                    </p:column>
+                                </p:row>
+                                <p:row rendered="#{not empty mailAccountController.model.mailAccount.accountDeleteReceivedDays}">
+                                    <p:column style="text-align: left;">
+                                        <p:outputLabel id="txtAccountDeleteReceivedDays" value="#{mailAccountController.model.mailAccount.accountDeleteReceivedDays}"/>
+                                        <p:outputLabel value="#{mailBundle['label.mail.account.delete.not.message']}"/>
+                                    </p:column>
+                                </p:row>
+                            </h:panelGrid>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{msg['label.memo']}" />
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:outputLabel value="#{mailAccountController.model.mailAccount.accountMemo}"/>
+                        </p:column>
+                    </p:row>
+                </p:panelGrid></div></div>
+    </h:form>
+</ui:composition>

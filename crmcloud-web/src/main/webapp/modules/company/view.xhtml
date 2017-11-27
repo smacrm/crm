@@ -1,0 +1,216 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html">
+    <div id="pageTitle">#{companyBundle['label.company.header']} #{msg['symbol.paren.left']}#{companyBundle['label.company.header.view']}#{msg['symbol.paren.right']}</div>
+    <h:form id="frmViewCompanyInfo">
+        <p:confirmDialog message="#{msg['label.dialog.confirm']}" header="#{msg['label.dialog.header']}"  widgetVar="confirmDeleteCompany" id="confirmDeleteCompany">  
+            <p:commandButton value="#{msg['label.dialog.yes']}" onclick="PF('confirmDeleteCompany').hide();" update="mainContent :growl"
+                             actionListener="#{companyController.delete}" title="accept" icon="ui-icon-check">
+                <f:param name="companyId" value="#{companyController.companyModel.company.companyId}"/>
+                <f:param name="force" value="true"/>
+            </p:commandButton>
+            <p:commandButton value="#{msg['label.dialog.no']}" onclick="PF('confirmDeleteCompany').hide();" type="button" title="close" icon="ui-icon-close"/>   
+        </p:confirmDialog>
+        <h:panelGrid width="100%" styleClass="page-header">
+            <f:facet name="header">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h1>
+                            #{companyBundle['label.company.header']}
+                            <small>#{companyBundle['label.company.header.view']}</small>
+                        </h1>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <p:commandButton value="#{msg['label.back']}" icon="fa fa-chevron-circle-left" actionListener="#{companyController.load}"
+                                         title="#{msg['label.back']}" update="mainContent"
+                                         onstart="start()" onsuccess="finish()"
+                                         rendered="#{sec.master}">
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+                        <p:commandButton value="#{msg['label.edit']}" icon="fa fa-pencil fa-fw"
+                                         title="#{msg['label.edit']}" update="mainContent" actionListener="#{companyController.show}" id="btnEdit"
+                                         onstart="start()" onsuccess="finish()"
+                                         rendered="${sec.hasMethod('CompanyController', 'update')}">
+                            <f:param name="showType" value="edit"/>
+                            <f:param name="companyId" value="#{companyController.companyModel.company.companyId}"/>
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+                        <p:commandButton value="#{msg['label.delete']}" title="#{msg['label.delete']}"
+                                         icon="fa fa-trash" onclick="PF('confirmDeleteCompany').show();" type="button"
+                                         rendered="${sec.hasMethod('CompanyController', 'delete')}"/>
+                        <p:commandButton value="#{msg['label.print']}" title="#{msg['label.print']}" icon="ui-icon-print" type="button" onstart="start()" onsuccess="finish()" rendered="#{sec.hasMethod('CompanyController','print')}">
+                            <p:printer target="frmViewCompanyInfo:gridCompanyInfo"/>
+                        </p:commandButton>
+                    </div>
+                </div>
+            </f:facet>
+        </h:panelGrid>
+        <div class="box box-solid box-view-mode">
+            <div class="box-body">
+                <p:panelGrid id="gridCompanyInfo" styleClass="crmcloud-panelgrid">
+
+                    <p:row rendered="#{sec.master}">
+                        <p:column styleClass="label-field"><p:outputLabel value="#{companyBundle['label.company.company']}"/></p:column>
+                        <p:column>
+                            <p:selectOneMenu value="#{companyController.companyModel.viewCompanyId}" filter="true" filterMatchMode="startsWith">
+                                <p:ajax listener="#{companyController.onViewCompanyChange}" update="mainContent" onstart="start()" onsuccess="finish()"/>
+                                <f:selectItems value="#{companyController.companys}" var="c" itemValue="#{c.companyId}" itemLabel="#{c.companyName}"/>
+                            </p:selectOneMenu>
+                        </p:column>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{companyBundle['label.company.twofactor']}"/></p:column>
+                        <p:column><p:selectBooleanCheckbox value="#{companyController.companyModel.company.usingTwoFactor}" disabled="true"/></p:column>
+                    </p:row>
+                    <p:row rendered="#{sec.master}">
+                        <p:column styleClass="label-field"><p:outputLabel value="#{companyBundle['label.company.group']}" /></p:column>
+                        <p:column style="width: 35%;">
+                            <p:outputLabel value="#{companyController.displayUnionCompany}" id="groupFromCompanyId"/>
+                        </p:column>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{companyBundle['label.company.bussiness']}" /></p:column>
+                        <p:column>
+                            <p:outputLabel value="#{companyController.companyModel.bussinessName}" />
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{companyBundle['label.company.name']}" styleClass="required"/></p:column>
+                        <p:column colspan="3"><p:outputLabel value="#{companyController.companyModel.company.companyName}" /></p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{msg['label.zipcode']}" /></p:column>
+                        <p:column style="width: 35%;"><p:outputLabel value="#{companyController.companyModel.company.companyPost}" /></p:column>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{msg['label.city']}" /></p:column>
+                        <p:column><p:outputLabel value="#{companyController.companyModel.displayCompanyCity}" /></p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{msg['label.address']}" /></p:column>
+                        <p:column ><p:outputLabel value="#{companyController.companyModel.company.companyAddress}" /></p:column>
+                        <p:column rowspan="3" styleClass="label-field"><p:outputLabel value="#{msg['label.logo']}" /></p:column>
+                        <p:column rowspan="3" >
+                            <p:graphicImage value="#{companyController.fileUploader.streamedContent}" id="companyLogoStream" cache="false"
+                                            style="width: 50px; height: 50px;" rendered="#{companyController.fileUploader.hasImage}"/>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{msg['label.address.kana']}" /></p:column>
+                        <p:column><p:outputLabel value="#{companyController.companyModel.company.companyAddressKana}" /></p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{msg['label.copyright']}"/></p:column>
+                        <p:column ><p:outputLabel value="#{companyController.companyModel.company.companyCopyRight}"/></p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column colspan="2" style="vertical-align: top">
+                            <p:dataList value="#{companyController.companyModel.companyPhones}" var="phone" rowIndexVar="rowIndex" type="definition"
+                                        rendered="#{not empty companyController.companyModel.companyPhones}" class="crmcloud-datalist">
+                                <p:panelGrid styleClass="panel-grid">
+                                    <p:row>
+                                        <p:column styleClass="label-field">
+                                            <p:outputLabel value="#{msg['label.phone']}" rendered="#{(companyController.companyModel.companyPhones.size()==1)}"/>
+                                            <p:outputLabel value="#{msg['label.phone']}#{rowIndex+1}" rendered="#{(companyController.companyModel.companyPhones.size()>1)}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:outputLabel style="float: left; position: relative;" value="#{phone.companyTargetData}"></p:outputLabel>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                            </p:dataList>
+                        </p:column>
+                        <p:column colspan="2" style="vertical-align: top">
+                            <p:dataList value="#{companyController.companyModel.companyFaxs}" var="fax" rowIndexVar="rowIndex" type="definition"
+                                        rendered="#{not empty companyController.companyModel.companyFaxs}" class="crmcloud-datalist">
+                                <p:panelGrid styleClass="panel-grid">
+                                    <p:row>
+                                        <p:column styleClass="label-field">
+                                            <p:outputLabel value="#{msg['label.fax']}" rendered="#{(companyController.companyModel.companyFaxs.size()==1)}"/>
+                                            <p:outputLabel value="#{msg['label.fax']}#{rowIndex+1}" rendered="#{(companyController.companyModel.companyFaxs.size()>1)}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:outputLabel style="float: left; position: relative;" value="#{fax.companyTargetData}"></p:outputLabel>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                            </p:dataList>
+                        </p:column> 
+                    </p:row>
+
+                    <p:row>
+                        <p:column colspan="4">
+                            <p:dataList value="#{companyController.companyModel.companyHomepages}" var="homepage" rowIndexVar="rowIndex" type="definition"
+                                        class="crmcloud-datalist" rendered="#{not empty companyController.companyModel.companyHomepages}">
+                                <p:panelGrid styleClass="panel-grid">
+                                    <p:row>
+                                        <p:column styleClass="label-field">
+                                            <p:outputLabel value="#{msg['label.homepage']}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputLink value="#{homepage.companyTargetData}" target="_blank" style="color: #3c8dbc; float: left; position: relative;" rendered="#{not empty homepage.companyTargetData}">
+                                                <p:outputLabel value="#{homepage.companyTargetData}"></p:outputLabel>
+                                            </h:outputLink>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                            </p:dataList>
+                        </p:column>
+                    </p:row>            
+
+                    <p:row>
+                        <p:column colspan="4">
+                            <p:dataList value="#{companyController.companyModel.companyEmails}" var="email" rowIndexVar="rowIndex" type="definition"
+                                        class="crmcloud-datalist" rendered="#{not empty companyController.companyModel.companyEmails}">
+                                <p:panelGrid styleClass="panel-grid">
+                                    <p:row>
+                                        <p:column styleClass="label-field">
+                                            <p:outputLabel value="#{msg['label.company.email']}" rendered="#{(companyController.companyModel.companyEmails.size()==1)}"/>
+                                            <p:outputLabel value="#{msg['label.company.email']}#{rowIndex+1}" rendered="#{(companyController.companyModel.companyEmails.size()>1)}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:outputLabel value="#{email.companyTargetData}" style="float: left; position: relative;"></p:outputLabel>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                            </p:dataList>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field" style="vertical-align: top"><p:outputLabel value="#{msg['label.layout']}"/></p:column>
+                        <p:column style="vertical-align: top">
+                            <p:outputLabel value="#{companyController.companyModel.company.companyLayout}"/>
+                        </p:column>
+                        <p:column colspan="2" style="vertical-align: top">
+                            <p:dataList value="#{companyController.companyModel.companyIps}" var="ip" type="definition" rowIndexVar="rowIndex" varStatus="status" id="dataListIp" class="crmcloud-datalist">
+                                <p:panelGrid styleClass="panel-grid" id="panelGridIp">
+                                    <p:row>
+                                        <p:column styleClass="label-field">
+                                            <p:outputLabel value="#{msg['label.ip']}" rendered="#{(companyController.companyModel.companyIps.size()==1)}"/>
+                                            <p:outputLabel value="#{msg['label.ip']}#{rowIndex+1}" rendered="#{(companyController.companyModel.companyIps.size()>1)}"/>
+                                        </p:column>
+                                        <p:column style="text-align: left;">
+                                            <p:outputLabel value="#{ip.companyTargetData}"></p:outputLabel>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                            </p:dataList>
+                        </p:column>
+                    </p:row>
+                    
+                    <p:row>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{companyBundle['label.company.globalgroupflag']}"/></p:column>
+                        <p:column colspan="3"><p:selectBooleanCheckbox value="#{companyController.companyModel.companyGlobalLocale}" disabled="true"/></p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{msg['label.memo']}"/></p:column>
+                        <p:column colspan="3"><p:outputLabel value="#{companyController.companyModel.company.companyMemo}"/></p:column>
+                    </p:row>
+                </p:panelGrid></div></div>
+    </h:form>
+</ui:composition>

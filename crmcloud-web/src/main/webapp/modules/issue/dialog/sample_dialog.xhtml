@@ -1,0 +1,89 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <f:view locale="#{localeController.locale}">
+        <f:metadata>
+            <f:viewParam name="id" value="#{issueController.issue.issueId}"/>
+        </f:metadata>
+        <h:head>
+            <title>${msg['label.example_sentence_type_id']}</title>
+            <h:outputStylesheet library="css" name="dialog_growl.css"  />
+            <h:outputStylesheet library="css" name="dialog.css"  />
+        </h:head>
+        <h:body>
+            <h:form prependId="false">
+                <p:growl id="dialog_growl" showDetail="false" life="3000" />
+                <p:remoteCommand name="dbClick" actionListener="#{issueSupportController.onLinkDoubleSelect()}" />
+                <p:panel styleClass="panelSreachProducts">
+                    <p:commandButton type="button" icon="fa fa-search" />
+                    <p:inputText
+                        style="margin-right: 0.5em;"
+                        onkeyup="var keyword = $(this).val().toLowerCase(); $('#dataListExampleSentenceList_3 .ui-datalist-data > li').each(function(){
+                            if ($(this).text().toLowerCase().indexOf(keyword) === -1){
+                                $(this).hide();
+                            }else{
+                                $(this).show();
+                            }
+                        })"
+                        placeholder="#{msg['label.keyword']}" />
+                </p:panel>
+                <p:panelGrid columns="3" styleClass="panelGridDataListProducts">
+                    <p:dataList
+                        itemType="none"
+                        id="dataListExampleSentenceList_1"
+                        var="example1"
+                        value="#{issueController.select.get('example_sentence_type_id')}">
+                        <f:facet name="header"><p:outputLabel value="${msg['label.example_sentence_type_id_1']}" /></f:facet>
+                        <p:commandLink
+                            onclick="$(this).closest('ul').find('a').removeClass('aSelected');$(this).addClass('aSelected');"
+                            actionListener="${issueSupportController.onLinkSelect(example1, 1)}"
+                            update=":dataListExampleSentenceList_2, :dataListExampleSentenceList_3"
+                            rendered="#{example1.value.itemLevel eq 1}"
+                            styleClass="#{issueSupportController.exampleDialogSelected.value.itemId eq example1.value.itemId ? 'aSelected' : ''}"
+                            style="white-space: normal !important; word-break: break-word !important;">
+                            <p:outputLabel styleClass="outputLabelBorderCircle" value="#{example1.value}" />
+                            <h:outputText value="#{example1.label}" />
+                        </p:commandLink>
+                    </p:dataList>
+                    <p:dataList
+                        itemType="none"
+                        id="dataListExampleSentenceList_2"
+                        var="example2"
+                        value="#{issueController.select.get('example_sentence_type_id')}">
+                        <f:facet name="header"><p:outputLabel value="${msg['label.example_sentence_type_id_2']}" /></f:facet>
+                        <p:commandLink
+                            onclick="$(this).closest('ul').find('a').removeClass('aSelected');$(this).addClass('aSelected');"
+                            actionListener="${issueSupportController.onLinkSelect(example2, 2)}"
+                            update=":dataListExampleSentenceList_3"
+                            rendered="#{example2.value.itemLevel eq 2 and example2.value.itemParent.itemId eq issueSupportController.exampleDialogSelected.get(1).value.itemId}"
+                            styleClass="#{issueSupportController.exampleDialogSelected.value.itemId eq example2.value.itemId ? 'aSelected' : ''}"
+                            style="white-space: normal !important; word-break: break-word !important;">
+                            <p:outputLabel styleClass="outputLabelBorderCircle" value="#{example2.value}" />
+                            <h:outputText value="#{example2.label}" />
+                        </p:commandLink>
+                    </p:dataList>
+                    <p:dataList
+                        itemType="none"
+                        id="dataListExampleSentenceList_3"
+                        var="example3"
+                        value="#{issueController.select.get('example_sentence_type_id')}">
+                        <f:facet name="header"><p:outputLabel value="&#160;" /></f:facet>
+                        <p:commandLink
+                            ondblclick="dbClick()"
+                            onclick="$(this).closest('ul').find('a').removeClass('aSelected');$(this).addClass('aSelected');"
+                            actionListener="${issueSupportController.onLinkSelect(example3, 3)}"
+                            rendered="#{example3.value.itemLevel eq 3 and example3.value.itemParent.itemId eq issueSupportController.exampleDialogSelected.get(2).value.itemId}"
+                            styleClass="#{issueSupportController.exampleDialogSelected.value.itemId eq example3.value.itemId ? 'aSelected' : ''}"
+                            style="white-space: normal !important; word-break: break-word !important;">
+                            <p:outputLabel styleClass="outputLabelBorderCircle" value="#{example3.value}" />
+                            <h:outputText value="#{example3.label}" />
+                        </p:commandLink>
+                    </p:dataList>
+                </p:panelGrid>
+            </h:form>
+        </h:body>
+    </f:view>
+</html>

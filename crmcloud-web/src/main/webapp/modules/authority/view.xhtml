@@ -1,0 +1,152 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <h:form style="width: 100%;">
+        <style>
+            .content {
+                width: 100%;
+            }
+            #mainContent{
+                width: 100%;
+            }
+            .ui-state-disabled{
+                opacity: 1 !important;
+            }
+        </style>
+        <h:panelGrid width="100%" styleClass="page-header">
+            <f:facet name="header">
+                <!-- Content Header (Page header) -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <h1>
+                            #{companyBundle['label.authority.title']}
+                            <small>#{companyBundle['label.authority.detail']}</small>
+                        </h1>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <p:commandButton id="btnReturn" actionListener="#{authorityController.reload()}"
+                                         value="#{msg['label.back']}"
+                                         title="#{msg['label.back']}"
+                                         icon="fa fa-chevron-circle-left" process="@this"
+                                         update="mainContent" onstart="start()" onsuccess="finish()">
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+                        <p:commandButton  id="btnDel" actionListener="#{authorityController.remove(authorityController.selectedRole)}"
+                                         value="#{msg['label.delete']}" icon="fa fa-trash" process="@this"
+                                         update=":growl, mainContent" onstart="start()" onsuccess="finish()"
+                                         rendered="#{not empty authorityController.selectedRole and sec.hasMethod('AuthorityController','delete') 
+                                                     and ((authorityController.selectedRole.creatorId ne 1) 
+                                                     or (authorityController.selectedRole.creatorId eq 1 and sec.master )
+                                                     )}">
+                            <p:confirm header="#{companyBundle['label.authority.confirm']}" message="#{companyBundle['label.authority.confirm.question']}" icon="ui-icon-alert" />
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+                        <p:commandButton id="btnSave" value="#{msg['label.edit']}" actionListener="#{authorityController.showForm()}"
+                                         update=":growl, mainContent"
+                                         title="#{msg['label.edit']}" icon="fa fa-pencil" onstart="start()" onsuccess="finish()"
+                                         rendered="#{not empty authorityController.selectedRole and sec.hasMethod('AuthorityController','update') 
+                                                     and ((authorityController.selectedRole.creatorId ne 1) 
+                                                     or (authorityController.selectedRole.creatorId eq 1 and sec.master )
+                                                     )
+                                                    }">
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+                        <p:outputPanel styleClass="ui-groupbutton" rendered="#{not empty authorityController.selectedRole}">
+                            <p:commandButton id="btnPrevious" title="#{msg['label.previous']}" icon="fa fa-angle-left" styleClass="btn btn-default"
+                                             update=":growl, @form"
+                                             disabled="#{authorityController.itemViewIndex le 0}"
+                                             actionListener="#{authorityController.viewFormByIndex(authorityController.itemViewIndex-1)}"
+                                             onstart="start()" onsuccess="finish()"/>
+                            <p:commandButton id="lblPaging" value="#{authorityController.itemViewIndex+1}/#{authorityController.roleList.size()}" styleClass="ui-corner-none"/>
+                            <p:commandButton id="btnNext" title="#{msg['label.next']}" icon="fa fa-angle-right" styleClass="ui-corner-right" 
+                                             update=":growl, @form"
+                                             disabled="#{authorityController.itemViewIndex + 1 ge authorityController.roleList.size()}"
+                                             actionListener="#{authorityController.viewFormByIndex(authorityController.itemViewIndex+1)}"
+                                             onstart="start()" onsuccess="finish()"/>
+                        </p:outputPanel>
+                        <p:commandButton value="#{msg['label.print']}" title="#{msg['label.print']}" icon="fa fa-print" rendered="#{not empty authorityController.selectedRole}">
+                            <p:printer target="printArea"/>
+                        </p:commandButton>
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" id="cfmAuthority">
+                            <p:commandButton value="#{msg['label.yes']}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="#{msg['label.no']}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+                    </div>
+                </div>
+            </f:facet>
+        </h:panelGrid>
+        <p:outputPanel id="printArea" styleClass="box">
+            <div class="box-body">
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <td width="80">
+                                <p:outputLabel value="#{companyBundle['label.authority.name']}" for="role_name"/>
+                            </td>
+                            <td colspan="3" style="vertical-align: middle;">
+                                <h:outputText id="role_name" value="#{empty authorityController.selectedRole ? authorityController.roleName : authorityController.selectedRole.roleName}" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td valign="top">
+                                <p:outputLabel value="#{companyBundle['label.authority']}"/>
+                            </td>
+                            <td width="40%">
+                                <p:selectManyMenu value="#{authorityController.selectedGroup}"
+                                                  var="t" 
+                                                  showCheckbox="true" style="width: 100%" scrollHeight="200" disabled="true">
+                                    <f:selectItems value="#{authorityController.groupList}" var="g" 
+                                                   itemLabel="#{g.groupName}" itemValue="#{g}" />
+                                    <p:column>
+                                        <h:outputText value="#{t.groupName}" />
+                                    </p:column>
+                                </p:selectManyMenu>
+                            </td>
+                            <td valign="top" width="80"><p:outputLabel value="#{msg['label.user']}"/></td>
+                            <td>
+                                <p:selectManyMenu value="#{authorityController.selectedMember}"
+                                                  var="t" showCheckbox="true"
+                                                  style="width: 100%" scrollHeight="200" disabled="true">
+                                    <f:selectItems value="#{authorityController.memberList}" var="m" 
+                                                   itemLabel="#{m.memberNameLast}#{msg['symbol.arrow.right']}#{m.memberNameFirst}" 
+                                                   itemValue="#{m}" />
+                                    <p:column>
+                                        <h:outputText value="#{t.memberNameLast}#{msg['symbol.arrow.right']}#{t.memberNameFirst}" />
+                                    </p:column>
+                                </p:selectManyMenu>
+                            </td>
+                        </tr>
+                    </tbody>    
+                </table>
+                <div class="flex_1" style="overflow: auto;">
+                    <p:treeTable id="authorityTree" styleClass="authorityTree" value="#{authorityController.authList}" var="document" scrollable="true">
+                        <f:facet name="header">
+                            #{companyBundle['label.authority.rule']}
+                        </f:facet>
+                        <p:column style="width: 280px" styleClass="col-first">
+                            <b><h:outputText value="#{msg['label.menu.'.concat(document.name)]}" rendered="#{!document.name.equals('FIRST_ROW')}"/></b>
+                        </p:column>
+                        <c:forEach var="label" items="#{authorityController.roleColumnLabels}" varStatus="loop">
+                            <p:column styleClass="text-center col-role-button" style="width: 100px;height: 20px">
+                                <p:selectBooleanButton
+                                    style="width: 100%;height: 100%; padding: 2px 2px 2px 2px !important;"
+                                    value="#{document.getActionByLabel(label).selected}"
+                                    onLabel="#{msg['label.menu.'.concat(document.getActionByLabel(label).name)]}" 
+                                    offLabel="#{msg['label.menu.'.concat(document.getActionByLabel(label).name)]}"
+                                    rendered="#{!document.name.equals('FIRST_ROW') and document.hasActionByLabel(label)}"
+                                    styleClass="btn-authority" disabled="true">
+                                </p:selectBooleanButton>
+                            </p:column>
+                        </c:forEach>
+                        <p:column styleClass="col-last"></p:column>
+                    </p:treeTable>
+                </div>
+            </div><!-- /.box-body -->
+        </p:outputPanel><!-- /.box -->
+    </h:form>
+</ui:composition>
+

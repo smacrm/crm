@@ -1,0 +1,144 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+    <div id="pageTitle">${msg['label.menu.LabelController']} #{msg['symbol.paren.left']}#{msg['label.show']}#{msg['symbol.paren.right']}</div>
+    <h:form enctype="multipart/form-data">
+        <h:panelGrid width="100%" styleClass="page-header">
+            <f:facet name="header">
+                <!-- Content Header (Page header) -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <h1>
+                           ${msg['label.menu.LabelController']}
+                        </h1>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <p:commandButton value="#{msg['label.update']}" actionListener="#{labelController.flush()}"
+                                         title="#{msg['label.update']}"  icon="fa fa-arrow-circle-o-down" update=":growl"
+                                         onstart="start()" onsuccess="finish()" 
+                                         rendered="${sec.hasMethod('LabelController', 'search')}"/>
+                        <p:commandButton value="#{msg['label.reload']}" actionListener="#{labelController.reload()}"
+                                         title="#{msg['label.reload']}"  icon="fa fa-refresh" update="mainContent"
+                                         onstart="start()" onsuccess="finish()" 
+                                         rendered="${sec.hasMethod('LabelController', 'search')}"/>
+                        <p:commandButton value="${msg['label.print']}" title="${msg['label.print']}" icon="fa fa-print" rendered="${sec.hasMethod('LabelController', 'print')}">
+                            <p:printer target="labelDataTable"/>
+                        </p:commandButton>
+                        <p:commandButton value="${msg['label.download']}" title="${msg['label.download']}" icon="fa fa-cloud-download"
+                                         rendered="${sec.hasMethod('LabelController', 'download')}" actionListener="#{labelController.export}" ajax="false">
+                        </p:commandButton>
+                        <p:commandButton value="${msg['label.import']}" title="${msg['label.import']}" icon="fa fa-cloud-upload"
+                                        rendered="${sec.hasMethod('LabelController', 'upload')}"
+                                        onclick="PF('uploadPanel').show();">
+                        </p:commandButton>
+                    </div>
+                </div>
+            </f:facet>
+        </h:panelGrid>
+        <p:dialog widgetVar="uploadPanel" header="${msg['label.upload']}" showEffect="fade" hideEffect="fade" resizable="false" dynamic="true" responsive="true" modal="true" width="500">
+            ${msg['label.upload_file']}#{msg['symbol.colon']} <p:outputLabel value="#{labelController.uploadedFile.fileName}" id="file-name"/>
+            
+            <p:fileUpload fileUploadListener="#{labelController.fileUploadListener}" auto="true" skinSimple="true" 
+                          label="${msg['label.select']}" update="file-name"
+                                     multiple="false" sizeLimit="3072000" allowTypes="/(\.|\/)(xls)$/"/>
+            <f:facet name="footer">
+                <p:outputPanel styleClass="text-right">
+                    <p:commandButton value="${msg['label.cancel']}" actionListener="#{labelController.importData()}" 
+                                     update="mainContent, :growl" onclick="PF('uploadPanel').hide();" 
+                                     styleClass="ui-confirmdialog-yes" icon="ui-icon-check"
+                                     onstart="start()" onsuccess="finish()"/>
+                    <p:commandButton value="${msg['label.cancel']}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" onclick="PF('uploadPanel').hide();"/>
+                </p:outputPanel>
+            </f:facet>
+        </p:dialog>
+        
+        <c:set var="rowsPerPageTemplate" value="#{configController.getConfig('DATATABLE_ROW_PER_PAGE')}" scope="session" />
+        <c:set var="rows" value="#{configController.getConfig('DATATABLE_DEFAULT_PER_PAGE')}" scope="session" />
+        <p:dataTable
+            id="labelDataTable"
+            widgetVar="labelDataTable"
+            var="r"
+            value="#{labelController.list}"
+            sortMode="multiple"
+            editable="true"
+            scrollable="true"
+            paginator="true"
+            paginatorTemplate="#{layout.paginatorTemplate}" currentPageReportTemplate="#{layout.currentPageReportTemplate}"
+            rowsPerPageTemplate="#{rowsPerPageTemplate}"
+            rows="#{rows}"
+            pageLinks="5"
+            rowHover="true"
+            rendered="${sec.hasMethod('LabelController', 'search')}"
+            emptyMessage="#{msg['label.data.empty']}">
+            
+            <p:ajax event="rowEdit" listener="#{labelController.onRowEdit}" 
+                    update="labelDataTable, :growl" onstart="start()" onsuccess="finish()"/>
+            <p:ajax event="rowEditCancel" listener="#{labelController.onRowCancel}" update="labelDataTable, :growl"/>
+            <p:ajax event="page" onstart="PF('blockUIWidget').block()" onsuccess="PF('blockUIWidget').unblock()"/>
+            <p:ajax event="sort" onstart="PF('blockUIWidget').block()" onsuccess="PF('blockUIWidget').unblock()"/>
+        
+            <p:column headerText="${label['label.manager.table.module']}" filterBy="#{r.module}" filterMatchMode="contains" style="width:110px">
+                <h:outputText value="#{labelController.getModuleLabel(r.module)}" />
+                <f:facet name="filter">
+                    <p:selectOneMenu onchange="PF('labelDataTable').filter()">
+                        <f:selectItems value="#{labelController.moduleList.entrySet()}" var="entry" itemLabel="#{entry.value}" itemValue="#{entry.key}"/>
+                    </p:selectOneMenu>
+                </f:facet>
+            </p:column>
+            
+            <p:column headerText="${label['label.manager.table.text']}" sortable="true"
+                      filterBy="#{labelController.resourceList[r.pk.itemCode]}" filterMatchMode="contains">
+                <h:outputText value="#{labelController.resourceList[r.pk.itemCode]}" />
+            </p:column>
+
+            <c:if test="#{loginController.member.company.companyGlobalLocale eq 1}">
+                <p:column headerText="${label['label.manager.table.language']}" style="width:140px; text-align: center"
+                          filterBy="#{r.labelLanguage}" filterMatchMode="equals">
+                    <f:facet name="filter">
+                        <p:selectOneMenu value="#{labelController.currentLanguage}" onchange="PF('labelDataTable').filter()">
+                            <f:selectItems value="#{localeController.locales}"/>
+                        </p:selectOneMenu>
+                    </f:facet>
+                    <h:outputText value="#{labelController.getLanguageLabel(r.labelLanguage)}" />
+                </p:column>
+            </c:if>
+
+            <p:column headerText="${label['label.manager.table.new_text']}" sortable="true"
+                      filterBy="#{r.labelName}" filterMatchMode="contains">
+                <p:cellEditor>
+                    <f:facet name="output"><h:outputText value="#{r.labelName}" /></f:facet>
+                    <f:facet name="input">
+                        <p:inputText value="#{r.labelName}" style="width:100%" maxlength="255">
+                            <f:validator validatorId="gnext.validator.RequiredValidator" />
+                            <f:validator validatorId="gnext.validator.LengthValidator" />
+                            <f:attribute name="max" value="255"/>
+                            <f:attribute name="title" value="${label['label.manager.table.new_text']}"/>
+                        </p:inputText>
+                    </f:facet>
+                </p:cellEditor>
+            </p:column>
+            <p:column style="width:72px" styleClass="table-action">
+                <p:rowEditor rendered="#{sec.hasMethod('LabelController', 'update')}"/>
+                <p:commandLink actionListener="#{labelController.delete(r)}"
+                               update="labelDataTable, :growl"
+                               title="#{msg['label.delete']}" styleClass="ui-icon ui-icon-trash"
+                               onstart="start()" onsuccess="finish()"
+                               rendered="${sec.hasMethod('LabelController', 'delete')}">
+                    <p:confirm header="#{msg['label.confirm']}" message="#{msg['label.confirm.delete']}" icon="ui-icon-alert" />
+                </p:commandLink>
+            </p:column>
+        </p:dataTable>
+        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+            <p:commandButton value="#{msg['label.yes']}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+            <p:commandButton value="#{msg['label.no']}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+        </p:confirmDialog>
+        <pe:blockUI target="labelDataTable" content="blockUIContent" widgetVar="blockUIWidget"/>  
+        <ui:include src="/blocks/infile/blockui.xhtml"/>
+    </h:form>
+</ui:composition>
+

@@ -1,0 +1,251 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html">
+    <div id="pageTitle">#{mailBundle['label.mail.account.title']} #{msg['symbol.paren.left']}#{msg['label.create']}#{msg['symbol.paren.right']}</div>
+    <h:form id="frmMailAccount">
+        <h:panelGrid width="100%" styleClass="page-header">
+            <f:facet name="header">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h1>
+                            #{mailBundle['label.mail.account.title']}
+                            <small>#{mailBundle['label.mail.account.title.edit']}</small>
+                        </h1>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <p:commandButton value="#{msg['label.back']}"
+                                         icon="fa fa-chevron-circle-left"
+                                         actionListener="#{mailAccountController.load}"
+                                         title="#{msg['label.back']}"
+                                         update="mainContent" process="@this"
+                                         onstart="start()" onsuccess="finish()">
+                            <p:confirm header="#{msg['label.confirm']}" message="#{msg['label.message.confirm.back']}" icon="ui-icon-alert"/>
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+                        <p:commandButton value="#{msg['label.save']}"
+                                         icon="fa fa-check-circle"
+                                         actionListener="#{mailAccountController.save}"
+                                         rendered="${sec.hasMethod('MailAccountController', 'create')}"
+                                         title="#{msg['label.save']}"
+                                         update="frmMailAccount mainContent :growl"
+                                         onstart="start()" onsuccess="finish()">
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+                        <p:commandButton value="#{mailBundle['label.mail.account.test.read']}" id="btnTestReadMail"
+                                         disabled="#{mailAccountController.model.mailAccount.accountReceiveFlag==1?'false':'true'}"
+                                         icon="fa fa-hand-peace-o"
+                                         actionListener="#{mailAccountController.onTestReadMail}"
+                                         title="#{mailBundle['label.mail.account.test.read']}"
+                                         update=":growl"
+                                         onstart="start()" onsuccess="finish()">
+                        </p:commandButton>
+                        <p:commandButton value="#{mailBundle['label.mail.account.test.send']}" id="btnTestSendMail"
+                                         disabled="#{mailAccountController.model.mailAccount.accountSendFlag==1?'false':'true'}"
+                                         icon="fa fa-hand-peace-o"
+                                         actionListener="#{mailAccountController.onTestSendMail}"
+                                         title="#{mailBundle['label.mail.account.test.send']}"
+                                         update=":growl"
+                                         onstart="start()" onsuccess="finish()">
+                        </p:commandButton>
+                    </div>
+                </div>
+            </f:facet>
+        </h:panelGrid>
+        <div class="box">
+            <div class="box-body">
+                <p:panelGrid id="pgMailAccount" styleClass="crmcloud-panelgrid">
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{mailBundle['label.mail.account.server.name']}" styleClass="required"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:selectOneMenu value="#{mailAccountController.model.mailAccount.mailServer.serverId}"
+                                             filter="true" filterMatchMode="startsWith">
+                                <f:selectItems value="#{mailAccountController.mailServers}" var="ms" itemValue="#{ms.serverId}" itemLabel="#{stringController.substring(ms.serverName, 50)}"/>
+                                <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                <f:attribute name="title" value="#{mailBundle['label.mail.account.server.name']}"/>
+                            </p:selectOneMenu>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{mailBundle['label.mail.account.name']}" styleClass="required"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:inputText value="#{mailAccountController.model.mailAccount.accountName}"
+                                         styleClass="input_text" id="j_account_name" autocomplete="off" maxlength="45">
+                                <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:attribute name="max" value="45"/>
+                                <f:attribute name="title" value="#{mailBundle['label.mail.account.name']}"/>
+                            </p:inputText>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{mailBundle['label.mail.account.receive.flag']}" />
+                        </p:column>
+                        <p:column colspan="3">
+                            <h:panelGrid columns="2">
+                                <p:selectBooleanCheckbox value="#{mailAccountController.model.accountReceiveFlag}"
+                                                         style="width: 100%;" id="accountReceiveFlag"
+                                                         title="#{mailBundle['label.mail.account.accountReceiveFlag.title']}">
+                                    <p:ajax update="frmMailAccount:btnTestReadMail"/>
+                                </p:selectBooleanCheckbox>
+                                <p:outputLabel value="#{mailBundle['label.mail.account.receive.flag.message']}"/>
+                            </h:panelGrid>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{mailBundle['label.mail.account.send.flag']}" />
+                        </p:column>
+                        <p:column colspan="3">
+                            <h:panelGrid columns="2">
+                                <p:selectBooleanCheckbox value="#{mailAccountController.model.accountSendFlag}"
+                                                         style="width: 100%;" id="accountSendFlag"
+                                                         title="#{mailBundle['label.mail.account.accountSendFlag.title']}">
+                                    <p:ajax update="frmMailAccount:btnTestSendMail"/>
+                                </p:selectBooleanCheckbox>
+                                <p:outputLabel value="#{mailBundle['label.mail.account.send.flag.message']}"/>
+                            </h:panelGrid>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{mailBundle['label.mail.account.support']}" />
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:selectBooleanCheckbox
+                                value="#{mailAccountController.model.accountSupport}"
+                                style="width: 100%;"/>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{mailBundle['label.mail.account.request']}" />
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:selectBooleanCheckbox
+                                value="#{mailAccountController.model.accountRequest}"
+                                style="width: 100%;"/>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{mailBundle['label.mail.account.user.email']}" styleClass="required"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:inputText value="#{mailAccountController.model.mailAccount.accountMailAddress}"
+                                         styleClass="input_mail" autocomplete="off" id="j_account_address" maxlength="70">
+                                <p:keyFilter regEx="/[a-z0-9_\.\-@]/i" preventPaste="false"/>
+                                <f:validateRegex pattern="^[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$" />
+                                <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:attribute name="max" value="70"/>
+                                <f:validator validatorId="gnext.validator.EmailValidator" />
+                                <f:attribute name="title" value="#{mailBundle['label.mail.account.user.email']}"/>
+                            </p:inputText>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{mailBundle['label.mail.account.user.name']}" styleClass="required"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:inputText value="#{mailAccountController.model.mailAccount.accountUserName}"
+                                         styleClass="input_text" autocomplete="off" maxlength="70">
+                                <p:keyFilter regEx="/[a-z0-9_\.\-@]/i" preventPaste="false" />
+                                <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:attribute name="max" value="70"/>
+                                <f:attribute name="title" value="#{mailBundle['label.mail.account.user.name']}"/>
+                            </p:inputText>
+                           
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{mailBundle['label.mail.account.user.password']}" styleClass="required"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <!-- fake password to avoid autocomplete -->
+                            <input type="text" name="fromMember:j_password" id="fakeusername" style="display: none"/>
+                            <input type="password" style="display: none" id="fakepassword"/>
+                            <p:password value="#{mailAccountController.model.mailAccount.accountPassword}"
+                                        styleClass="input_text"  redisplay="true" autocomplete="new-password" maxlength="30">
+                                <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:attribute name="max" value="30"/>
+                                <f:attribute name="title" value="#{mailBundle['label.mail.account.user.password']}"/>
+                            </p:password>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{mailBundle['label.mail.account.delete.receive']}" />
+                        </p:column>
+                        <p:column colspan="3">
+                            <h:panelGrid
+                                style="width: 101%; margin-left: -6px; margin-top: -2px; margin-bottom: -2px;">
+                                <p:row>
+                                    <p:column>
+                                        <h:panelGrid columns="2">
+                                            <p:selectBooleanCheckbox id="chkaccountDeleteReceivedDays"
+                                                                     value="#{mailAccountController.model.accountDeleteReceivedDays}">
+                                                <p:ajax update="txtAccountDeleteReceivedDays" onstart="start()" onsuccess="finish()"
+                                                        listener="#{mailAccountController.onChangeAccountDeleteReceivedDays}" />
+                                            </p:selectBooleanCheckbox>
+                                            <p:outputLabel value="#{mailBundle['label.mail.account.delete.message']}"/>
+                                        </h:panelGrid>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <h:panelGrid columns="2">
+                                            <p:inputText id="txtAccountDeleteReceivedDays"
+                                                         disabled="#{mailAccountController.model.mailAccount.accountDeleteReceivedDays == null}"
+                                                         value="#{mailAccountController.model.mailAccount.accountDeleteReceivedDays}"
+                                                         styleClass="input_date input_number" autocomplete="off" maxlength="3"
+                                                         converterMessage="#{validator['validator.server.mail.day.delete']}">
+                                                <p:keyFilter regEx="/[0-9]/i" preventPaste="false"/>
+                                                <f:validator validatorId="gnext.validator.NumberValidator" />
+                                                <f:attribute name="title" value="#{mailBundle['label.mail.account.delete.receive']}"/>
+                                                <f:attribute name="allownegative" value="false"/>
+                                            </p:inputText>
+                                            <p:outputLabel value="#{mailBundle['label.mail.account.delete.not.message']}"/>
+                                        </h:panelGrid>
+                                    </p:column>
+                                </p:row>
+                            </h:panelGrid>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{msg['label.memo']}" />
+                        </p:column>
+                        <p:column colspan="3">
+                            <p:inputTextarea value="#{mailAccountController.model.mailAccount.accountMemo}"
+                                             styleClass="input_memo" maxlength="500">
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:attribute name="title" value="#{msg['label.memo']}"/>
+                                <f:attribute name="max" value="500"/>
+                            </p:inputTextarea>
+                        </p:column>
+                    </p:row>
+                </p:panelGrid></div></div>
+    </h:form>
+</ui:composition>

@@ -1,0 +1,50 @@
+div[id="frmCompany:datatableUCRM"] thead {
+    display:none;
+    width: 102%;
+}
+
+.crmcloud-panelgrid {
+    width: 100%;
+}
+
+.crmcloud-panelgrid .label-field {
+    background: rgb(235, 237, 240);
+    width: 150px;
+}
+
+.crmcloud_datatable .link {
+    color: #3c8dbc;
+}
+
+.crmcloud-datalist .panel-grid {
+    width: 100%;
+    margin-top: -1px;
+}
+
+.crmcloud-datalist {
+    margin-right: -6px;
+}
+
+.crmcloud-datalist > .ui-datalist-content {
+    border: 0px;
+    margin-left: -6px;
+    margin-top: -3px;
+    margin-bottom: -23px;
+}
+
+.ui-datatable-scrollable-body {
+    overflow: auto;
+    border-left: 1px solid #d5d5d5;
+    border-right: 1px solid #d5d5d5;
+    background-color: #fff;
+    height: 497.24px;
+}
+.ui-button-text-icon-left .ui-button-text {
+    padding: .21em 1em .21em 2.1em !important;
+}
+.ui-button .ui-button-text {
+    font-size: 1.1em !important;
+}
+.ui-button-text-icon-left .ui-icon.fa, .ui-button-text-icon-right .ui-icon.fa {
+    margin-top: -6px !important;
+}

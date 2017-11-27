@@ -1,0 +1,101 @@
+/** 全体見た目小さくする */
+.ui-widget {
+    font-size: 99% !important;
+}
+
+table {
+    width: 100%;
+    margin: 0;
+}
+
+i {
+    margin-right: 0.2em;
+}
+
+.ui-layout-unit {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+.fc-border-separate { margin-top: 0; }
+.fc-first {
+    height: 1.5em;
+    min-height: 1.5em;
+}
+.ui-timepicker-div {
+    padding-left: 0.5em;
+}
+
+.ui-panel-content{
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.ui-layout-unit-header {
+    text-align: center !important;
+}
+
+.ui-growl-message {
+    text-align: left;
+}
+
+.gn_span_datetime input {
+    max-width: 9.7em;
+}
+
+.gn_input_date,
+.gn_span_date input {
+    max-width: 7em;
+}
+
+.gn_span_time input {
+    max-width: 3.7em;
+}
+
+.div-head-left {
+    background-image: url("../images/appicon.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    max-height: 5.2em;
+    min-height: 5.2em;
+    max-width: 98%;
+    max-height: 98%;
+    text-align: right;
+    margin: 0;
+    padding: 0;
+/*    border: solid;*/
+}
+
+.ui-growl-image
+,.ui-growl-image-info
+,.ui-growl-image-warn
+,.ui-growl-image-error
+,.ui-growl-image-fatal{
+/*    background: none !important;*/
+    width: 0;
+    height: 0;
+    display: none !important;
+}
+.ui-growl-message{
+    padding: 0 !important;
+    width: 100% !important;
+}
+
+.dialog_tbl th {
+    margin: 0;
+    padding: 0;
+    width: 15%
+}
+
+.dialog_tbl td {
+    margin: 0;
+    padding: 0;
+    width: 35%;
+}
+
+.checkbox_th {
+    width: 15px;
+    max-width: 15px !important;
+    text-align: center;
+}

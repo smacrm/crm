@@ -1,0 +1,221 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:a="http://xmlns.jcp.org/jsf/passthrough"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <div id="pageTitle">#{sf['label.twilio.history.title']} #{msg['symbol.paren.left']}#{msg['label.show']}#{msg['symbol.paren.right']}</div>
+    <h:form prependId="false">
+        <h:panelGrid width="100%" styleClass="page-header">
+            <f:facet name="header">
+                <!-- Content Header (Page header) -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <h1>
+                            #{sf['label.twilio.history.title']}
+                            <small>#{msg['symbol.paren.left']}#{msg['label.show']}#{msg['symbol.paren.right']}</small>
+                        </h1>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <p:commandButton actionListener="#{twilioController.reload()}"
+                                         value="#{msg['label.back']}" icon="fa fa-chevron-circle-left" process="@this"
+                                         update="mainContent" onstart="start()" onsuccess="finish()">
+                            <p:confirm header="#{msg['label.confirm']}" message="#{msg['label.message.confirm.back']}" icon="ui-icon-alert"/>
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+                        <p:outputPanel styleClass="ui-groupbutton" rendered="#{not empty twilioController.twilio.twilioId}">
+                            <p:commandButton title="#{msg['label.previous']}" icon="fa fa-angle-left" styleClass="btn btn-default"
+                                             update=":growl, mainContent"
+                                             disabled="#{twilioController.itemViewIndex le 0}"
+                                             actionListener="#{twilioController.viewByIndex(twilioController.itemViewIndex-1)}"/>
+                            <p:commandButton value="#{twilioController.itemViewIndex+1}/#{twilioController.list.size()}" styleClass="ui-corner-none"/>
+                            <p:commandButton title="#{msg['label.next']}" icon="fa fa-angle-right" styleClass="ui-corner-right" 
+                                             update=":growl, mainContent"
+                                             disabled="#{twilioController.itemViewIndex + 1 ge twilioController.list.size()}"
+                                             actionListener="#{twilioController.viewByIndex(twilioController.itemViewIndex+1)}"/>
+                        </p:outputPanel>
+                        <p:commandButton value="#{msg['label.print']}" title="#{msg['label.print']}" icon="fa fa-print">
+                            <p:printer target="printArea"/>
+                        </p:commandButton>
+                    </div>
+                </div>
+                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                    <p:commandButton value="#{msg['label.yes']}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                    <p:commandButton value="#{msg['label.no']}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                </p:confirmDialog>
+            </f:facet>
+        </h:panelGrid>
+        <p:outputPanel id="printArea" styleClass="box">
+            <div class="box-body">
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <p:outputLabel value="Call ID" />
+                            </td>
+                            <td>
+                                <p:outputLabel value="#{twilioController.twilio.conferenceId}"/>
+                            </td>
+                            <td>
+                                <p:outputLabel value="#{sf['label.status']}"/>
+                            </td>
+                            <td colspan="3">
+                                <p:outputLabel value="#{twilioController.twilio.status}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="80">
+                                <p:outputLabel value="#{issue['label.attachment.caller.phone']}"/>
+                            </td>
+                            <td>
+                                <p:outputLabel value="#{twilioController.twilio.from}"/>
+                            </td>
+                            <td>
+                                <p:outputLabel value="#{issue['label.attachment.creator']}"/>
+                            </td>
+                            <td colspan="3">
+                                <p:outputLabel value="#{twilioController.twilio.agentId}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>#{sf['label.time.receive']}</td>
+                            <td>
+                                <h:outputText value="#{twilioController.twilio.receivedTime}">
+                                    <f:convertDateTime type="date" pattern="yyyy-MM-dd / HH:mm:ss"/>
+                                </h:outputText>
+                            </td>
+                            <td>#{sf['label.time.start']}</td>
+                            <td>
+                                <h:outputText value="#{twilioController.twilio.callStartTime}">
+                                    <f:convertDateTime type="date" pattern="yyyy-MM-dd / HH:mm:ss"/>
+                                </h:outputText>
+                            </td>
+                            <td>#{sf['label.time.finish']}</td>
+                            <td>
+                                <h:outputText value="#{twilioController.twilio.callFinishTime}">
+                                    <f:convertDateTime type="date" pattern="yyyy-MM-dd / HH:mm:ss"/>
+                                </h:outputText>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="6">#{sf['label.audio.download']}
+                                <p:spacer width="10"/>
+                                <p:link styleClass="recording-download" 
+                                        href="rest/twilio/record/#{twilioController.twilio.conferenceId}"
+                                        target="_blank">
+                                    <i class="fa fa-download"></i>
+                                </p:link>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="6">
+                                <c:set var="rowsPerPageTemplate" value="#{configController.getConfig('DATATABLE_ROW_PER_PAGE')}" scope="session" />
+                                <c:set var="rows" value="#{configController.getConfig('DATATABLE_DEFAULT_PER_PAGE')}" scope="session" />
+                                <p:dataTable var="r" value="#{twilioController.twilio.historyList}" scrollable="true"
+                                    lazy="true" paginator="true" paginatorTemplate="#{layout.paginatorTemplate}" currentPageReportTemplate="#{layout.currentPageReportTemplate}"
+                                    rowsPerPageTemplate="#{rowsPerPageTemplate}" rows="#{rows}" pageLinks="5" rowHover="true" emptyMessage="#{msg['label.data.empty']}">
+                                    <p:column style="width:90px">
+                                        <f:facet name="header">  
+                                            <h:outputText value="#{issue['label.attachment.creator']}"/>  
+                                        </f:facet> 
+                                        <h:outputText value="#{r.agentId}" />
+                                        <h:outputText value="-" rendered="#{empty r.agentId}"/>
+                                    </p:column>
+
+                                    <p:column style="width:350px">
+                                        <f:facet name="header">  
+                                            <h:outputText value="#{sf['label.status']}"/>  
+                                        </f:facet> 
+                                        <h:outputText value="#{r.status}" />
+                                        <h:outputText value="-" rendered="#{empty r.status}"/>
+                                    </p:column>
+
+                                    <p:column styleClass="text-center">
+                                        <f:facet name="header">  
+                                            <h:outputText value="#{sf['label.audio']}"/>  
+                                        </f:facet> 
+                                        <p:link href="/#play-recording" rendered="#{not empty r.recordingUrl}" 
+                                                a:ref="#{r.twilioHistoryId}"
+                                                styleClass="inline-play-recording">
+                                            <i class="fa fa-play-circle"></i>
+                                        </p:link>
+                                        <p:spacer width="10"/>
+                                        <p:link styleClass="recording-download" 
+                                                href="rest/twilio/record/#{r.twilioHistoryId}"
+                                                target="_blank"
+                                                rendered="#{not empty r.recordingUrl}">
+                                            <i class="fa fa-download"></i>
+                                        </p:link>
+                                    </p:column>
+
+                                    <p:column styleClass="text-center">
+                                        <f:facet name="header">  
+                                            <h:outputText value="#{sf['label.audio.status']}"/>  
+                                        </f:facet> 
+                                        <h:outputText value="#{r.recordingStatus}"/>
+                                    </p:column>
+
+                                    <p:column styleClass="text-center">
+                                        <f:facet name="header">  
+                                            <h:outputText value="#{sf['label.audio.duration']}"/>  
+                                        </f:facet> 
+                                        <h:outputText value="#{r.recordingDuration}"/>#{sf['label.twilio.second']}
+                                    </p:column>
+
+                                    <p:column style="width:180px">
+                                        <f:facet name="header">  
+                                            <h:outputText value="#{issue['label.attachment.timerange']}"/>  
+                                        </f:facet> 
+                                        <h:outputText value="#{r.callUpdateTime}">
+                                            <f:convertDateTime type="date" pattern="yyyy-MM-dd / HH:mm:ss"/>
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+                            </td>
+                        </tr>
+                    </tbody>    
+                </table>
+            </div><!-- /.box-body -->
+        </p:outputPanel><!-- /.box -->
+        <h:outputScript>
+            $(document).ready(function(){
+            var _audio = new Audio();
+            _audio.loop = false;
+            _audio.stop = function(){
+            this.pause();
+            this.currentTime = 0;
+            };
+            _audio.onended = function() {
+            $(".inline-play-recording i.fa-pause-circle").removeClass('fa-pause-circle')
+            .addClass('fa-play-circle');
+            };
+
+
+            $("#printArea").on('click', '.inline-play-recording i.fa-play-circle', function(e){
+            e.preventDefault();
+            var ref = $(this).parent().attr("ref");
+            if(ref &amp;&amp; !isNaN(ref)){
+            _audio.src = BASE_URL + "/rest/twilio/record/" + ref;
+            _audio.play();
+            }
+
+            $(".inline-play-recording i.fa-pause-circle").removeClass('fa-pause-circle')
+            .addClass('fa-play-circle');
+            $(this).removeClass('fa-play-circle').addClass('fa-pause-circle');
+            });
+
+            $("#printArea").on('click', '.inline-play-recording i.fa-pause-circle', function(e){
+            e.preventDefault();
+            if(_audio) _audio.stop();
+
+            $(".inline-play-recording i.fa-pause-circle").removeClass('fa-pause-circle')
+            .addClass('fa-play-circle');
+            $(this).removeClass('fa-pause-circle').addClass('fa-play-circle');
+            });
+            });
+        </h:outputScript>
+    </h:form>
+</ui:composition>
+

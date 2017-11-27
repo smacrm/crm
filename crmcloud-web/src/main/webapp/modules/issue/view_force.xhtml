@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <h:head></h:head>
+    <h:body>
+        <h:form prependId="false">
+            <c:set var="token" value="#{ifvc.isValidToken(param['code'])}"/>
+            <p:commandLink id="execute" actionListener="#{ifvc.execute(param['code'])}"/>
+            <h:outputScript rendered="#{not empty token}">
+                window.onload = function(){
+                    document.getElementById('execute').click();
+                };
+            </h:outputScript>
+            <h:outputScript rendered="#{empty token}">
+                alert('#{issue['label.issue.invalid_key']}');
+                window.location.href = '/index.xhtml';
+            </h:outputScript>
+        </h:form>
+    </h:body>
+</html>

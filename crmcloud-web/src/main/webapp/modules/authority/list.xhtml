@@ -1,0 +1,244 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:crm="http://gnext.co.jp/facelets">
+    <div id="pageTitle">#{companyBundle['label.authority.title']} #{msg['symbol.paren.left']}#{msg['label.list']}#{msg['symbol.paren.right']}</div>
+    <h:form>
+        <h:panelGrid width="100%" styleClass="page-header">
+            <f:facet name="header">
+                <!-- Content Header (Page header) -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <h1>
+                            #{companyBundle['label.authority.title']}
+                            <small>#{companyBundle['label.authority.title.screen']}</small>
+                        </h1>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <p:commandButton value="#{companyBundle['label.authority.reload']}" actionListener="#{authorityController.reload}"
+                                         title="#{companyBundle['label.authority.reload.title']}"  icon="fa fa-refresh" update="mainContent"
+                                         onstart="start()" onsuccess="finish()" 
+                                         rendered="${sec.hasMethod('AuthorityController', 'search')}"/>
+                        <p:commandButton value="#{companyBundle['label.authority.create']}" actionListener="#{authorityController.showCreateForm}"
+                                         update="mainContent" onstart="start()" onsuccess="finish()"
+                                         title="#{companyBundle['label.authority.create']}" icon="fa fa-plus-circle" 
+                                         rendered="${sec.hasMethod('AuthorityController', 'create')}">
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+                        <p:commandButton value="#{msg['label.download']}" title="#{msg['label.download']}" icon="fa fa-cloud-download"
+                                         rendered="${sec.hasMethod('AuthorityController', 'download')}" ajax="false">
+                            <pe:exporter type="xlsx" target="roleTable" tableTitle="#{companyBundle['label.authority.role.list']}"
+                                         fileName="#{authorityController.exportFileName}" encoding="UTF-8"/>
+                        </p:commandButton>
+                    </div>
+                </div>
+            </f:facet>
+            
+        </h:panelGrid>
+        <p:outputPanel rendered="${sec.hasMethod('AuthorityController', 'search')}">
+            <div class="box box-solid box-search">
+                <div class="box-header with-border" data-widget="collapse">
+                    <h3 class="box-title">#{msg['label.search.title']}</h3>
+                    #{msg['symbol.colon']}<code></code>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <div id="search-filter"></div>
+                </div>
+                <div class="box-footer text-center">
+                    <h:inputText value="#{authorityController.searchDataJson}" styleClass="searchDataJson" style="display: none"/>
+                    <p:commandLink actionListener="#{authorityController.search}" 
+                                   style="display:none" styleClass="search-action" 
+                                   onstart="start()" onsuccess="finish()" 
+                                   update="mainContent, :growl"/>
+
+                    <p:commandButton value="#{companyBundle['label.search']}" type="button" icon="fa fa-search" styleClass="btn-search"></p:commandButton>
+                </div>
+            </div>
+        </p:outputPanel>
+        <c:set var="rowsPerPageTemplate" value="#{configController.getConfig('DATATABLE_ROW_PER_PAGE')}" scope="session" />
+        <c:set var="rows" value="#{configController.getConfig('DATATABLE_DEFAULT_PER_PAGE')}" scope="session" />
+        <p:dataTable id="roleTable" var="r" value="#{authorityController.roleList}" rowIndexVar="itemViewIndex" style="width: 100%" scrollable="true"
+           lazy="true" paginator="true" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+            rowsPerPageTemplate="#{rowsPerPageTemplate}" rows="#{rows}" pageLinks="5" rowHover="true" emptyMessage="#{msg['label.data.empty']}">
+
+            <p:column style="width:50px" styleClass="table-action" exportable="false">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-success btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                        <span class="fa fa-cog"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <p:commandLink actionListener="#{authorityController.viewForm(r, itemViewIndex)}"
+                                           update="mainContent"
+                                           value="#{msg['label.show']}" styleClass="fa fa-search"
+                                           onstart="start()" onsuccess="finish()"
+                                           rendered="${sec.hasMethod('AuthorityController', 'view')}" >
+                                <f:param name="force" value="true"/>
+                            </p:commandLink>
+                        </li>
+                        <li>
+                            <p:commandLink actionListener="#{authorityController.showForm(r, itemViewIndex)}"
+                                           update="mainContent"
+                                           value="#{msg['label.edit']}" styleClass="fa fa-edit"
+                                           onstart="start()" onsuccess="finish()"
+                                           rendered="#{sec.hasMethod('AuthorityController','update') and ((r.creatorId != 1 and !sec.master) or (r.creatorId == 1 and sec.master )
+                                                   )}" >
+                                <f:param name="force" value="true"/>
+                            </p:commandLink>
+                        </li>
+                        <li>
+                            <p:commandLink actionListener="#{authorityController.remove(r)}"
+                                           update="mainContent, :growl"
+                                           value="#{msg['label.delete']}" styleClass="fa fa-trash"
+                                           onstart="start()" onsuccess="finish()"
+                                           rendered="#{sec.hasMethod('AuthorityController','delete') and ((r.creatorId != 1 and !sec.master) or (r.creatorId == 1 and sec.master)
+                                    )}">
+                                <p:confirm header="#{companyBundle['label.authority.confirm']}" message="#{companyBundle['label.authority.confirm.question']}" icon="ui-icon-alert" />
+                            </p:commandLink>
+                        </li>
+                    </ul>
+                </div>
+            </p:column>
+            
+            <p:column>
+                <f:facet name="header">  
+                    <h:outputText value="#{companyBundle['label.authority.role.name']}"/>  
+                </f:facet>
+                <p:commandLink value="#{r.roleName}"
+                               actionListener="#{authorityController.showForm(r, itemViewIndex)}"
+                               update="mainContent" style="color: #3c8dbc"
+                               onstart="start()" onsuccess="finish()"
+                               rendered="#{sec.hasMethod('AuthorityController','update') and ((r.creatorId != 1) 
+                                                   or (r.creatorId == 1 and sec.master )
+                                    )}">
+                    <f:param name="force" value="true"/>
+                </p:commandLink>
+                <p:commandLink value="#{r.roleName}"
+                               actionListener="#{authorityController.viewForm(r, itemViewIndex)}"
+                               update="mainContent" style="color: #3c8dbc"
+                               onstart="start()" onsuccess="finish()"
+                               rendered="${not (sec.hasMethod('AuthorityController','update') and ((r.creatorId != 1) 
+                                                   or (r.creatorId == 1 and sec.master )
+                                                   )) and sec.hasMethod('AuthorityController', 'view')}" >
+                    <f:param name="force" value="true"/>
+                </p:commandLink>
+                <h:outputLabel value="#{r.roleName}" rendered="${not (sec.hasMethod('AuthorityController','update') and ((r.creatorId != 1) 
+                                                   or (r.creatorId == 1 and sec.master )
+                                    )) and not sec.hasMethod('AuthorityController', 'view')}"/>
+            </p:column>
+
+            <p:column rendered="${sec.master}" style="width:350px">
+                <f:facet name="header">  
+                    <h:outputText value="#{companyBundle['label.company.name']}"/>  
+                </f:facet> 
+                <h:outputText value="#{r.company.companyName}" />
+            </p:column>
+            
+            <p:column style="width:180px">
+                <f:facet name="header">  
+                    <h:outputText value="#{companyBundle['label.authority.time']}"/>  
+                </f:facet> 
+                <h:outputText value="#{r.updatedTime}">
+                    <f:convertDateTime type="date" pattern="yyyy-MM-dd"/>
+                </h:outputText>
+            </p:column>
+
+            <p:column styleClass="text-center status-column">
+                <f:facet name="header">  
+                    <h:outputText value="#{msg['label.state']}"/>  
+                </f:facet> 
+                <crm:state state="#{r.roleDeleted}"/>
+            </p:column>
+        </p:dataTable>
+        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+            <p:commandButton value="#{msg['label.yes']}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+            <p:commandButton value="#{msg['label.no']}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+        </p:confirmDialog>
+        <h:outputScript library="js" name="search-filter.js"/>
+        <script type="text/javascript">
+            var searchFilterOpts = {
+                fields: [
+                    {
+                        "type": "string",
+                        "label": "#{companyBundle['label.authority.role.name']}",
+                        "name": 'c.roleName',
+                        'operator': ['EQ', 'LIKE', 'BLANK']
+                    },    
+                    {
+                        "type": "select",
+                        "label": "#{msg['label.state']}",
+                        "name": 'c.roleDeleted',
+                        'operator': ['EQ'],
+                        "data": [
+                            {
+                                'label': '#{msg['label.state.using']}',
+                                'value': '0'
+                            },
+                            {
+                                'label': '#{msg['label.state.deleted']}',
+                                'value': '1'
+                            }
+                        ]
+                    }
+                ],
+                callback: {
+                    onValue: function(field, value){
+                        if(value === '#{msg['label.state.using']}') return 0;
+                        if(value === '#{msg['label.state.deleted']}') return 1;
+                        return value;
+                    },
+                    onDisplayValue: function(field, value){
+                        if(value === 0) return '#{msg['label.state.using']}';
+                        if(value === 1) return '#{msg['label.state.deleted']}';
+                        return value;
+                    }
+                },
+                data: $('.searchDataJson').val(),
+                displayQuery: true,
+                queryContainer: $("#search-filter").closest('.box.box-search').find('.box-header code'),
+                langs:{
+                    AND: '#{msg['label.condition.and']}',
+                    OR: '#{msg['label.condition.or']}',
+                    LIKE: '#{msg['label.condition.like']}',
+                    LIKE_START: '#{msg['label.condition.like_start']}',
+                    LIKE_END: '#{msg['label.condition.like_end']}',
+                    NOT_LIKE: '#{msg['label.condition.not_like']}',
+                    BLANK: '#{msg['label.condition.blank']}',
+                    NOT_BLANK: '#{msg['label.condition.not_blank']}'
+                }
+            };
+        </script>
+        <c:if test="${sec.master}">
+            <script type="text/javascript">
+                searchFilterOpts.fields.push({
+                        "type": "select",
+                        "label": "#{companyBundle['label.company.name']}",
+                        "name": 'c.company.companyId',
+                        'operator': ['EQ'],
+                        "data": ${authorityController.companyList}
+                    });
+            </script>
+        </c:if>
+        <script type="text/javascript">
+            jQuery(document).ready(function ($) {
+                var sf = $("#search-filter").searchFilter(searchFilterOpts);
+
+                $(".btn-search").click(function (event) {
+                    event.preventDefault();
+                    var data = sf.data('searchFilter').getData();
+                    $('.searchDataJson').val(data);
+                    $(".search-action").trigger('click');
+                });
+            });
+        </script>
+    </h:form>
+</ui:composition>
+

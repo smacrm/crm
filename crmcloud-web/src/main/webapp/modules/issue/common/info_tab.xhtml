@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:composition>
+        <c:set var="baseInfoList" value="#{issueController.issue.issueInfoList}"/>
+        <c:set var="display_max_customer" value="6" />
+        <c:forEach var="baseInfo" items="#{baseInfoList}" varStatus="tabIndex" begin="0" end="#{display_max_customer}">
+            <p:tab>
+            <f:facet name="title">
+                <h:outputText value="#{issue['label.tab_base_info']}" rendered="#{tabIndex.index eq 0}"/>
+                <h:outputText value="(#{tabIndex.index})" rendered="#{tabIndex.index ne 0}"/>
+                <c:if test="#{loginController.member.companyStoreMode}">
+                    <p:commandLink actionListener="#{issueController.addInfoTab()}"
+                        onstart="start()" onsuccess="finish()"
+                        update="tabViewCustomer, :growl"
+                        process="tabViewCustomer"
+                        rendered="#{tabIndex.index eq 0}"
+                        styleClass="btn btn-xs btn-default fa fa-plus-circle link-add-icon"/>
+                    <p:commandLink
+                        actionListener="#{issueController.removeInfoTab(baseInfo.tabIdx)}" update="tabViewCustomer, :growl"
+                        onstart="start()" onsuccess="finish()"
+                        process="tabViewCustomer"
+                        style="padding: .7em; cursor: pointer"
+                        rendered="#{tabIndex.index gt 0}"
+                        styleClass="fa fa-times">
+                        <p:confirm
+                            header="${msg['label.delete']}"
+                            message="${issue['label.delete_customer']}"
+                            icon="ui-icon-alert" />
+                    </p:commandLink>
+                </c:if>
+            </f:facet>
+            <p:panelGrid id="baseInfo_#{tabIndex.index}" style="width: 100%;" styleClass="panelGrid_td_line_height ui-panelgrid-color">
+                <p:row>
+                    <p:column styleClass="td_15">
+                        <h:outputLabel value="${issue['label.issue_proposal_name']}" />
+                        <c:if test="${loginController.member.companyBusinessFlag != 1}"><font>*</font></c:if>
+                    </p:column>
+                    <p:column colspan="4">
+                        <p:commandButton
+                            id="issueProposalDialog"
+                            process="@this"
+                            actionListener="${issueController.openProposalProductDialog()}"
+                            onstart="start()" onsuccess="finish()"
+                            oncomplete="setTimeout(function () {CRMCLOUD.dialogFrameWorkTop('form_issue', 'issueProposalDialog');}, 50);"
+                            title="${issue['label.issue_proposal_name']}${msg['label.add']}"
+                            icon="fa fa-th"
+                            styleClass="menu-toggle">
+                            <f:param name="openDialogURL" value="/modules/issue/dialog/proposal_dialog" />
+                            <f:param name="width" value="1000" />
+                            <f:param name="height" value="600" />
+                            <f:param name="msgType" value="3" />
+                            <f:param name="tabId" value="#{tabIndex.index}" />
+                            <p:ajax event="dialogReturn" update="baseInfo_#{tabIndex.index}" />
+                        </p:commandButton>
+                        <h:outputText styleClass="outputLabelProposalName" value="${issueController.issue.issueInfoList.get(tabIndex.index).getIssueLinkedMenteName('issue_proposal_id', localeController.locale)}" 
+                                      style="font-weight: normal;" />
+                        <c:if test="${loginController.member.companyBusinessFlag == 1}">
+                            <p:commandLink
+                                id="commandLinkProposalName_minus"
+                                actionListener="#{issueController.deleteSelectName('issue_proposal_id', tabIndex.index)}"
+                                onclick="$(this).hide('slow');"
+                                update="baseInfo_#{tabIndex.index}"
+                                rendered="${!empty issueController.issue.issueInfoList.get(tabIndex.index).getIssueLinkedMenteName('issue_proposal_id', localeController.locale)}"
+                                process="@this"
+                                styleClass="btn btn-xs btn-default fa fa-minus-circle"
+                                style="float: right;margin-top: 0.1em;padding: 0.3em;" />
+                        </c:if>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column><h:outputLabel value="${issue['label.issue_keyword_name']}" /></p:column>
+                    <p:column colspan="4" style="white-space: normal !important;word-break: break-word !important;">
+                        <!--!! TODO-->
+                            <!--value="#{issueController.issue.issueInfoList.get(tabIndex.index).getIssueLinkedMenteIdList('issue_keyword_id')}" -->
+                        <p:selectCheckboxMenu label="${msg['label.select']}" value="#{issueController.issue.issueInfoList.get(tabIndex.index).keywords}"
+                                              filter="true" filterMatchMode="startsWith"
+                                              converter="gnext.converter.smart">
+                            <f:selectItems value="#{issueController.select.get('issue_keyword_id')}" />
+                            <p:ajax event="change" update="@this:issueKeywordIds" />
+                            <p:ajax event="toggleSelect" update="@this:issueKeywordIds"/>
+                        </p:selectCheckboxMenu>
+                        <h:outputLabel id="issueKeywordIds" value="#{issueController.issue.issueInfoList.get(tabIndex.index).getIssueLinkedMenteName('issue_keyword_id', localeController.locale, msg['symbol.ideographiccomma'])}" style="font-weight: normal;margin-left: 0.5em;" />
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column>
+                        <h:outputLabel value="${issue['label.issue_product_name']}" />
+                    </p:column>
+                    <p:column colspan="4">
+                        <p:commandButton
+                            id="issueProductDialog"
+                            process="@this"
+                            actionListener="${issueController.openProposalProductDialog()}"
+                            onstart="start()" onsuccess="finish()"
+                            oncomplete="setTimeout(function () {CRMCLOUD.dialogFrameWorkTop('form_issue', 'issueProductDialog');}, 50);"
+                            title="${issue['label.issue_product_name']}${msg['label.add']}"
+                            icon="fa fa-th"
+                            styleClass="menu-toggle">
+                            <f:param name="openDialogURL" value="/modules/issue/dialog/product_dialog" />
+                            <f:param name="width" value="1000" />
+                            <f:param name="height" value="600" />
+                            <f:param name="msgType" value="3" />
+                            <f:param name="tabId" value="#{tabIndex.index}" />
+                            <p:ajax event="dialogReturn" update="baseInfo_#{tabIndex.index}" />
+                        </p:commandButton>
+                        <h:outputText value="${issueController.issue.issueInfoList.get(tabIndex.index).getIssueProductName(localeController.locale)}" 
+                                      style="font-weight: normal;" styleClass="outputLabelProductName"/>
+                        <p:commandLink
+                            actionListener="#{issueController.deleteSelectName('issue_product_id', tabIndex.index)}"
+                            onclick="$(this).hide('slow');"
+                            update="baseInfo_#{tabIndex.index}"
+                            rendered="${!empty issueController.issue.issueInfoList.get(tabIndex.index).getIssueProductName(localeController.locale)}"
+                            process="@this"
+                            styleClass="btn btn-xs btn-default fa fa-minus-circle commandLinkProductName_minus"
+                            style="float: right;margin-top: 0.1em;padding: 0.3em;" />
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column>
+                        <h:outputLabel value="${issue['label.issue_product_memo']}" />
+                        <p:spacer width="5"/>
+                        <a href="#speech-record" locale="#{localeController.locale}" target=".issueeInputMemo_#{tabIndex.index}" title="#{msg['label.speech.search']}" 
+                           class="btn btn-xs btn-primary pull-right">
+                            <i class="fa fa-microphone state-stop"></i>
+                            <i class="fa fa-microphone faa-flash animated state-play"></i>
+                        </a>
+                    </p:column>
+                    <p:column colspan="4">
+                        <p:inputTextarea autoResize="false" value="#{issueController.issue.issueInfoList.get(tabIndex.index).issueProductMemo}" 
+                                         styleClass="input_memo issueeInputMemo_#{tabIndex.index}" maxlength="500" rows="2">
+                            <f:validator validatorId="gnext.validator.LengthValidator" />
+                            <f:attribute name="max" value="500"/>
+                            <f:attribute name="title" value="#{issue['label.issue_product_memo']}"/>
+                        </p:inputTextarea>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column>
+                        <h:outputLabel value="${issue['label.issue_content_ask']}" /><br/>
+                        <a href="#speech-record" locale="#{localeController.locale}" target=".issueContentAskId_#{tabIndex.index}" title="#{msg['label.speech.search']}" 
+                           class="btn btn-xs btn-primary pull-right">
+                            <i class="fa fa-microphone state-stop"></i>
+                            <i class="fa fa-microphone faa-flash animated state-play"></i>
+                        </a>
+                    </p:column>
+                    <p:column colspan="4">
+                        <p:inputTextarea
+                            autoResize="false"
+                            value="#{issueController.issue.issueInfoList.get(tabIndex.index).issueContentAsk}"
+                            rows="3" maxlength="2000"
+                            styleClass="issueContentAskId_#{tabIndex.index} input_text_area">
+                            <f:validator validatorId="gnext.validator.LengthValidator" />
+                            <f:attribute name="max" value="2000"/>
+                            <f:attribute name="title" value="#{issue['label.issue_comment']}"/>
+                        </p:inputTextarea>
+                        <div id="speech-summary-output" style="white-space: pre !important;word-break: break-word !important; background: lightyellow"></div>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column><h:outputLabel value="${issue['label.issue_risk_sensor']}" /></p:column>
+                    <p:column style="width: 5em;">
+                        <h:outputLabel value="${issue['label.issue_within_one_month']}" styleClass="font_weight_normal" />
+                    </p:column>
+                    <p:column style="text-align: left; line-height: 31px !important">
+                        <h:outputText value="#{issueController.issue.riskSensorOneMonth}#{issue['label.count']}" rendered="#{!empty issueController.issue.riskSensorOneMonth}"/>
+                        <p:spacer width="5"/>
+                        <p:commandButton value="#{issue['label.btn.ref']}" oncomplete="PF('dlgRiskSensor').show()" rendered="#{!empty issueController.issue.riskSensorOneMonth}"
+                                         actionListener="#{issueController.showRiskSensor(issueController.issue.riskSensorOneMonthList)}"
+                                         update="dlgRiskSensor" onstart="start()" onsuccess="finish()"/>
+                    </p:column>
+                    <p:column style="width: 5em;">
+                        <h:outputLabel value="${issue['label.issue_within_three_month']}" styleClass="font_weight_normal" />
+                    </p:column>
+                    <p:column style="text-align: left; line-height: 31px !important">
+                        <h:outputText value="#{issueController.issue.riskSensorThreeMonth}#{issue['label.count']}" rendered="#{!empty issueController.issue.riskSensorThreeMonth}"/>
+                        <p:spacer width="5"/>
+                        <p:commandButton value="#{issue['label.btn.ref']}" oncomplete="PF('dlgRiskSensor').show()" rendered="#{!empty issueController.issue.riskSensorThreeMonth}"
+                                         actionListener="#{issueController.showRiskSensor(issueController.issue.riskSensorThreeMonthList)}"
+                                         update="dlgRiskSensor" onstart="start()" onsuccess="finish()"/>
+                    </p:column>
+                </p:row>
+            </p:panelGrid>
+        </p:tab>
+        </c:forEach>
+    </ui:composition>
+</html>

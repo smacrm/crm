@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:a="http://xmlns.jcp.org/jsf/passthrough"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <c:if test="#{not empty twilioController.getToken()}">
+        <h:outputStylesheet>
+            /*#callpad{ 
+                position: relative; 
+            }
+            #callpad::before{ 
+                content: '(+81)';
+                position: absolute;
+                font-size: 24px;
+                line-height: 45px;
+                color: gray;
+            }*/
+        </h:outputStylesheet>
+        <!-- Phone: style can be found in dropdown.less -->
+        <li class="dropdown phone">
+            <a href="#" class="dropdown-toggle" title="#{msg['label.webrtc_phone']}" data-toggle="dropdown">
+                <i class="fa fa-phone"></i>
+                <!--<span class="label label-warning">10</span>-->
+            </a>
+            <div class="dropdown-menu">
+                <div class="row">
+                    <div class="col-md-12 call-status start">
+                        <div class="media">
+                            <div class="media-body padding-10">
+                                <h4 class="media-heading no-margin search-cus-name">
+                                    <span>#{msg['label.company']}</span>
+                                    <span class="pull-right text-sm">
+                                        #{msg['label.lastest.communication']}
+                                    </span>
+                                </h4>
+                                <span class="fa fa-phone text-primary"></span>
+                                <span class="search-cus-phonenumber">#{twilioController.twilioConfig.phoneNumber}</span>
+                                <span class="pull-right text-sm text-muted search-cus-lastcall">-</span>
+                            </div>
+                          </div>
+                    </div>
+                    <div class="col-md-12 call-status start" id="callpad">
+                        <input type="tel" name="telNumber" id="telNumber" class="form-control tel" value="" maxlength="19" size="19"/>
+                        <a href="#" class="back-action"><i class="fa fa-arrow-left"></i></a>
+                        <div class="num-pad">
+                            <div class="span4">
+                                <div class="num">
+                                    <div class="txt">
+                                        1
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="span4">
+                                <div class="num">
+                                    <div class="txt">
+                                        2 <span class="small"><p>ABC</p></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="span4">
+                                <div class="num">
+                                    <div class="txt">
+                                        3 <span class="small"><p>DEF</p></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="span4">
+                                <div class="num">
+                                    <div class="txt">
+                                        4 <span class="small"><p>GHI</p></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="span4">
+                                <div class="num">
+                                    <div class="txt">
+                                        5 <span class="small"><p>JKL</p></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="span4">
+                                <div class="num">
+                                    <div class="txt">
+                                        6 <span class="small"><p>MNO</p></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="span4">
+                                <div class="num">
+                                    <div class="txt">
+                                        7 <span class="small"><p>PQRS</p></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="span4">
+                                <div class="num">
+                                    <div class="txt">
+                                        8 <span class="small"><p>TUV</p></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="span4">
+                                <div class="num">
+                                    <div class="txt">
+                                        9 <span class="small"><p>WXYZ</p></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="span4">
+                                <div class="num">
+                                    <div class="txt">
+                                        *
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="span4">
+                                <div class="num">
+                                    <div class="txt">
+                                        0 <span class="small"><p>+</p></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="span4 control-call-ext">
+                                <div class="num">
+                                    <div class="txt">
+                                        <i class="fa fa-users text-warning" aria-hidden="true"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="col-md-12 call-status forward">
+                        <div class="input-group">
+                            <input type="text" name="searchUser" id="searchUser" class="form-control" value="" placeholder="#{msg['label.keyword']}" maxlength="13" size="13"/>
+                            <span class="input-group-btn">
+                                <button class="btn btn-default btn-xs" type="button" id="reload-forward-list" style="width: 34px;line-height: 30px;">
+                                    <i class="fa fa-refresh" aria-hidden="true"></i>
+                                </button>
+                            </span>
+                        </div>
+                        <input type="hidden" name="forwardUser" id="forwardUser"/>
+                        <ul class="list-group" id="forward-list"></ul>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="col-md-12 text-center call-status incoming">
+                        <p></p>
+                        <img src="http://placehold.it/160x160" style="border-radius: 50%"/>
+                        <h3>admin</h3>
+                        <span>+817043839282</span>
+                        <p></p>
+                    </div>
+                    <div class="col-md-12 text-center call-status calling">
+                        <p></p>
+                        <img src="http://placehold.it/160x160" style="border-radius: 50%"/>
+                        <h3>admin</h3>
+                        <span>+817043839282</span>
+                        <p></p>
+                        <h4>Calling...</h4>
+                        <div class="num-pad">
+                            <div class="span4" style="display: inline-block; float: none">
+                                <div class="num">
+                                    <div class="txt">
+                                        <i class="fa fa-user-plus" aria-hidden="true"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="span4 control-mute" style="display: inline-block; float: none">
+                                <div class="num">
+                                    <div class="txt">
+                                        <i class="fa fa-microphone-slash" aria-hidden="true"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p></p>
+                    </div>
+                    <div class="col-md-12 text-center call-status answering">
+                        <p></p>
+                        <img src="http://placehold.it/160x160" style="border-radius: 50%"/>
+                        <h3>admin</h3>
+                        <span>+817043839282</span>
+                        <p></p>
+                        <h4>00:01</h4>
+                        <div class="num-pad">
+                            <div class="span4">
+                                <div class="num">
+                                    <div class="txt">
+                                        <i class="fa fa-user-plus" aria-hidden="true"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="span4 control-mute">
+                                <div class="num">
+                                    <div class="txt">
+                                        <i class="fa fa-microphone-slash" aria-hidden="true"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="span4 control-forward">
+                                <div class="num">
+                                    <div class="txt">
+                                        <i class="fa fa-share" aria-hidden="true"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p></p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <a href="#CALL" class="btn btn-success btn-block call-status start" id="start-call">#{sf['label.call']}</a>
+                        <a href="#ANSWER" class="btn btn-success col-sm-6 call-status incoming" id="answer-call">#{sf['label.answer']}</a>
+                        <a href="#HANGUP" class="btn btn-danger col-sm-6 hangup-call call-status incoming">#{sf['label.hangup']}</a>
+                        <a href="#END" class="btn btn-danger btn-block finish-call call-status calling answering">#{sf['label.end']}</a>
+
+                        <a href="#CANCEL" class="btn btn-warning col-sm-6 cancel-forward call-status forward">#{sf['label.cancel']}</a>
+                        <a href="#FORWARD" class="btn btn-default col-sm-6 forward-call call-status forward" id="forward-call">#{sf['label.forward']}</a>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <c:set var="softphone_mode" value="#{configController.getConfig('SOFTPHONE_MODE')}" />
+        <c:if test="#{not empty softphone_mode and softphone_mode eq 'twilio' }">
+            <audio id="touch_sound" preload="true">
+                <source src="#{resource['sound/touch.mp3']}" type="audio/mpeg"/>
+            </audio>
+            <h:commandLink target="_blank" action="#{issueController.show(twilioController.issueId)}" id="twilioViewIssueAction" styleClass="hide" >
+                <f:param name="force" value="true"/>
+            </h:commandLink>
+            <h:inputHidden value="#{twilioController.callSid}" id="relateCallSid"/>
+            <h:inputHidden value="#{twilioController.custPhoneNumber}" id="custPhoneNumber"/>
+            <h:inputHidden value="#{twilioController.issueId}" id="relateIssueId"/>
+            <h:commandLink target="_blank" action="#{twilioController.doCreateIssue()}" id="twilioCreateIssueAction" styleClass="hide">
+                <f:param name="force" value="true"/>
+            </h:commandLink>
+            <h:outputScript library="plugins" name="mask/inputmask.min.js"/>
+            <h:outputScript library="plugins" name="mask/inputmask.phone.extensions.js"/>
+            <h:outputScript library="plugins" name="mask/phone-codes/phone-ja.js"/>
+            <h:outputScript library="plugins" name="mask/jquery.inputmask.min.js"/>
+            <h:outputScript library="js" name="twilio.js"/>
+            <h:outputScript target="head">
+                $(document).ready(function () {
+                    $("#navigation #telNumber").inputmask({
+                        mask: "[9[\-]]{1,12}",
+                        greedy: false,
+                        jitMasking: true,
+                    });
+                    /*$("#navigation #telNumber").inputmask({
+                        alias : "phoneja",
+                        greedy: false,
+                        onKeyValidation: function () { //show some metadata in the console
+                          console.log($(this).inputmask("getmetadata")["city"]);
+                        }
+                    });*/
+                    CRMCloudTwilio.start({
+                        companyId: '#{loginController.member.companyId}',
+                        memberId: '#{loginController.member.userId}',
+                        token: '#{twilioController.getToken()}',
+                        ringing: '#{resource['sound/incomming_call.mp3']}',
+                        debug: false,
+                        requiredSettingMsg: "#{sf['label.requiredsetting']}",
+                    });
+                });
+            </h:outputScript>
+        </c:if>
+        <c:if test="#{not empty softphone_mode and softphone_mode eq 'itelpy' }">
+            <script type="text/javascript">
+                $(document).ready(function () {
+                    $("#start-call").click(function (e) {
+                        e.preventDefault();
+                        var tel = $(this).parent().find("#telNumber").val();
+                        $.ajax({
+                            type: 'GET',
+                            url: BASE_URL + "/rest/itelpy/",
+                            data: {act: 'StartItelpy', IssueCode: '0001', TelNumber: tel},
+                            success: function (data, textStatus, jqXHR) {
+                                console.log('start call with itelpy');
+                            }
+                        })
+                    });
+                });
+            </script>
+        </c:if>
+    </c:if>
+</ui:composition>

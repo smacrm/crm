@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:crm="http://gnext.co.jp/facelets"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <style>
+        .ui-cell-editor-output,.ui-cell-editor-input, .ui-inputfield {
+            text-align: center;
+        }
+        .issue_lamp_color {
+            width: 20px;
+            height: 20px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+    </style>
+    <h:form id="issueLampFrm">
+        <p></p>
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-md-6">
+                            #{companyBundle['label.member.management.title']}
+                            <small>#{msg['label.title.list']}</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <p:dataTable id="tblIssueLamps" rowIndexVar="rowIndex"
+                                 var="issueLamp" value="#{issueLampController.issueLamps}"
+                                 scrollable="false" editable="true"
+                                 styleClass="static-table">
+                        <p:ajax event="rowEdit" listener="#{issueLampController.onRowEdit}" update="tblIssueLamps,sidebarLeft :growl" onstart="start()" onsuccess="finish()"/>
+                        <p:ajax event="rowEditCancel" listener="#{issueLampController.onRowCancel}" update="tblIssueLamps :growl" onstart="start()" onsuccess="finish()"/>
+                        <p:column headerText="#{companyBundle['label.group.parent.name']}" >                
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{issueLamp.itemName}"/></f:facet>
+                                <f:facet name="input"><p:inputText value="#{issueLamp.itemName}" style="width:100%;text-align: center"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        <p:column headerText="#{companyBundle['label.group.parent.name']}" >                
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{issueLamp.itemData}"/></f:facet>
+                                <f:facet name="input">
+                                    <!--<p:inputText value="#{issueLamp.lampProposalId}" style="width:100%;text-align: center"/>-->
+                                    <h:selectOneMenu value="#{issueLamp.lampProposalId}">
+                                        <f:selectItems value="#{issueLampController.proposalItems}" var ="item"
+                                                       itemLabel="#{item.itemData}" itemValue="#{item.menteOptionDataValuePK.itemId}"/>
+                                    </h:selectOneMenu>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        <p:column headerText="#{companyBundle['label.group.parent.name']}" style="text-align: center">       
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{issueLamp.lampDates}"/></f:facet>
+                                <f:facet name="input">
+                                    <p:inputNumber value="#{issueLamp.lampDates}" decimalPlaces="0"/>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        <p:column headerText="#{companyBundle['label.group.parent.name']}">                
+                            <p:cellEditor>
+                                <f:facet name="output" id="color_output">
+                                    <span class="issue_lamp_color" style="background-color: ##{issueLamp.lampColor}"></span>
+                                </f:facet>
+                                <f:facet name="input" id="color_input">
+                                    <p:colorPicker value="#{issueLamp.lampColor}" />     
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        <p:column headerText="Action" width="80px;" style="text-align: center"> 
+                            <f:facet name="header">
+                                <p:commandLink styleClass="btn btn-xs btn-default" 
+                                               actionListener="#{issueLampController.addStaticRow}" update="mainContent"
+                                               rendered="#{sec.hasMethod('MaintenanceController', 'create')}">
+                                    <span class="fa fa-plus-circle"></span>
+                                </p:commandLink>
+                            </f:facet>
+                            <p:rowEditor styleClass="ui-row-editor ui-helper-clearfix text-center editable" style="display: inline-flex" rendered="#{sec.hasMethod('MaintenanceController','update')}"/>
+                            <p:commandLink styleClass="ui-icon ui-icon-trash"
+                                           onstart="start()" onsuccess="finish()"
+                                           style="display: inline-flex"
+                                           actionListener="#{issueLampController.delete(issueLamp)}"
+                                           rendered="#{sec.hasMethod('MaintenanceController','delete')}"
+                                           update="sidebarLeft,tblIssueLamps :growl">
+                                <p:confirm header="#{msg['label.confirm']}" message="#{msg['label.confirm.delete']}" icon="ui-icon-alert" />
+                            </p:commandLink>
+                        </p:column>
+                    </p:dataTable>
+                </div>
+            </div>
+        </div>
+    </h:form>
+</ui:composition>

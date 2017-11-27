@@ -1,0 +1,347 @@
+body {
+    text-align: center;
+    margin: 0;
+    font-size: 88%;
+}
+
+.btn-xs {
+  padding: 2px;
+  padding-right: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 3px;
+  border: 1px solid #ddd;
+}
+
+.btn-default {
+    text-decoration: none;
+    background-color: #f4f4f4;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, .2);
+    -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15), 0 1px 1px rgba(0, 0, 0, .075);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15), 0 1px 1px rgba(0, 0, 0, .075);
+}
+.btn-default:active {
+    -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
+        box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
+}
+
+div.ui-datalist-empty-message {
+    padding: 0 !important;
+}
+
+.ui-dialog table td:first-child {
+    background: #F3F3F3 !important;
+}
+
+.ui-dialog .ui-dialog-content {
+    padding: 0 !important;
+}
+
+.ui-dialog-titlebar a {
+    margin-top: 0.3em !important;
+}
+
+.ui-panelgrid font {
+    color: red !important;
+}
+
+.button_padding_05 {
+    margin-top: 0.5em !important;
+}
+
+.input_text_97 {
+    width: 97% !important;
+}
+
+.input_text_98 {
+    width: 98% !important;
+}
+
+.input_text_99 {
+    width: 99% !important;    
+}
+
+.input_text_100 {
+    width: 100% !important;
+}
+
+.input_mail {
+    width: 18em !important;
+}
+
+.input_address {
+    width: 22em !important;
+}
+
+.ui-menu .ui-menu-parent .ui-menu-child {
+    width: 105% !important;
+}
+
+.selectBooleanCheckbox_todo {
+    margin-top: 0.3em !important;
+}
+
+.commandButtonMarginLeft_05 {
+    margin-left: 0.5em;
+}
+.ui-selectonebutton span {
+    font-weight: normal !important;
+}
+
+a.aSelected {
+    color: #a52a2a;
+    background: #f6f7f9 0 0 repeat-x;
+    background: -moz-linear-gradient(top,#f6f7f9 0,#ebedf0 100%);
+    background: -webkit-gradient(linear,left top,left bottom,color-stop(0%,#f6f7f9),color-stop(100%,#ebedf0));
+    background: -webkit-linear-gradient(top,#f6f7f9 0,#ebedf0 100%);
+    background: -o-linear-gradient(top,#f6f7f9 0,#ebedf0 100%);
+    background: -ms-linear-gradient(top,#f6f7f9 0,#ebedf0 100%);
+    background: linear-gradient(top,#f6f7f9 0,#ebedf0 100%);
+}
+
+.outputLabelBorderCircle {
+    margin-right: 0.3em !important;
+    padding: 0.2em !important;
+    border: 1px solid #d5d5d5;
+    border-radius: 50%;
+}
+
+.panelSreachProducts {
+    width: 100% !important;
+    text-align: right !important;
+    margin-bottom: -2.7em;
+    border: none;
+}
+
+.panelSreachProducts div:first-child {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.panelSreachProducts span {
+    font-weight: normal !important;
+}
+
+div.selectBooleanCheckboxMarginTop_02 {
+    margin-top: 0.2em;
+}
+
+.div_panelGridDialog_show {
+    height: 520px;
+    overflow-y: auto;
+    padding: 0 !important;
+}
+
+.panelGridDialog_show {
+    width: 99%;
+    border: none !important;
+}
+
+.panelGridDialog_show tr {
+    border: none !important;
+}
+
+.panelGridDialog_show  > td:nth-child(1),td:nth-child(3)  {
+    line-height: 1.5em !important;
+    white-space: nowrap !important;
+    width: 15% !important;
+    text-align: right !important;
+    border: 1px solid #d9d9d9 !important;
+    padding: 0.2em !important;
+}
+
+.panelGridDialog_show > td:nth-child(2),td:nth-child(4) {
+    line-height: 1.5em !important;
+    font-weight: normal !important;
+    width: 35% !important;
+    text-align: left !important;
+    border: 1px solid #d9d9d9 !important;
+    padding: 0.2em !important;
+}
+
+.div_panelGridDialog {
+    height: 560px;
+    overflow-y: auto;
+    padding: 0 !important;
+}
+
+.panelGridDialog {
+    width: 99%;
+    border-color:transparent;
+}
+
+.panelGridDialog tr,
+.panelGridDialog td{
+    border-color:transparent;
+}
+
+.panelGridDialog td:nth-child(1),td:nth-child(3) {
+    line-height: 1.5em !important;
+    white-space: nowrap !important;
+    width: 1% !important;
+    text-align: right !important;
+    padding: 0.2em !important;
+}
+
+.panelGridDialog td:nth-child(2),td:nth-child(4) {
+    line-height: 1.5em !important;
+    font-weight: normal !important;
+    width: 35% !important;
+    text-align: left !important;
+    padding: 0.2em !important;
+}
+
+.panelGridDialog_notBorder td:nth-child(1),td:nth-child(3) {
+    border: none !important;
+}
+
+.panelGridDialog_notBorder td:nth-child(2),td:nth-child(4) {
+    border: none !important;
+}
+
+.panelGridDialog_left {
+    width: 100%;
+    border: none !important;
+}
+
+.panelGridDialog_left td:first-child {
+    line-height: 1.5em !important;
+    white-space: nowrap !important;
+    width: 15% !important;
+    text-align: right !important;
+    padding: 0.2em !important;
+}
+
+.panelGridDialog_left td:last-child {
+    line-height: 1.5em !important;
+    font-weight: normal !important;
+    text-align: left !important;
+    padding: 0.2em !important;
+}
+
+.panelGridDialog td a {
+    margin-top: -0.2em;
+    margin-left: 0.2em;
+}
+
+.panelGridDialog div.panelDataTableEmailFileList {
+    border: none;
+    width: 100% !important;
+}
+
+.panelGridDialog div.panelDataTableEmailFileList div:nth-child(1) {
+    margin: 0;
+    padding: 0;
+}
+
+th.th_dataTableEmailFileList_minus {
+    width: 1em !important;
+    text-align: center !important;
+}
+
+td.th_dataTableEmailFileList_minus {
+    width: 1em !important;
+    text-align: center !important;
+}
+
+.panelGridDialog div.ui-fileupload-buttonbar {
+    border: none;
+    background: none;
+    padding: 0 !important;
+}
+
+.panelGridDialog div.ui-fileupload-content {
+    height: 100px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 60%;
+    background-image: url("./images/folder.png.xhtml");
+    border: 1px solid #d6d6d6;
+}
+
+.panelGridDialog div.ui-fileupload-content table {
+    display: none;
+}
+
+.panelGridDialog div.ui-fileupload-content table td {
+    text-align: left !important;
+}
+
+.td_minus {
+    width: 35px !important;
+    text-align: center !important;
+}
+
+.panelGridDialog td.noMarginPadding {
+    margin: 0;
+    padding: 0;
+    text-align: center !important;
+}
+
+.panelGridDialog td.verticalAlignTop {
+    vertical-align: top;
+}
+
+.panelGridDialog div.fileUploadContentBackground div:nth-child(2) div {
+    display: none !important;
+}
+
+.panelGridDataListProducts tbody > tr:first-child > td {
+    vertical-align: top;
+}
+
+.panelGridDataListProducts {
+    border-collapse: initial !important;
+    width: 100% !important;
+}
+
+.panelGridDataListProducts td {
+    padding: 0 !important;
+    border: none !important;
+    width: 20% !important;
+    min-width: 20% !important;
+    max-width: 20% !important;
+    text-align: left !important;
+}
+
+.panelGridDataListProducts td:last-child {
+    padding: 0 !important;
+    width: 40% !important;
+    min-width: 40% !important;
+    text-align: left !important;
+}
+
+.panelGridDataListProducts td:last-child div {
+   text-align: left !important;
+}
+
+.panelGridDataListProducts a {
+    text-decoration: none !important;
+    display: block !important;
+}
+
+.panelGridDataListProducts a:hover {
+    color: #1b1d1f;
+    background: #f6f7f9 0 0 repeat-x;
+    background: -moz-linear-gradient(top,#f6f7f9 0,#ebedf0 100%);
+    background: -webkit-gradient(linear,left top,left bottom,color-stop(0%,#f6f7f9),color-stop(100%,#ebedf0));
+    background: -webkit-linear-gradient(top,#f6f7f9 0,#ebedf0 100%);
+    background: -o-linear-gradient(top,#f6f7f9 0,#ebedf0 100%);
+    background: -ms-linear-gradient(top,#f6f7f9 0,#ebedf0 100%);
+    background: linear-gradient(top,#f6f7f9 0,#ebedf0 100%);
+}
+
+.panelGridDataListProducts div div:first-child label {
+    line-height: 2em;
+}
+
+.panelGridDataListProducts div div:last-child {
+    height: 560px !important;
+    overflow-y: auto;
+}
+
+.panelGridDataListProducts div div ul {
+    line-height: 2em !important;
+    padding-left: 0.2em !important;
+    margin: 0.1em !important;
+}

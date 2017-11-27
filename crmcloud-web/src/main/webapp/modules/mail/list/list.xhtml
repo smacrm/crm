@@ -1,0 +1,291 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <div id="pageTitle">#{mailFolderController.currentFolderName} - #{msg['label.menu.MAIL']}#{msg['symbol.paren.left']}#{msg['label.show']}#{msg['symbol.paren.right']}</div>
+    <div class="box box-primary no-margin">
+        <div class="box-body no-padding">
+            <p:outputPanel styleClass="mailbox-controls">
+                <p:selectBooleanCheckbox style="padding: 0 10px 0 2px" value="#{mailListController.chkItem}" disabled="#{mailListController.datas.size() le 0 ? true: false}">
+                    <p:ajax update="@(.mailbox-controls), listOfMailMessages" listener="#{mailListController.onCheckBoxItemChange}" oncomplete="$.fn.smoothElements();"/>
+                </p:selectBooleanCheckbox>
+
+                <p:selectOneMenu effect="fade" filter="true" filterMatchMode="startsWith"
+                                 widgetVar="selCofirmMoveToFolder01"
+                                 onchange="PF('cofirmMoveToFolder').show();"
+                                 disabled="#{!mailListController.checkSelectedItems()}"
+                                 value="#{mailListController.folderToChange}">
+                    <p:ajax listener="#{mailListController.moveMailToFolder}">
+                        <f:param name="actionMoveToFolder" value=""/>
+                    </p:ajax>
+                    <f:selectItem itemLabel="" itemValue="" />
+                    <f:selectItems value="#{mailFolderController.allFolders}"
+                                   var="folder"
+                                   itemLabel="#{folder.displayFolderNameWithIcon}"
+                                   itemValue="#{folder.folderCode}">
+                    </f:selectItems>
+                </p:selectOneMenu>
+
+                <p:commandButton value="#{msg['label.delete']}" title="#{msg['label.delete']}"
+                                 icon="fa fa-trash"
+                                 actionListener="#{mailListController.delete}"
+                                 update="mainContent"
+                                 disabled="#{!mailListController.checkSelectedItems()}"
+                                 onstart="start()" onsuccess="finish()">
+                    <p:confirm header="#{mailBundle['label.mail.list.confirm.delete.header']}" message="#{mailBundle['label.mail.list.confirm.delete.message']}" icon="ui-icon-alert" />
+                </p:commandButton>
+
+                <p:spacer width="30"/>
+                <i class="fa fa-sort" aria-hidden="true"></i>
+                <p:spacer width="5"/>
+                <p:selectOneMenu style="width:125px" value="#{mailListController.sort}" disabled="#{mailListController.datas.size() le 0 ? true: false}">
+                    <p:ajax listener="#{mailListController.onSortChange}" update="mainContent" onstart="start()" onsuccess="finish()"/>
+                    <f:selectItems value="#{mailListController.sortItems}"/>
+                </p:selectOneMenu>
+
+                <p:spacer width="30"/>
+                <i class="fa fa-filter" aria-hidden="true"></i>
+                <p:spacer width="5"/>
+                
+                <!--
+                <p:selectOneMenu style="width:125px" value="#{mailListController.filter}">
+                    <p:ajax listener="#{mailListController.onFilterChange}" update="mainContent" />
+                    <f:selectItem itemLabel="" itemValue="" />
+                    <f:selectItems value="#{mailListController.filterItems}"/>
+                </p:selectOneMenu>
+                -->
+                <p:selectOneMenu style="width:125px" value="#{mailListController.mailPersonId}">
+                    <p:ajax listener="#{mailListController.onPersonChange}" update="mainContent" onstart="start()" onsuccess="finish()"/>
+                    <f:selectItem itemLabel="" itemValue="" />
+                    <f:selectItems value="#{mailListController.mailPersons}" var="person" itemValue="#{person.mailPersonId}" itemLabel="#{person.mailPersonInCharge.memberNameFirst}"/>
+                </p:selectOneMenu>
+
+                <!-- Tìm kiếm theo ngày tháng -->
+                <p:spacer width="5"/>
+                <p:commandButton id="btnSearchBySentData" icon="fa fa-calendar" type="button"/>
+                <p:overlayPanel id="panelSearchBySentData" widgetVar="panelSearchBySentData" for="btnSearchBySentData" hideEffect="fade" showCloseIcon="false" my="right top" at="right bottom"
+                                onShow="$(document.body).unbind('mousedown.ui-overlay')" dismissable="false">
+                    <p:commandLink value="#{mailBundle['label.mail.list.filter.date.month.three']}" actionListener="#{mailListController.onSentDateChange(3, null, null)}" update="mainContent" onstart="start()" onsuccess="finish()"/><br/>
+                    <p:commandLink value="#{mailBundle['label.mail.list.filter.date.month.two']}" actionListener="#{mailListController.onSentDateChange(1, null, null)}" update="mainContent" onstart="start()" onsuccess="finish()"/><br/>
+                    <p:commandLink value="#{mailBundle['label.mail.list.filter.date.month.one']}" actionListener="#{mailListController.onSentDateChange(null, 1, null)}" update="mainContent" onstart="start()" onsuccess="finish()"/><br/>
+                    <p:commandLink value="#{mailBundle['label.mail.list.filter.date.month.today']}" actionListener="#{mailListController.onSentDateChange(null, null, 1)}" update="mainContent" onstart="start()" onsuccess="finish()"/><br/>
+                    <p:calendar id="calSearchBySentDataFrom" value="#{mailListController.from}" locale="#{loginController.member.locale}" pattern="yyyy/MM/dd" showOn="button" styleClass="input_datetime"> </p:calendar>
+                    <p:calendar id="calSearchBySentDataTo" value="#{mailListController.to}" locale="#{loginController.member.locale}" pattern="yyyy/MM/dd" showOn="button" styleClass="input_datetime"> </p:calendar>
+                    <p:commandButton actionListener="#{mailListController.onSentDateChange(null, null, null)}" update="mainContent" value="OK" onstart="start()" onsuccess="finish()"/><br/>
+                </p:overlayPanel>
+
+                <p:spacer width="20"/>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-#{mailListController.hasAttachment ? 'primary' : 'default'} btn-sm cmd-remote-command" cmd="#mail_filter_attachment">
+                        <i class="fa fa-file-archive-o"></i>
+                    </button>
+                    <button type="button" class="btn btn-#{mailListController.readed ? 'primary' : 'default'} btn-sm cmd-remote-command" cmd="#mail_filter_read">
+                        <i class="fa fa-circle"></i>
+                    </button>
+                </div>
+                <!-- hidden action -->
+                <p:selectBooleanButton value="#{mailListController.hasAttachment}" 
+                                       id="mail_filter_attachment" styleClass="hide"
+                                       onLabel="" offLabel="">
+                    <p:ajax listener="#{mailListController.onFilterAttachmentChange}" update="mainContent" onstart="start()" onsuccess="finish()"/>
+                </p:selectBooleanButton>
+
+                <p:selectBooleanButton value="#{mailListController.readed}"
+                                       id="mail_filter_read" styleClass="hide"
+                                       onLabel="" offLabel="">
+                    <p:ajax listener="#{mailListController.onFilterMailReadedChange}" update="mainContent" onstart="start()" onsuccess="finish()"/>
+                </p:selectBooleanButton>
+                <!-- /hidden action -->
+                <div class="pull-right">
+                    <p:selectOneMenu value="#{mailListController.paginator.limit}">
+                        <p:ajax listener="#{mailListController.onChangeRowsPerPageTemplate}" update="mainContent" onstart="start()" onsuccess="finish()">
+                        </p:ajax>
+                        <f:selectItems value="#{mailListController.paginator.rowsPerPageTemplate}" />
+                    </p:selectOneMenu>
+
+                    <p:spacer width="20"/>
+                    <h:outputLabel style="display: inline;"
+                                   value="#{mailListController.paginator.from} ~ #{mailListController.paginator.to} / #{mailListController.paginator.total}"/>
+                    <p:spacer width="10"/>
+                    <div class="btn-group">
+                        <p:commandLink styleClass="btn btn-default btn-sm"
+                                       title="#{msg['label.previous']}"
+                                       disabled="#{mailListController.paginator.first}"
+                                       actionListener="#{mailListController.previousPaging}"
+                                       update="mainContent"
+                                       onstart="start()" onsuccess="finish()">
+                            <i class="fa fa-chevron-left"></i>
+                        </p:commandLink>
+                        <p:commandLink styleClass="btn btn-default btn-sm"
+                                       title="#{msg['label.next']}"
+                                       disabled="#{mailListController.paginator.last}"
+                                       actionListener="#{mailListController.nextPaging}"
+                                       update="mainContent"
+                                       onstart="start()" onsuccess="finish()">
+                            <i class="fa fa-chevron-right"></i>
+                        </p:commandLink>
+                    </div>
+                    <!-- /.btn-group -->
+                </div>
+                <!-- /.pull-right -->
+            </p:outputPanel>
+            <p:outputPanel id="listOfMailMessages" styleClass="table-responsive mailbox-messages table-hover">
+                <table class="table table-hover table-striped">
+                    <col width="20"/>
+                    <col width="200"/>
+                    <col width=""/>
+                    <col width="10"/>
+                    <col width="80"/>
+                    <col width="100"/>
+                    <tbody>
+                        <c:if test="#{mailListController.datas.size() le 0}">
+                            <tr>
+                                <td class="text-center" colspan="10">
+                                    <h:outputText value="#{mailBundle['label.mail.list.filter.result.empty']}" styleClass="text-danger"/>
+                                </td>
+                            </tr>
+                        </c:if>
+                        <c:forEach items="#{mailListController.datas}" var="mail">
+                            <tr class="#{mailListController.dataSelected[mail.mailData.mailDataId] ? 'active' : ''}">
+                                <td>
+                                    <p:selectBooleanCheckbox value="#{mailListController.dataSelected[mail.mailData.mailDataId]}" onchange="$(this).closest('tr').toggleClass('active')">
+                                        <p:ajax listener="#{mailListController.onDataItemChange(mail.mailData.mailDataId)}" 
+                                                update="@(.mailbox-controls)"/>
+                                    </p:selectBooleanCheckbox>
+                                </td>
+                                <td class="mailbox-name">
+                                    <span><h:outputText value="#{mail.mailData.mailDataFrom}" /></span>
+                                </td>
+                                <td class="mailbox-subject">
+                                    <p:commandLink value="#{mail.mailData.mailDataSubject}" onstart="start()" onsuccess="finish()"
+                                                   actionListener="#{mailController.gotoDetails}"
+                                                   style="font-weight:#{(not empty mail.mailData.mailDataIsRead and mail.mailData.mailDataIsRead == 1)?'normal':'bold'};"
+                                                   update=":mailingListForm:mailContentPanel, :mailingListForm:emailDetailToolPanel, :mainScript">
+                                        <f:param name="mailId" value="#{mail.mailData.mailDataId}"/>
+                                        <f:param name="rowNum" value="#{mail.rowNum}"/>
+                                        <f:param name="fromList" value="true"/>
+                                    </p:commandLink>
+                                    <p><h:outputText value="#{mail.displayBodyOnList}" styleClass="text-muted"/></p>
+                                </td>
+                                <td class="mailbox-attachment">
+                                    <h:outputText styleClass="fa fa-paperclip" rendered="#{not empty mail.attachments}"></h:outputText>
+                                </td>
+                                <td class="mailbox-date text-right">
+                                    <h:outputText value="#{mail.mailData.mailDataDatetime}" title="#{mail.mailData.mailDataDatetime}">
+                                        <f:converter converterId="org.ocpsoft.PrettyTimeConverter"/>
+                                    </h:outputText>
+                                </td>
+                                <td class="mailbox-date text-right">
+                                    <!-- Hiển thị mã code issue -->
+                                    <c:choose>
+                                        <c:when test="#{empty mail.mailData.issue}">
+                                            <h:commandLink value="#{mailBundle['label.mail.issue.create']}" title="#{mailBundle['label.mail.issue.create']}" 
+                                                           styleClass="btn btn-default btn-sm"
+                                                           actionListener="#{mail2IssueController.processExplodeMail(mail.mailData.mailDataId)}" 
+                                                           action="#{issueController.outcome(-1)}"
+                                                           target="_blank" >
+                                                <f:param name="id" value="-1"/>
+                                                <f:param name="force" value="true"/>
+                                            </h:commandLink>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <h:commandLink action="#{issueController.show()}" 
+                                                           target="_blank">  
+                                                <h:outputText value="#{mail.mailData.issue.issueViewCode}" styleClass="txtlink" />
+                                                <f:param name="id" value="#{mail.mailData.issue.issueId}"/>
+                                                <f:param name="mailId" value="#{mail.mailData.mailDataId}"/>
+                                                <f:param name="newwindow" value="true"/>
+                                                <f:param name="force" value="true"/>
+                                            </h:commandLink>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <!-- Hiển thị người phụ trách issue -->
+                                    <br/>
+                                    <c:choose>
+                                        <c:when test="#{empty mail.mailData.mailPerson}"><h:outputText value="--"/></c:when>
+                                        <c:otherwise>
+                                            <h:outputText value="#{mail.mailData.mailPerson.mailPersonInCharge.memberNameFirst}"></h:outputText>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <br/>
+                                    <!-- Hiển thị history -->
+                                    <c:choose>
+                                        <c:when test="#{mail.hasEscalation()}">
+                                            #{mailBundle['label.mail.list.escalation.exits']}
+                                        </c:when>
+                                        <c:otherwise> <h:outputText value="--"/> </c:otherwise>
+                                    </c:choose>
+                                </td>
+                            </tr>
+                        </c:forEach>
+                    </tbody>
+                </table>
+                <!-- /.table -->
+            </p:outputPanel>
+            <!-- /.mail-box-messages -->
+        </div>
+        <!-- /.box-body -->
+        <div class="box-footer no-padding">
+            <p:outputPanel styleClass="mailbox-controls">
+                <p:selectBooleanCheckbox style="padding: 0 10px 0 2px" value="#{mailListController.chkItem}">
+                    <p:ajax update="mainContent" listener="#{mailListController.onCheckBoxItemChange}" />
+                </p:selectBooleanCheckbox>
+
+                <p:selectOneMenu effect="fade"
+                                 onchange="PF('cofirmMoveToFolder').show();"
+                                 widgetVar="selCofirmMoveToFolder02"
+                                 disabled="#{!mailListController.checkSelectedItems()}"
+                                 value="#{mailListController.folderToChange}">
+                    <p:ajax listener="#{mailListController.moveMailToFolder}">
+                        <f:param name="actionMoveToFolder" value=""/>
+                    </p:ajax>
+                    <f:selectItem itemLabel="" itemValue="" />
+                    <f:selectItems value="#{mailFolderController.allFolders}"
+                                   var="folder"
+                                   itemLabel="#{folder.displayFolderNameWithIcon}"
+                                   itemValue="#{folder.folderCode}">
+                    </f:selectItems>
+                </p:selectOneMenu>
+
+                <p:commandButton value="#{msg['label.delete']}" title="#{msg['label.delete']}"
+                                 icon="fa fa-trash"
+                                 actionListener="#{mailListController.delete}"
+                                 update="mainContent"
+                                 disabled="#{!mailListController.checkSelectedItems()}"
+                                 onstart="start()" onsuccess="finish()">
+                    <p:confirm header="#{mailBundle['label.mail.list.delete.confirm.header']}" message="#{mailBundle['label.mail.list.delete.confirm.message']}" icon="ui-icon-alert" />
+                </p:commandButton>
+                <div class="pull-right">
+                    <p:spacer width="20"/>
+                    <h:outputLabel style="display: inline;"
+                                   value="#{mailListController.paginator.from} ~ #{mailListController.paginator.to} / #{mailListController.paginator.total}"/>
+                    <p:spacer width="10"/>
+                    <div class="btn-group">
+                        <p:commandLink styleClass="btn btn-default btn-sm"
+                                       title="#{msg['label.previous']}"
+                                       disabled="#{mailListController.paginator.first}"
+                                       actionListener="#{mailListController.previousPaging}"
+                                       update="mainContent"
+                                       onstart="start()" onsuccess="finish()">
+                            <i class="fa fa-chevron-left"></i>
+                        </p:commandLink>
+                        <p:commandLink styleClass="btn btn-default btn-sm"
+                                       title="#{msg['label.next']}"
+                                       disabled="#{mailListController.paginator.last}"
+                                       actionListener="#{mailListController.nextPaging}"
+                                       update="mainContent"
+                                       onstart="start()" onsuccess="finish()">
+                            <i class="fa fa-chevron-right"></i>
+                        </p:commandLink>
+                    </div>
+                    <!-- /.btn-group -->
+                </div>
+                <!-- /.pull-right -->
+            </p:outputPanel>
+        </div>
+    </div>
+
+</ui:composition>

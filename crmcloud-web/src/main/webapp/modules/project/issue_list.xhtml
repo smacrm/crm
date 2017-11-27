@@ -1,0 +1,167 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <div id="pageTitle">#{projectController.project.listName}</div>
+    <h:form id="projectList" onkeypress="if (event.keyCode === 13 &amp;&amp; $(event.target).prop('tagName') !== 'TEXTAREA') { return false; }" enctype="multipart/form-data" 
+            rendered="#{(sec.isMaster() or sec.hasMethod('IssueController', 'view'))}" prependId="false">
+        <h:panelGrid width="100%" styleClass="page-header" style="margin: 0;padding: 0;">
+            <f:facet name="header">
+                <!-- Content Header (Page header) -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <h1>#{projectController.project.listName}
+                            <c:if test="#{(sec.isMaster() or sec.hasMethod('ProjectController', 'search'))}">
+                                <small>
+                                    <p:inputText
+                                        id="quicksearch"
+                                        value="#{projectController.keyword}" placeholder="${msg['label.keyword']}"
+                                        maxlength="100" style="font-size: 12px !important; padding: 6px !important;"
+                                        onkeydown="if(event.keyCode === 13) return false;" 
+                                        onkeyup="if(event.keyCode === 13){ $('.btn-search').trigger('click'); return false; }"/>
+                                    <p:commandButton icon="fa fa-search" style="width: 2em;height: 2em;margin-right: 1em;margin-bottom: 0.2em !important;" onclick="$('.btn-search').trigger('click');" />
+                                    <!--<span data-toggle="tooltip" data-placement="right" title="${msg['label.quicksearch_hint']}" class="badge bg-default">?</span>-->
+                                    <p:selectOneRadio id="console" value="#{projectController.keywordCondition}" style="display: inline-block; vertical-align: middle;">
+                                        <f:selectItem itemLabel="#{msg['label.and']}" itemValue="AND" />
+                                        <f:selectItem itemLabel="#{msg['label.or']}" itemValue="OR"/>
+                                    </p:selectOneRadio>
+                                </small>
+                            </c:if>
+                        </h1>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <c:choose>
+                            <c:when test="#{loginController.member.companyCustomerMode}">
+                                <h:outputLabel value="#{msg['label.created_time']}" style="font-size: 12px;"/>
+                            </c:when>
+                            <c:otherwise>
+                                <h:outputLabel value="#{issue['label.issue_receive_date.cond']}" style="font-size: 12px;"/>
+                            </c:otherwise>
+                        </c:choose>
+                        <font color="red" style="font-size: 12px; font-weight: normal;">*</font>
+                        <p:spacer width="5"/>
+                        <p:calendar id="fromDateSearch" value="#{projectController.project.dateFrom}" pattern="yyyy/MM/dd" size="12" 
+                                    maxdate="#{projectController.project.dateTo}"
+                                    required="true" label="#{issue['label.issue_receive_date.from']}" placeholder="#{issue['label.issue_receive_date.from']}">
+                            <p:ajax event="dateSelect" oncomplete="$('.btn-search').click()" update="toDateSearch" />
+                        </p:calendar>
+                        <h:outputText value="~" style="font-size: 12px; font-weight: normal; display: inline-block; margin: 0 5px;"/>
+                        <p:calendar id="toDateSearch" widgetVar="toDateSearch" maxdate="toDateSearch.today()" size="12" 
+                                    required="true" label="#{issue['label.issue_receive_date.to']}" placeholder="#{issue['label.issue_receive_date.to']}"
+                                    value="#{projectController.project.dateTo}" mindate="#{projectController.project.dateFrom}" pattern="yyyy/MM/dd">
+                            <p:ajax event="dateSelect" oncomplete="$('.btn-search').click()" update="fromDateSearch"/>
+                        </p:calendar>
+                        <p:spacer width="10"/>
+                            <c:choose>
+                                <c:when test="#{loginController.member.companyCustomerMode}">
+                                    <p:commandButton
+                                        value="${msg['label.create']}"
+                                        actionListener="#{customerController.openTab}" onclick="this.form.action = '/index.xhtml?custId=0';"
+                                        icon="fa fa-plus-circle"  
+                                        update="mainContent, :growl"
+                                        onstart="start()" onsuccess="finish()">
+                                        <f:param name="custId" value="0"/> <!-- trường hợp thêm mới. -->
+                                        <f:param name="force" value="true"/>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        rendered="#{(sec.isMaster() or sec.hasMethod('IssueController', 'download'))}"
+                                        ajax="false"
+                                        value="${msg['label.download']}"
+                                        icon="fa fa-cloud-download"
+                                        onstart="start()" onsuccess="finish()" />
+                                </c:when>
+                            
+                                <!-- công ty là loại bình thường. -->
+                                <c:otherwise>
+                                    <p:commandButton
+                                        value="${msg['label.create']}"
+                                        rendered="#{(sec.isMaster() or sec.hasMethod('IssueController', 'create'))}"
+                                        actionListener="#{issueController.create}" onclick="this.form.action = '/index.xhtml?id=0';"
+                                        icon="fa fa-plus-circle"  
+                                        update="mainContent"
+                                        onstart="start()" onsuccess="finish()">
+                                        <f:param name="issueIdx" value="notNext" />
+                                        <f:param name="force" value="true"/>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        rendered="#{(sec.isMaster() or sec.hasMethod('IssueController', 'download'))}"
+                                        ajax="false"
+                                        value="${msg['label.download']}"
+                                        icon="fa fa-cloud-download"
+                                        actionListener="#{issueController.dowload()}"
+                                        onstart="start()" onsuccess="finish()" />
+                                </c:otherwise>
+                            
+                        </c:choose>
+                    </div>
+                </div>
+                <ui:include src="/modules/project/import_dialog.xhtml"/>
+            </f:facet>
+        </h:panelGrid>
+        <p:spacer width="100" height="5" />
+        <p:outputPanel rendered="#{(sec.isMaster() or sec.hasMethod('ProjectController', 'search'))}">
+            <div class="box box-solid box-search">
+                <div class="box-header with-border" data-widget="collapse">
+                    <h3 class="box-title">#{msg['label.search.title']}</h3>
+                    #{msg['symbol.colon']}<code></code>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <div id="search-filter"></div>
+                </div>
+                <div class="box-footer text-center">
+                    <h:inputText value="#{projectController.searchDataJson}" styleClass="searchDataJson" style="display: none"/>
+                    <p:commandLink actionListener="#{projectController.search}" 
+                                   style="display:none" styleClass="search-action" 
+                                   onstart="start()" onsuccess="finish()" oncomplete="resize(); changeIssueItemLampColor();"
+                                   update="issueListData, issueListDataScript, :growl"/>
+                    <p:commandButton value="#{msg['label.search']}" type="button" icon="fa fa-search" styleClass="btn-search"></p:commandButton>
+                </div>
+            </div>
+        </p:outputPanel>
+        <ui:include src="/modules/project/datatable.xhtml"/>
+        <h:outputScript library="js" name="search-filter.js"/>
+        <script type="text/javascript">
+            jQuery(document).ready(function ($) {
+                var sf = $("#search-filter").searchFilter({
+                    prependConds: #{projectController.project.listSearchData},
+                    fillPrepend: #{projectController.project.listType eq 1 ? 'false' : 'true'}, //案件画面場合は「FALSE」です。
+                    fields: #{projectController.columnViewData},
+                    extraFieldNames: #{projectController.extraFieldNames},
+                    data: $('.searchDataJson').val(),
+                    displayQuery: true,
+                    queryContainer: $("#search-filter").closest('.box.box-search').find('.box-header code'),
+                    langs:{
+                        AND: '#{msg['label.condition.and']}',
+                        OR: '#{msg['label.condition.or']}',
+                        LIKE: '#{msg['label.condition.like']}',
+                        LIKE_START: '#{msg['label.condition.like_start']}',
+                        LIKE_END: '#{msg['label.condition.like_end']}',
+                        NOT_LIKE: '#{msg['label.condition.not_like']}',
+                        BLANK: '#{msg['label.condition.blank']}',
+                        NOT_BLANK: '#{msg['label.condition.not_blank']}'
+                    }
+                });
+
+                $(".btn-search").click(function (event) {
+                    event.preventDefault();
+                    
+                    var data = sf.data('searchFilter').getData();
+                    $('.searchDataJson').val(data);
+                    $(".search-action").trigger('click');
+                });
+                
+                $("#projectList\\:quicksearch").focus();
+            });
+        </script>
+        <h:commandLink actionListener="#{issueImportController.downloadResult()}" target="_blank" id="importResult">
+            <f:param name="force" value="true"/>
+        </h:commandLink>
+    </h:form>
+</ui:composition>
+

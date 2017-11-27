@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:metadata>
+        <f:event type="preRenderView" listener="#{layout.onPageLoad}" />
+    </f:metadata>
+    <h:head>
+        <title>${msg['appname']}</title>
+        <ui:include src="/blocks/common/meta.xhtml"/>
+
+        <!-- Bootstrap 3.3.5 -->
+        <h:outputStylesheet library="bootstrap" name="css/bootstrap.css"/>
+        <!-- Ionicons -->
+        <h:outputStylesheet library="css" name="ionicons.min.css"/>
+        <!-- Theme style -->
+        <h:outputStylesheet library="dist" name="css/AdminLTE.css"/>
+        <!-- Animation -->
+        <h:outputStylesheet library="fontawesome" name="css/font-awesome-animation.min.css"/>
+        <!-- AdminLTE Skins. Choose a skin from the css/skins folder instead of downloading all of them to reduce the load. -->
+        <h:outputStylesheet library="dist" name="css/skins/_all-skins.css"/>
+        <!-- iCheck -->
+        <h:outputStylesheet library="plugins" name="iCheck/flat/blue.css"/>
+        <!-- jvectormap -->
+        <h:outputStylesheet library="plugins" name="jvectormap/jquery-jvectormap-1.2.2.css"/>
+        <!-- select2 -->
+        <h:outputStylesheet library="plugins" name="select2/select2.min.css"/>
+        <!-- bootstrap wysihtml5 - text editor -->
+        <h:outputStylesheet library="plugins" name="bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css"/>
+        <h:outputStylesheet library="css" name="nprogress.css"/>
+        <h:outputStylesheet library="css" name="pfcrud.css"/>
+        <h:outputStylesheet library="css" name="toggles.css"/>
+        <h:outputStylesheet library="css" name="application.css"/>
+        <h:outputStylesheet library="css" name="search-filter.css"/>
+        <h:outputStylesheet library="css" name="growl.css"  />
+        <h:outputStylesheet library="css" name="jquery-cron.css"/>
+        <h:outputStylesheet library="css" name="primefaces-override.css"/>
+
+        <c:set var="WSURL" value="${request.serverName}${request.serverPort eq 80 ? '' : ':'.concat(request.serverPort)}/${pageContext.request.requestURL.substring(0, pageContext.request.requestURL.length() - pageContext.request.requestURI.length())}${pageContext.request.contextPath?pageContext.request.contextPath.concat('/'):''}" />
+        <h:outputScript>
+            var LANG='#{localeController.locale}';
+            var BASE_URL='#{request.contextPath}';
+            var WS_URL='#{WSURL}';
+            var COMPANY_ID = '#{loginController.member.companyId}';
+        </h:outputScript>
+
+        <script type="text/javascript" src="//media.twiliocdn.com/sdk/js/client/v1.3/twilio.min.js"></script>
+        <h:outputScript library="bootstrap" name="js/bootstrap.min.js"/>
+        <h:outputScript library="plugins" name="moment/moment.min.js"/>
+        <h:outputScript library="plugins" name="select2/select2.min.js"/>
+        <h:outputScript library="plugins" name="moment/locale/#{localeController.locale}.js"/>
+        <h:outputScript library="plugins" name="slimScroll/jquery.slimscroll.js"/>
+        <h:outputScript library="dist" name="js/app.js"/>
+        <h:outputScript library="scripts" name="nprogress.js"/>
+        <h:outputScript library="js" name="mousetrap.min.js"/>
+        <h:outputScript library="plugins" name="toggles/toggles.min.js"/>
+        <h:outputScript library="js" name="application.js"/>
+        <h:outputScript library="js" name="device-notification.js"/>
+        <h:outputScript library="js" name="jquery-cron.js"/>
+        <h:outputScript library="plugins" name="blockui/jquery.blockUI.js"/>
+        <h:outputScript library="plugins" name="purl/purl.js"/>
+    </h:head>
+    <h:body class="hold-transition ${(loginController.member.theme != null)?loginController.member.theme:'skin-blue'} fixed sidebar-collapse"
+            id="issueBlockUI" onunload="try {
+                        tabClosed();
+                    } catch (e) {
+                    }" onload="try {
+                                tabOpened();
+                            } catch (e) {
+                            }">
+        <p:growl id="growl" widgetVar="growl" showDetail="false" life="5000" />
+        <ui:include src="/blocks/infile/loading.xhtml"/>
+        <ui:include src="/blocks/common/locale.xhtml"/>
+        <div class="wrapper">
+            <header class="main-header">
+                <ui:include src="/blocks/logo.xhtml"/>
+                <!-- Header Navbar: style can be found in header.less -->
+                <ui:include src="/blocks/navigation.xhtml"/>
+            </header>
+            <!-- Left side column. contains the logo and sidebar -->
+            <aside class="sidebar-fixed sidebar-collapse sidebar-mini"> <!-- class: background -->
+                <ui:include src="/blocks/sidebar_fixed.xhtml"/>
+            </aside>
+            <aside class="main-sidebar">
+                <ui:include src="/blocks/sidebar_left.xhtml"/>
+            </aside>
+            <!-- Content Wrapper. Contains page content -->
+            <div class="content-wrapper">
+                <!-- Main content -->
+                <section class="content">
+                    <ui:insert name="body" />
+                </section><!-- /.content -->
+            </div><!-- /.content-wrapper -->
+            <!-- Control Sidebar -->
+            <!--<aside class="control-sidebar control-sidebar-dark">-->
+            <!--<ui:include src="/blocks/sidebar_right.xhtml"/>-->
+            <!--</aside> /.control-sidebar -->
+            <ui:include src="/blocks/common/confirmDialog.xhtml" />
+        </div>
+        <!-- ################################################################################ -->
+        <h:outputScript>
+            function start(spinElm) {
+            var cssClass = $("body").attr("class");
+            NProgress.start(cssClass);
+            if(spinElm) $(spinElm).addClass('fa-spin');
+            $.blockUI({ css: { display: 'none'} , message: ''});
+            }
+            function finish(spinElm) {
+            NProgress.done();
+            if(spinElm) $(spinElm).removeClass('fa-spin');
+            $.unblockUI();
+            }
+            function showAlert(msg){
+            PF('growl').renderMessage({"detail":msg, "severity":"error"});
+            }
+            function showWarning(msg){
+            PF('growl').renderMessage({"detail":msg, "severity":"warn"});
+            }
+            function showInfo(msg){
+            PF('growl').renderMessage({"detail":msg, "severity":"info"});
+            }
+<!--            var changeIssueLampColor = function(className, issueItemColors){
+            if(className === undefined || className === null || issueItemColors == null) return;
+            var icon = $('.' + className);
+            var date = icon.attr('date');
+            if(date) date = date.replace(/(T|Z)/g, ' ').trim();
+            else return true;
+            var proposal = icon.attr('proposal');
+            var days = moment().diff(moment(date, "YYYY-MM-DD"), 'day');
+            var color = "transparent";
+            var text = "";
+            if(!isNaN(days) &amp;&amp; issueItemColors[proposal]){
+            var minDiffDay = 10000000;
+            $.each(issueItemColors[proposal], function(idx, item){
+            var diffDay = days - parseInt(item.lampDates);
+            if(diffDay &gt;= 0 &amp;&amp; diffDay &lt; minDiffDay){
+            if(item.lampDates > 0){
+            minDiffDay = diffDay;
+            color = '#' + item.lampColor;
+            //text = item.lampDates + item.lampName;
+            text = item.lampName;
+            }
+            }
+            });
+            }
+            icon.css({'background': color}).html(text);
+            }-->
+            var resize = function(){
+            $.fn.smoothElements();
+            }
+        </h:outputScript>
+    </h:body>
+</html>

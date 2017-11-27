@@ -1,0 +1,469 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <div id="pageTitle">#{companyBundle['label.member.information.title']} #{msg['symbol.paren.left']}#{msg['label.create']}#{msg['symbol.paren.right']}</div>
+    <h:form id="fromMember" >
+        <h:panelGrid width="100%" styleClass="page-header">
+            <f:facet name="header">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h1>
+                            #{companyBundle['label.member.information.title']}
+                            <small>#{msg['label.create']}</small>
+                        </h1>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <p:commandButton value="#{msg['label.back']}" icon="fa fa-chevron-circle-left"
+                                         actionListener="#{memberController.show}"
+                                         title="#{msg['label.back']}" update="mainContent" process="@this"
+                                         onstart="start()" onsuccess="finish()">
+                            <f:param name="showType" value="list"/>
+                            <p:confirm header="#{msg['label.confirm']}" message="#{msg['label.message.confirm.back']}" icon="ui-icon-alert"/>
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+                        <p:commandButton value="#{msg['label.save']}" icon="fa fa-check-circle"
+                                         rendered="${sec.hasMethod('MemberController', 'create')}"
+                                         actionListener="#{memberController.save}"
+                                         title="#{msg['label.save']}" update="fromMember mainContent :growl"
+                                         onstart="start()" onsuccess="finish()">
+                            <f:param name="force" value="true"/>
+                        </p:commandButton>
+                    </div>
+                </div>
+            </f:facet>
+        </h:panelGrid>
+        <div class="box">
+            <div class="box-body">
+                <p:panelGrid id="pgGroup" styleClass="crmcloud-panelgrid">
+                    <p:row>
+                        <p:column styleClass="label-field" rendered="#{sec.isMaster()}"><p:outputLabel value="#{companyBundle['label.company.name']}"/></p:column>
+                        <p:column style="width: 35%;" rendered="#{sec.isMaster()}">
+                            <p:selectOneMenu value="#{memberController.memberModel.member.group.company.companyId}" filter="true" filterMatchMode="startsWith">
+                                <f:selectItem itemLabel="--" itemValue="" />
+                                <f:selectItems value="#{memberController.companies}" var="company" itemValue="#{company.companyId}" itemLabel="#{company.companyName}"/>
+                                <p:ajax listener="#{memberController.onSuperAdminChangeCompany}" update="groupId,roleIds,groupParentMultipleSelectId,cbMemberGlobalFlag"  onstart="start()" onsuccess="finish()" oncomplete="reBuildPage('#fromMember\\:groupId_items li'),reBuildPage('#fromMember\\:groupParentMultipleSelectId_panel li')"/>
+                                <f:attribute name="title" value="#{companyBundle['label.company.name']}"/>
+                            </p:selectOneMenu>
+                        </p:column>
+                        
+                        <p:column styleClass="label-field" rendered="#{sec.hasMethod('AuthorityController', 'create') or sec.isMaster()}"><p:outputLabel value="#{msg['label.menu.AuthorityController']}"/></p:column>
+                        <p:column rendered="#{sec.hasMethod('AuthorityController', 'create') or sec.isMaster()}">
+                            <p:selectCheckboxMenu value="#{memberController.memberModel.roleIds}"  label="#{memberController.memberModel.displayRoleName}" filter="true" filterMatchMode="startsWith"  widgetVar="cbmRoleIds" id="roleIds">
+                                <f:selectItems value="#{memberController.roles}" var="role" itemValue="#{role.roleId}" itemLabel="#{role.roleName}"/>
+                                <f:attribute name="title" value="#{msg['label.menu.AuthorityController']}"/>
+                                <p:ajax oncomplete="PF('cbmRoleIds').show()" listener="#{memberController.handleChangeRole}" update="roleIds" onstart="start()" onsuccess="finish()"/>
+                                <p:ajax event="toggleSelect" oncomplete="PF('cbmRoleIds').show()" listener="#{memberController.handleChangeRole}"  update="roleIds"  onstart="start()" onsuccess="finish()"/>
+                            </p:selectCheckboxMenu>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{msg['label.group.name']}" styleClass="required"/></p:column>
+                        <p:column >
+                            <p:selectOneMenu value="#{memberController.memberModel.member.group.groupId}" filter="true"
+                                             filterMatchMode="startsWith" id="groupId">
+                                <f:selectItem itemLabel="--" itemValue="" />
+                                <f:selectItems value="#{memberController.groups}" var="group" id="groupParentSelect"
+                                               itemValue="#{group.groupId}" itemLabel="#{group.groupName}" itemDescription="#{group.treeLevel.toString()}"/>
+                                <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                <f:attribute name="title" value="#{msg['label.group.name']}"/>
+                            </p:selectOneMenu>
+                        </p:column>
+                        <p:column rowspan="4" styleClass="label-field" ><p:outputLabel value="#{companyBundle['label.member.upload.image']}"/></p:column>
+                        <p:column rowspan="4">
+                            <h:panelGrid columns="2">
+                                <p:fileUpload label="#{msg['label.btn.upload']}" fileUploadListener="#{memberController.handleFileUpload}" mode="advanced" auto="true" dragDropSupport="true"
+                                              id="file_drop" oncomplete="chose_file()"
+                                              multiple="false" sizeLimit="#{layout.sizeLimitUpload}" 
+                                              allowTypes="#{layout.allowTypetUpload}" update="companyLogoStream,file_drop" 
+                                              styleClass="#{memberController.fileUploader.isHasImage() ? 'file_drop_no_back' : 'file_drop'}"
+                                              accept="image/*">
+                                    <small>#{msg['label.drop.in.here']}</small>
+                                    <p:outputPanel id="companyLogoStream" class="logo_stream">
+                                        <p:graphicImage value="#{memberController.fileUploader.streamedContent}" cache="false"
+                                                        style="width: 50px; height: 50px;" rendered="#{memberController.fileUploader.hasImage}"/>   
+                                    </p:outputPanel>
+                                </p:fileUpload>
+                            </h:panelGrid>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{msg['label.loginId']}" styleClass="required"/></p:column>
+                        <p:column >
+                            <p:inputText  autocomplete="off" value="#{memberController.memberLoginIdDisplay}" styleClass="input_number" id="j_member_login_id" maxlength="20"
+                                          required="true" label="#{msg['label.loginId']}">
+                                <p:keyFilter regEx="/[a-z0-9]/i"  preventPaste="false"/>
+                                <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:attribute name="max" value="20"/>
+                                <f:attribute name="title" value="#{msg['label.loginId']}"/>
+                            </p:inputText>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{msg['label.password']}" styleClass="required"/></p:column>
+                        <p:column >
+                            <!-- fake password to avoid autocomplete -->
+                            <input type="text" name="fakeusername" id="fakeusername" style="display: none"/>
+                            <input type="password" name="fakepassword" id="fakepassword" value="" style="display: none;" disabled="true" readonly="true"/>
+                            <p:password id ="j_password" redisplay="true" value="#{memberController.memberModel.member.memberPassword}" styleClass="input_number"
+                                        autocomplete="new-password" maxlength="50" required="true" label="#{msg['label.password']}">
+                                <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:attribute name="max" value="50"/>
+                                <f:attribute name="title" value="#{msg['label.password']}"/>
+                            </p:password>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{companyBundle['label.member.code']}"/></p:column>
+                        <p:column >
+                            <p:inputText value="#{memberController.memberModel.member.memberCode}" styleClass="input_number" autocomplete="off" maxlength="30">
+                                <p:keyFilter regEx="/[a-z0-9]/i"  preventPaste="false"/>
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:attribute name="max" value="30"/>
+                                <f:attribute name="title" value="#{companyBundle['label.member.code']}"/>
+                            </p:inputText>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{companyBundle['label.member.firstname']}" styleClass="required"/></p:column>
+                        <p:column >
+                            <p:inputText value="#{memberController.memberModel.member.memberNameFirst}" styleClass="input_text" autocomplete="off" maxlength="70"
+                                         required="true" label="#{companyBundle['label.member.firstname']}">
+                                <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:attribute name="max" value="70"/>
+                                <f:attribute name="title" value="#{companyBundle['label.member.firstname']}"/>
+                            </p:inputText>
+                        </p:column>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{companyBundle['label.member.lastname']}" styleClass="required"/></p:column>
+                        <p:column >
+                            <p:inputText value="#{memberController.memberModel.member.memberNameLast}" styleClass="input_text" autocomplete="off" maxlength="70"
+                                         required="true" label="#{companyBundle['label.member.lastname']}">
+                                <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:attribute name="max" value="70"/>
+                                <f:attribute name="title" value="#{companyBundle['label.member.lastname']}"/>
+                            </p:inputText>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{companyBundle['label.member.firstname.kana']}"/></p:column>
+                        <p:column >
+                            <p:inputText value="#{memberController.memberModel.member.memberKanaFirst}" styleClass="input_text" autocomplete="off" maxlength="70">
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:attribute name="max" value="70"/>
+                                <f:attribute name="title" value="#{companyBundle['label.member.firstname.kana']}"/>
+                            </p:inputText>
+                        </p:column>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{companyBundle['label.member.lastname.kana']}"/></p:column>
+                        <p:column >
+                            <p:inputText value="#{memberController.memberModel.member.memberKanaLast}" styleClass="input_text" autocomplete="off" maxlength="70">
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:validator validatorId="gnext.validator.KatakanaValidator" />
+                                <f:attribute name="max" value="70"/>
+                                <f:attribute name="title" value="#{companyBundle['label.member.lastname.kana']}"/>
+                            </p:inputText>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{msg['label.zipcode']}"/></p:column>
+                        <p:column >
+                            <p:inputText value="#{memberController.memberModel.member.memberPost}" styleClass="input_post" autocomplete="off" maxlength="8">
+                                <p:keyFilter regEx="/[0-9]/i" preventPaste="false"/>
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:validator validatorId="gnext.validator.PhoneFaxValidator" />
+                                <f:attribute name="max" value="8"/>
+                                <f:attribute name="title" value="#{msg['label.zipcode']}"/>
+                                <p:ajax event="blur" update="comMemberCity memberAddress memberAddressKana" listener="#{memberController.onBlurMemberPost}"/>
+                            </p:inputText>
+                        </p:column>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{msg['label.city']}"/></p:column>
+                        <p:column >
+                            <p:selectOneMenu value="#{memberController.memberModel.member.memberCity}" id="comMemberCity">
+                                <f:selectItem itemLabel="--" itemValue="" />
+                                <f:selectItems value="#{memberController.prefectures}"
+                                               var="prefecture" itemValue="#{prefecture.prefectureCode}" itemLabel="#{prefecture.prefectureName}"/>
+                            </p:selectOneMenu>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{msg['label.address.kana']}"/></p:column>
+                        <p:column>
+                            <p:inputText value="#{memberController.memberModel.member.memberAddressKana}" 
+                                         id="memberAddressKana" styleClass="input_text" autocomplete="off" maxlength="200" style="width: 70% !important">
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:validator validatorId="gnext.validator.KatakanaValidator" />
+                                <f:attribute name="max" value="200"/>
+                                <f:attribute name="title" value="#{msg['label.address.kana']}"/>
+                            </p:inputText>
+                        </p:column>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{msg['label.address']}"/></p:column>
+                        <p:column>
+                            <p:inputText value="#{memberController.memberModel.member.memberAddress}" id="memberAddress" styleClass="input_text" autocomplete="off" maxlength="150" style="width: 70% !important">
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:attribute name="max" value="150"/>
+                                <f:attribute name="title" value="#{msg['label.address']}"/>
+                            </p:inputText>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column colspan="2" style="vertical-align: top">
+                            <p:dataList value="#{memberController.memberModel.memberPhones}" var="phone" type="definition"
+                                        rowIndexVar="rowIndex"  varStatus="status" id="dataListPhone" class="crmcloud-datalist">
+                                <p:panelGrid styleClass="panel-grid" id="panelGridPhone">
+                                    <p:row>
+                                        <p:column  styleClass="label-field">
+                                            <p:outputLabel value="#{msg['label.phone']}"
+                                                           rendered="#{(memberController.memberModel.memberPhones.size()==1)}"/>
+                                            <p:outputLabel value="#{msg['label.phone']}#{rowIndex+1}"
+                                                           rendered="#{(memberController.memberModel.memberPhones.size()>1)}"/>
+                                        </p:column>
+                                        <p:column style="float:left;">
+                                            <p:inputText value="#{phone.companyTargetData}" id="phone" styleClass="input_tel" autocomplete="off" maxlength="15">
+                                                <p:keyFilter regEx="/[0-9\-\+]/i" preventPaste="false"/>
+                                                <f:validator validatorId="gnext.validator.PhoneFaxValidator" />
+                                                <f:attribute name="title" value="#{msg['label.phone']}#{rowIndex+1}"/>
+                                            </p:inputText>
+                                            <p:commandLink actionListener="#{memberController.removeInfos(phone)}" 
+                                                           update="dataListPhone"
+                                                           process="dataListPhone"
+                                                           rendered="#{rowIndex ne 0}"
+                                                           styleClass="btn btn-xs btn-default">
+                                                <f:param name="memberTargetData" value="#{phone.companyTargetData}"></f:param>
+                                                <f:param name="type" value="phone"/>
+                                                <span class="fa fa-minus-circle"></span>
+                                            </p:commandLink>
+                                            <p:commandLink actionListener="#{memberController.addInfo}" 
+                                                           update="dataListPhone :growl"
+                                                           rendered="#{rowIndex eq 0}"
+                                                           process="dataListPhone" 
+                                                           styleClass="btn btn-xs btn-default">
+                                                <f:param name="type" value="phone"/>
+                                                <span class="fa fa-plus-circle"></span>
+                                            </p:commandLink>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                            </p:dataList>
+                        </p:column>
+                        <p:column colspan="2" style="vertical-align: top">
+                            <p:dataList value="#{memberController.memberModel.memberMobilePhones}" var="mobile" type="definition"
+                                        rowIndexVar="rowIndex"  varStatus="status" id="dataListMobilePhone" class="crmcloud-datalist">
+                                <p:panelGrid styleClass="panel-grid" id="panelGridMobilePhone">
+                                    <p:row>
+                                        <p:column  styleClass="label-field">
+                                            <p:outputLabel value="#{msg['label.mobile.phone']}"
+                                                           rendered="#{(memberController.memberModel.memberMobilePhones.size()==1)}"/>
+                                            <p:outputLabel value="#{msg['label.mobile.phone']}#{rowIndex+1}"
+                                                           rendered="#{(memberController.memberModel.memberMobilePhones.size()>1)}"/>
+                                        </p:column>
+                                        <p:column >
+                                            <p:inputText value="#{mobile.companyTargetData}" id="mobile" styleClass="input_tel" autocomplete="off" maxlength="15">
+                                                <p:keyFilter regEx="/[0-9\-\+]/i" preventPaste="false"/>
+                                                <f:validator validatorId="gnext.validator.PhoneFaxValidator" />
+                                                <f:attribute name="title" value="#{msg['label.mobile.phone']}#{rowIndex+1}"/>
+                                            </p:inputText>
+                                            <p:commandLink actionListener="#{memberController.removeInfos(mobile)}" 
+                                                           update="dataListMobilePhone"
+                                                           rendered="#{rowIndex ne 0}"
+                                                           process="dataListMobilePhone" 
+                                                           styleClass="btn btn-xs btn-default">
+                                                <f:param name="memberTargetData" value="#{mobile.companyTargetData}"></f:param>
+                                                <f:param name="type" value="mobilephone"/>
+                                                <span class="fa fa-minus-circle"></span>
+                                            </p:commandLink>
+                                            <p:commandLink actionListener="#{memberController.addInfo}" 
+                                                           update="dataListMobilePhone :growl"
+                                                           rendered="#{rowIndex eq 0}"
+                                                           process="dataListMobilePhone" 
+                                                           styleClass="btn btn-xs btn-default">
+                                                <f:param name="type" value="mobilephone"/>
+                                                <span class="fa fa-plus-circle"></span>
+                                            </p:commandLink>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                            </p:dataList>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column colspan="2" style="vertical-align: top">
+                            <p:dataList value="#{memberController.memberModel.memberEmails}" var="email" type="definition"
+                                        rowIndexVar="rowIndex"  varStatus="status" id="dataListEmail" class="crmcloud-datalist">
+                                <p:panelGrid styleClass="panel-grid" id="panelGridEmail">
+                                    <p:row>
+                                        <p:column  styleClass="label-field">
+                                            <p:outputLabel value="#{msg['label.email']}" style="margin-top: 6px"
+                                                           rendered="#{(memberController.memberModel.memberEmails.size()==1)}"/>
+                                            <p:outputLabel value="#{msg['label.email']}#{rowIndex+1}" style="margin-top: 6px"
+                                                           rendered="#{(memberController.memberModel.memberEmails.size()>1)}"/>
+                                        </p:column>
+                                        <p:column style="float: left;">
+                                            <p:inputText value="#{email.companyTargetData}" id="email" styleClass="input_mail" autocomplete="off" maxlength="150">
+                                                <p:keyFilter regEx="/[a-z0-9_\.\-@]/i" preventPaste="false"/>
+                                                <f:validator validatorId="gnext.validator.EmailValidator" />
+                                                <f:attribute name="title" value="#{msg['label.email']}#{rowIndex+1}"/>
+                                            </p:inputText>
+                                            <p:commandLink actionListener="#{memberController.removeInfos(email)}" 
+                                                           update="dataListEmail"
+                                                           rendered="#{rowIndex ne 0}"
+                                                           process="dataListEmail" 
+                                                           styleClass="btn btn-xs btn-default">
+                                                <f:param name="memberTargetData" value="#{email.companyTargetData}"></f:param>
+                                                <f:param name="type" value="email"/>
+                                                <span class="fa fa-minus-circle"></span>
+                                            </p:commandLink>
+                                            <p:commandLink actionListener="#{memberController.addInfo}" 
+                                                           update="dataListEmail :growl"
+                                                           rendered="#{rowIndex eq 0}"
+                                                           process="dataListEmail" styleClass="btn btn-xs btn-default">
+                                                <f:param name="type" value="email"/>
+                                                <span class="fa fa-plus-circle"></span>
+                                            </p:commandLink>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                            </p:dataList>
+                        </p:column>
+                        <p:column colspan="5" style="vertical-align: top">
+                            <div  class="ui-datalist ui-widget crmcloud-datalist">
+                                <div class="ui-datalist-content ui-widget-content">
+                                    <dl  class="ui-datalist-data">
+                                        <dt class="ui-datalist-item">
+                                            <p:panelGrid styleClass="panel-grid" id="managerFlag">
+                                                <p:row>
+                                                    <p:column  styleClass="label-field">
+                                                        <p:outputLabel value="#{companyBundle['label.member.administrator']}" styleClass="required"/>
+                                                    </p:column>
+                                                    <p:column style="display: table; margin-left: 5px;"> 
+                                                        <p:selectOneMenu value="#{memberController.memberModel.member.memberManagerFlag}" 
+                                                                         id="memberManagerFlag" style="display: table-cell;">
+                                                            <p:ajax update="managerFlag" onstart="start()" onsuccess="finish()" 
+                                                                    oncomplete="reBuildPage('#fromMember\\:groupParentMultipleSelectId_panel li')"/>
+                                                            <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                                            <f:selectItem itemLabel="#{companyBundle['label.member.general']}" itemValue="0" />
+                                                            <f:selectItem itemLabel="#{companyBundle['label.member.manager']}" itemValue="1" />
+                                                            <f:attribute name="title" value="#{companyBundle['label.member.administrator']}"/>
+                                                        </p:selectOneMenu>
+                                                        <p:selectCheckboxMenu value="#{memberController.memberModel.memberGroupRelIds}" 
+                                                                              label="#{memberController.memberModel.displaymemberGroupRelIds}"
+                                                                              filter="true" filterMatchMode="startsWith" style="margin-left: 10px"
+                                                                              rendered="#{memberController.memberModel.member.memberManagerFlag == 1}"
+                                                                              id="groupParentMultipleSelectId"
+                                                                              widgetVar="cbmGroups">
+                                                            <f:selectItems value="#{memberController.groups}" var="group" id="groupParentMultipleSelect"
+                                                                           itemValue="#{group.groupId}" itemLabel="#{group.groupName}" 
+                                                                           itemDescription="#{group.treeLevel.toString()}"/>
+                                                            <f:validator validatorId="gnext.validator.RequiredValidator" />
+                                                            <p:ajax oncomplete="PF('cbmGroups').show(),reBuildPage('#fromMember\\:groupParentMultipleSelectId_panel li')"
+                                                                    listener="#{memberController.handleChangeMemberGroupRel}"
+                                                                    update="groupParentMultipleSelectId"/>
+                                                            <p:ajax event="toggleSelect" oncomplete="PF('cbmGroups').show(),reBuildPage('#fromMember\\:groupParentMultipleSelectId_panel li')"
+                                                                    listener="#{memberController.handleChangeMemberGroupRel}" 
+                                                                    update="groupParentMultipleSelectId"/>
+                                                        </p:selectCheckboxMenu>
+                                                    </p:column>
+                                                </p:row>
+                                            </p:panelGrid>
+                                        </dt>
+                                    </dl>
+                                </div>
+                            </div>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{msg['label.layout']}"/></p:column>
+                        <p:column >
+                            <p:selectOneMenu value="#{memberController.memberModel.member.memberLayout}" >
+                                <f:selectItem itemLabel="--" itemValue="" />
+                                <f:selectItems value="#{companyController.themes}" var="themes" itemLabel="${themes.label}" itemValue="#{themes.value}"/>
+                            </p:selectOneMenu>
+                        </p:column>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{companyBundle['label.member.permission']}"/></p:column>
+                        <p:column><p:selectBooleanCheckbox value="#{memberController.memberModel.asMemberFirewallFlag}"/></p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field"><p:outputLabel value="#{msg['label.memo']}"/></p:column>
+                        <p:column colspan="3">
+                            <p:inputTextarea autoResize="false" value="#{memberController.memberModel.member.memberMemo}" styleClass="input_memo" maxlength="500">
+                                <f:validator validatorId="gnext.validator.LengthValidator" />
+                                <f:attribute name="max" value="500"/>
+                                <f:attribute name="title" value="#{msg['label.memo']}"/>
+                            </p:inputTextarea>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column styleClass="label-field">
+                            <p:outputLabel value="#{companyBundle['label.member.company.group']}"/>
+                        </p:column>
+                        <p:column colspan="3">
+                            <table>
+                                <tr>
+                                    <td>
+                                        <p:selectBooleanCheckbox id="cbMemberGlobalFlag" value="#{memberController.memberModel.asMemberGlobalFlag}" disabled="#{!memberController.exclusiveCompanyFlag or sec.isLoggedInOtherCompany(memberController.memberModel.member.memberId)}">
+                                            <p:ajax listener="#{memberController.onChangeCheckboxMemberGlobalChange}" update="colGroupCompanys,selectCompanyGroupId,selectGroupOnCompanyGroupId" onstart="start()" onsuccess="finish()"/>
+                                        </p:selectBooleanCheckbox>
+                                    </td>
+                                    <td>
+                                        <p:outputPanel id="colGroupCompanys">
+                                            <h:panelGrid columns="4" cellpadding="20" style="margin-left: 5px;" cellspacing="20" rendered="#{memberController.memberModel.asMemberGlobalFlag}">
+                                                <p:column style="width: 30px">
+                                                    <p:outputLabel value="#{companyBundle['label.company.name']}" style="width: 40px"/>
+                                                </p:column>
+                                                <p:column style="width: 30px">
+                                                    <p:selectOneMenu value="#{memberController.selectCompanyGroupId}" filter="true" filterMatchMode="startsWith" id="selectCompanyGroupId" disabled="#{!memberController.memberModel.asMemberGlobalFlag or sec.isLoggedInOtherCompany(memberController.memberModel.member.memberId)}">
+                                                        <f:selectItem itemLabel="" itemValue="0"/>
+                                                        <f:selectItems value="#{memberController.companyBelongGroup}" var="company" itemValue="#{company.companyId}" itemLabel="#{company.companyName}"/>
+                                                        <p:ajax listener="#{memberController.onChangeCompanyGroup}" onstart="start()" onsuccess="finish()" update="selectGroupOnCompanyGroupId"/>
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                                <p:column style="width: 30px">
+                                                    <p:outputLabel value="#{companyBundle['label.group.name']}" style="width: 50px; padding-left: 10px;"/>
+                                                </p:column>
+                                                <p:column style="width: 30px">
+                                                    <p:selectOneMenu value="#{memberController.selectGroupOnCompanyGroupId}" filter="true" filterMatchMode="startsWith" id="selectGroupOnCompanyGroupId" disabled="#{!memberController.memberModel.asMemberGlobalFlag or sec.isLoggedInOtherCompany(memberController.memberModel.member.memberId)}">
+                                                        <f:selectItem itemLabel="" itemValue="0"/>
+                                                        <f:selectItems value="#{memberController.groupOnCompanyGroups}" var="group" itemValue="#{group.groupId}" itemLabel="#{group.groupName}"/>
+                                                        <p:ajax listener="#{memberController.onChangeGroupOfCompanyGroup}" onstart="start()" onsuccess="finish()"/>
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                            </h:panelGrid>
+                                        </p:outputPanel>
+                                    </td>
+                                </tr>
+                            </table>
+                        </p:column>
+                    </p:row>
+                </p:panelGrid>
+            </div>
+        </div>
+    </h:form>
+    <script>
+        $(document).ready(function () {
+            chose_file();
+            reBuildPage('#fromMember\\:groupId_items li');
+            reBuildPage('#fromMember\\:groupParentMultipleSelectId_panel li');
+        });
+        function chose_file() {
+            $('#fromMember\\:file_drop').on('click', function (e) {
+                $('#fromMember\\:file_drop_input').click();
+            });
+            $('#fromMember\\:file_drop_input').click(function (e) {
+                e.stopImmediatePropagation();
+            });
+        }
+        function reBuildPage(selector) {
+            $(selector).each(function (index) {
+                var lv = $(this).attr('title');
+                var margin = 10 * lv;
+                $(this).css("margin-left", margin);
+                $(this).removeAttr('title');
+            });
+        }
+    </script>
+</ui:composition>

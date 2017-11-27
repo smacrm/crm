@@ -1,0 +1,373 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <f:view locale="#{localeController.locale}">
+        <f:metadata>
+            <f:viewParam name="id" value="#{issueController.issue.issueId}"/>
+            <f:viewParam name="custId" value="#{customerController.custIdViewParamInDialog}"/>
+        </f:metadata>
+        <h:head>
+            <title>${issue['label.tab_customer_special']} <h:outputText value="No：[${customerController.customer.custId}]" rendered="${!empty customerController.customer.custId}" /></title>
+
+            <h:outputStylesheet library="css" name="nprogress.css"/>
+            <f:facet name="last">
+                <h:outputScript library="bootstrap" name="js/bootstrap.min.js"/>
+                <h:outputScript library="scripts" name="nprogress.js"/>
+                <h:outputScript library="plugins" name="blockui/jquery.blockUI.js"/>
+            </f:facet>
+
+            <!-- 受付情報Javascript関連処理部分 -->
+            <h:outputScript library="js" name="select-level.js"/>
+            <h:outputStylesheet library="css" name="application.css"  />
+            <h:outputStylesheet library="css" name="dialog_growl.css"  />
+            <h:outputStylesheet library="css" name="dialog.css"  />
+
+            <script type="text/javascript">
+
+                function start(spinElm) {
+                    var cssClass = $("body").attr("class");
+                    NProgress.start(cssClass);
+                    if (spinElm) {
+                        $(spinElm).addClass('fa-spin');
+                    }
+                    // todo: disable screen
+                    $.blockUI({css: {display: 'none'},
+                        message: ''});
+                }
+
+                function finish(spinElm) {
+                    NProgress.done();
+                    if (spinElm) {
+                        $(spinElm).removeClass('fa-spin');
+                    }
+                    // todo: enable screen
+                    $.unblockUI();
+                }
+
+            </script>
+
+        </h:head>
+
+        <h:body class="hold-transition ${(loginController.member.theme != null)?loginController.member.theme:'skin-blue'} sidebar-mini" id="customer_dialog_id">
+            <h:form id="form_special_customer" prependId="false">
+                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                    <p:commandButton value="${msg['label.yes']}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                    <p:commandButton value="${msg['label.no']}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                </p:confirmDialog>
+                <p:growl id="dialog_growl" showDetail="false" life="3000" />
+                <div class="div_panelGridDialog_show">
+                    <p:panelGrid styleClass="panelGridDialog" id="panelGridCust">
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="${issue['label.cust_cooperation_name']}" /><font>*</font>
+                            </p:column>
+                            <p:column>
+                                <p:selectOneMenu value="#{customerController.customer.custCooperationId}" converter="gnext.converter.smart">
+                                    <f:attribute name="title" value="${issue['label.cust_cooperation_name']}"/>
+                                    <f:selectItem itemLabel="--" itemValue="" />
+                                    <f:selectItems value="#{issueController.select.get('cust_cooperation_id')}"/>
+                                </p:selectOneMenu>
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="${issue['label.cust_special_name']}" /><font>*</font>
+                            </p:column>
+                            <p:column>
+                                <p:selectOneMenu value="#{customerController.customer.custSpecialId}" converter="gnext.converter.smart">
+                                    <f:attribute name="title" value="${issue['label.cust_special_name']}"/>
+                                    <f:selectItem itemLabel="--" itemValue="" />
+                                    <f:selectItems value="#{issueController.select.get('cust_special_id')}"/>
+                                </p:selectOneMenu>
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="${issue['label.cust_code']}" /><font>*</font>
+                            </p:column>
+                            <p:column colspan="3">
+                                <p:inputText value="#{customerController.customer.custCode}" maxlength="20" >
+                                    <f:validator validatorId="gnext.validator.LengthValidator" />
+                                    <f:attribute name="max" value="20"/>
+                                    <f:attribute name="title" value="${issue['label.cust_code']}"/>
+                                </p:inputText>
+                            </p:column>
+                        </p:row>
+                        
+                        <!-- Tên khách hàng. -->
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="${issue['label.name_kana']}" /><font>*</font>
+                            </p:column>
+                            <p:column colspan="3">
+                                <p:inputText value="#{customerController.customer.custFirstKana}" maxlength="70"> 
+                                    <f:validator validatorId="gnext.validator.LengthValidator" />
+                                    <f:attribute name="min" value="3"/>
+                                    <f:attribute name="max" value="70"/>
+                                    <f:attribute name="title" value="${issue['label.name_kana']}"/>
+                                </p:inputText>
+                                - 
+                                <p:inputText value="#{customerController.customer.custLastKana}" maxlength="70">
+                                    <f:validator validatorId="gnext.validator.LengthValidator" />
+                                    <f:attribute name="max" value="70"/>
+                                    <f:attribute name="title" value="${issue['label.name_kana']}"/>
+                                </p:inputText>
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="${issue['label.name_hira']}" /><font>*</font>
+                            </p:column>
+                            <p:column colspan="3">
+                                <p:inputText value="#{customerController.customer.custFirstHira}" maxlength="70">
+                                    <f:validator validatorId="gnext.validator.LengthValidator" />
+                                    <f:attribute name="min" value="3"/>
+                                    <f:attribute name="max" value="70"/>
+                                    <f:attribute name="title" value="${issue['label.name_hira']}"/>
+                                </p:inputText>
+                                -
+                                <p:inputText value="#{customerController.customer.custLastHira}" maxlength="70">
+                                    <f:validator validatorId="gnext.validator.LengthValidator" />
+                                    <f:attribute name="max" value="70"/>
+                                    <f:attribute name="title" value="${issue['label.name_hira']}"/>
+                                </p:inputText>
+                            </p:column>
+                        </p:row>
+                        
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="${issue['label.sex']}" />
+                            </p:column>
+                            <p:column>
+                                <p:selectOneButton value="#{customerController.customer.custSexId}" converter="gnext.converter.smart">
+                                    <f:selectItems value="#{issueController.select.get('cust_sex_id')}"/>
+                                </p:selectOneButton>
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="${issue['label.age']}" />
+                            </p:column>
+                            <p:column>
+                                <p:selectOneMenu value="#{customerController.customer.custAgeId}" converter="gnext.converter.smart">
+                                    <f:selectItem itemLabel="--" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{issueController.select.get('cust_age_id')}"/>
+                                </p:selectOneMenu>
+                            </p:column>
+                        </p:row>
+                        
+                        <!-- Đia khách hàng. -->
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="${issue['label.post']}" />
+                            </p:column>
+                            <p:column>
+                                <p:inputText value="#{customerController.customer.custPost}" styleClass="input_post" maxlength="8">
+                                    <p:ajax event="blur" update="customer_city customer_address customer_address_kana" listener="#{customerController.onBlurCustomerPost}"/>
+                                    <f:param name="custId" value="#{customerController.custIdViewParamInDialog}"/>
+                                    <p:keyFilter regEx="/[0-9]/i" preventPaste="false"/>
+                                    <f:validator validatorId="gnext.validator.LengthValidator" />
+                                    <f:attribute name="max" value="8"/>
+                                    <f:attribute name="title" value="${issue['label.post']}"/>
+                                </p:inputText>
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="${issue['label.city']}" />
+                            </p:column>
+                            <p:column>
+                                <p:selectOneMenu value="#{customerController.customer.custCity}" id="customer_city">
+                                    <f:selectItem itemLabel="--" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{customerController.prefecturesSelectItems}" />
+                                    <f:converter converterId="gnext.converter.prefecture" />
+                                </p:selectOneMenu>
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="${issue['label.address']}" />
+                            </p:column>
+                            <p:column colspan="3">
+                                <p:inputText value="#{customerController.customer.custAddress}" styleClass="input_memo" maxlength="150" id="customer_address">
+                                    <f:validator validatorId="gnext.validator.LengthValidator" />
+                                    <f:attribute name="max" value="150"/>
+                                    <f:attribute name="title" value="${issue['label.address']}"/>
+                                </p:inputText>
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="${issue['label.address_kana']}" />
+                            </p:column>
+                            <p:column colspan="3">
+                                <p:inputText value="#{customerController.customer.custAddressKana}" styleClass="input_memo" maxlength="200" id="customer_address_kana">
+                                    <f:validator validatorId="gnext.validator.LengthValidator" />
+                                    <f:attribute name="max" value="200"/>
+                                    <f:attribute name="title" value="#{customerController.customer.custAddressKana}"/>
+                                </p:inputText>
+                            </p:column>
+                        </p:row>
+
+                        <c:forEach var="tel" items="#{customerController.customer.tel}" varStatus="telStatus">
+                            <p:row>
+                                <p:column>
+                                    <h:outputText value="${issue['label.tel']}" rendered="${(telStatus.index == 0)}" />
+                                    <h:outputText value="${issue['label.tel']} ${(telStatus.index+1)}" rendered="${(telStatus.index > 0)}" />
+                                </p:column>
+                                <p:column>
+                                    <p:inputText value="#{tel.custTargetData}" styleClass="input_tel callInputGridTel_${customer.tabIdx}_${(telStatus.index+1)}" maxlength="15">
+                                        <p:keyFilter regEx="/[0-9\-\+]/i" preventPaste="false"/>
+                                        <f:attribute name="title" value="${issue['label.tel']}"/>
+                                    </p:inputText>
+                                    <p:commandLink 
+                                        actionListener="#{customerController.addTarget(2)}"
+                                        update="panelGridCust,dialog_growl"
+                                        oncomplete="callInputKeyUp(false, 'callInputGridTel_');callInputKeyUp(true, 'callInputGridTel_');"
+                                        rendered="${telStatus.index == 0}"
+                                        disabled="#{customerController.customer.tel.size() gt 4}"
+                                        styleClass="btn btn-xs btn-default">
+                                        <span class="fa fa-plus-circle"></span>
+                                        <f:viewParam name="custId" value="#{customerController.custIdViewParamInDialog}"/>
+                                    </p:commandLink>
+                                    <p:commandLink
+                                        actionListener="#{customerController.removeTarget(tel)}"
+                                        update="panelGridCust" process="@this"
+                                        oncomplete="callInputKeyUp(false, 'callInputGridTel_');callInputKeyUp(true, 'callInputGridTel_');"
+                                        rendered="${telStatus.index > 0}"
+                                        styleClass="btn btn-xs btn-default">
+                                        <span class="fa fa-minus-circle"></span>
+                                        <f:viewParam name="custId" value="#{customerController.custIdViewParamInDialog}"/>
+                                    </p:commandLink>
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="${issue['label.session']}" />
+                                </p:column>
+                                <p:column style="white-space: nowrap">
+                                    <p:selectOneMenu value="${tel.custTargetClass}" converter="gnext.converter.smart">
+                                        <f:selectItems value="#{issueController.select.get('cust_tel_session_id')}"/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                            </p:row>
+                        </c:forEach>
+
+                        <c:forEach var="mobile" items="#{customerController.customer.mobile}" varStatus="mobileStatus">
+                            <p:row>
+                                <p:column>
+                                    <h:outputText value="${issue['label.mobile']}" rendered="${(mobileStatus.index == 0)}" />
+                                    <h:outputText value="${issue['label.mobile']} ${(mobileStatus.index+1)}" rendered="${(mobileStatus.index > 0)}" />
+                                </p:column>
+                                <p:column>
+                                    <p:inputText value="#{mobile.custTargetData}" styleClass="input_tel callInputGridMobile_${customer.tabIdx}_${(mobileStatus.index+1)}" maxlength="15">
+                                        <f:attribute name="title" value="#{issue['label.mobile']}"/>
+                                        <p:keyFilter regEx="/[0-9\-\+]/i" preventPaste="false"/>
+                                    </p:inputText>
+                                    <p:commandLink 
+                                        actionListener="#{customerController.addTarget(3)}"
+                                        update="panelGridCust,dialog_growl"
+                                        oncomplete="callInputKeyUp(false, 'callInputGridMobile_');callInputKeyUp(true, 'callInputGridMobile_');"
+                                        rendered="#{mobileStatus.index == 0}"
+                                        disabled="#{customerController.customer.mobile.size() gt 4}"
+                                        styleClass="btn btn-xs btn-default">
+                                        <span class="fa fa-plus-circle"></span>
+                                        <f:viewParam name="custId" value="#{customerController.custIdViewParamInDialog}"/>
+                                    </p:commandLink>
+                                    <p:commandLink
+                                        actionListener="#{customerController.removeTarget(mobile)}"
+                                        update="panelGridCust"
+                                        process="@this"
+                                        oncomplete="callInputKeyUp(false, 'callInputGridMobile_');callInputKeyUp(true, 'callInputGridMobile_');"
+                                        rendered="#{mobileStatus.index > 0}"
+                                        styleClass="btn btn-xs btn-default">
+                                        <span class="fa fa-minus-circle"></span>
+                                        <f:viewParam name="custId" value="#{customerController.custIdViewParamInDialog}"/>
+                                    </p:commandLink>
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="${issue['label.session']}" />
+                                </p:column>
+                                <p:column style="white-space: nowrap">
+                                    <p:selectOneMenu value="${mobile.custTargetClass}" converter="gnext.converter.smart">
+                                        <f:selectItems value="#{issueController.select.get('cust_tel_session_id')}"/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                            </p:row>
+                        </c:forEach>
+
+                        <c:forEach var="mail" items="#{customerController.customer.mail}" varStatus="mailStatus">
+                            <p:row>
+                                <p:column>
+                                    <h:outputText value="${issue['label.mail']}" rendered="${(mailStatus.index == 0)}" />
+                                    <h:outputText value="${issue['label.mail']} ${(mailStatus.index+1)}" rendered="${(mailStatus.index > 0)}" />
+                                    <!--<font>*</font>-->
+                                </p:column>
+                                <p:column colspan="3">
+                                    <p:inputText value="#{mail.custTargetData}" styleClass="input_mail" maxlength="50">
+                                        <f:validator validatorId="gnext.validator.EmailValidator"/>
+                                        <f:attribute name="title" value="${issue['label.mail']}"/>
+                                        <p:keyFilter regEx="/[a-z0-9_\.\-@]/i" preventPaste="false"/>
+                                    </p:inputText>
+                                    <p:commandLink 
+                                        actionListener="#{customerController.addTarget(1)}"
+                                        update="panelGridCust,dialog_growl"
+                                        rendered="#{mailStatus.index == 0}"
+                                        disabled="#{customerController.customer.mail.size() gt 4}"
+                                        styleClass="btn btn-xs btn-default">
+                                        <span class="fa fa-plus-circle"></span>
+                                        <f:viewParam name="custId" value="#{customerController.custIdViewParamInDialog}"/>
+                                    </p:commandLink>
+                                    <p:commandLink
+                                        actionListener="#{customerController.removeTarget(mail)}"
+                                        update="panelGridCust"
+                                        process="@this"
+                                        rendered="#{mailStatus.index > 0}"
+                                        styleClass="btn btn-xs btn-default">
+                                        <span class="fa fa-minus-circle"></span>
+                                        <f:viewParam name="custId" value="#{customerController.custIdViewParamInDialog}"/>
+                                    </p:commandLink>
+                                </p:column>
+                            </p:row>
+                        </c:forEach>
+
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="${issue['label.memo']}" />
+                            </p:column>
+                            <p:column colspan="3">
+                                <p:inputTextarea value="#{customerController.customer.custMemo}"
+                                                 rows="3" style="width: 100%" styleClass="input_text_area" maxlength="2000">
+                                    <f:validator validatorId="gnext.validator.LengthValidator" />
+                                    <f:attribute name="max" value="200"/>
+                                    <f:attribute name="title" value="${issue['label.memo']}"/>
+                                </p:inputTextarea>
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                </div>
+
+                <p:commandButton
+                    onstart="start()" onsuccess="finish()"
+                    actionListener="${customerController.delete}"
+                    icon="fa fa-trash"
+                    process="@this"
+                    value="${msg['label.delete']}"
+                    update="form_special_customer,dialog_growl"
+                    rendered="#{not empty customerController.customer.custId and (sec.isMaster() or sec.hasMethod('CustomerController', 'delete'))}"
+                    styleClass="button_padding_05" >
+                    <p:confirm header="#{msg['label.confirm']}" message="#{msg['label.confirm.delete']}" icon="ui-icon-alert"/>
+                </p:commandButton>
+                <p:commandButton
+                    onstart="start()" onsuccess="finish()"
+                    actionListener="${customerController.insert}" update="form_special_customer,dialog_growl"
+                    icon="fa fa-save"
+                    value="${msg['label.register']}"
+                    styleClass="button_padding_05" 
+                    rendered="#{ (customerController.customer.custId eq null or customerController.customer.custId le 0) and (sec.isMaster() or sec.hasMethod('CustomerController', 'CREATE')) }"/>
+                <p:commandButton
+                    onstart="start()" onsuccess="finish()"
+                    actionListener="#{customerController.update}" update="form_special_customer,dialog_growl"
+                    value="#{msg['label.update']}" icon="fa fa-check-circle" title="#{msg['label.update']}" styleClass="button_padding_05"
+                    rendered="#{customerController.customer.custId gt 0 and (sec.isMaster() or sec.hasMethod('CustomerController', 'UPDATE'))}">
+                </p:commandButton>
+            </h:form>
+        </h:body>
+    </f:view>
+</html>

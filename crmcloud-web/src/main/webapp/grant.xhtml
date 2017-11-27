@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:a="http://xmlns.jcp.org/jsf/passthrough"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <h:head>
+        <f:facet name="first">
+            <title>${msg['label.page.login']}</title>
+            <ui:include src="/blocks/common/meta.xhtml"/>
+            <meta http-equiv="pragma" content="no-cache" />
+        </f:facet>
+        
+        <h:outputStylesheet library="css" name="nprogress.css"/>
+        
+        <f:facet name="last">
+            <!--<h:outputScript library="bootstrap" name="js/bootstrap.min.js"/>-->
+            <h:outputScript library="scripts" name="nprogress.js"/>
+            <h:outputScript library="plugins" name="blockui/jquery.blockUI.js"/>
+            
+            <h:outputStylesheet library="bootstrap" name="css/bootstrap.css"  />
+            <!-- Font Awesome -->
+            <h:outputStylesheet library="fontawesome" name="css/font-awesome.min.css"  />
+            <!-- Ionicons -->
+            <h:outputStylesheet library="css" name="ionicons.min.css"/>
+            <!-- Theme style -->
+            <h:outputStylesheet library="dist" name="css/AdminLTE.css"/>
+            <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+            <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+            <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+            <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+            <![endif]-->
+            <style>
+                .login-page .ui-chkbox .ui-chkbox-label{
+                    vertical-align: text-bottom !important;
+                }
+            </style>
+            <h:outputStylesheet library="css" name="growl.css"  />
+        </f:facet>
+        <script type="text/javascript">
+            function start(spinElm) {
+                var cssClass = $("body").attr("class");
+                NProgress.start(cssClass);
+                if(spinElm){
+                    $(spinElm).addClass('fa-spin');
+                }
+                // todo: disable screen
+                $.blockUI({ css: { display: 'none'} ,
+                                   message: ''});
+            }
+
+            function finish(spinElm) {
+                NProgress.done();
+                if(spinElm){
+                    $(spinElm).removeClass('fa-spin');
+                }
+                // todo: enable screen
+                $.unblockUI();
+            }
+
+        </script>
+        <f:metadata>
+            <f:viewAction action="#{loginController.checkAutoGrant}" />
+        </f:metadata>
+    </h:head>
+    <h:body class="hold-transition login-page">
+        <f:view locale="#{localeController.locale}">
+            <p:growl id="growl" showDetail="false" life="5000" />
+            <div class="login-box">
+                <div class="login-logo">
+                    <c:if test="#{loginController.member.hasRemoteLogo()}">
+                        <a href="login.xhtml">
+                            <p:graphicImage value="#{loginController.member.streamedContent}" title="#{loginController.member.companyName}" cache="false"/>
+                        </a>
+                    </c:if>
+                </div>
+                <!-- /.login-logo -->
+                <p:outputPanel>
+                    <h:form>
+                        <p class="login-box-msg">
+<!--                            <h:outputLabel value="${msg['label.system.choose_company']}" />-->
+                            <h:outputText value="${msg['label.system.name']} ${msg['label.app.version']}" styleClass="quited"/>
+                        </p>
+                        <div class="list-group">
+                            <div style="margin: 0;padding: 0;max-height: 400px;overflow-y: auto;">
+                                <c:forEach items="#{loginController.grantList}" var="company">
+                                    <p:commandLink styleClass="list-group-item" actionListener="#{loginController.grantAccess(company)}" onstart="start()" onsuccess="finish()">
+                                        <h:outputText value="#{company.companyName}"/>
+                                        <i class="fa fa-chevron-circle-right pull-right" style="font-size: 20px" aria-hidden="true"></i>
+                                    </p:commandLink>
+                                </c:forEach>
+                            </div>
+                            <p:commandButton action="login.xhtml?faces-redirect=true"
+                                             value="${msg['label.back']}"
+                                             styleClass="btn btn-primary btn-block btn-flat"
+                                             style="padding: 6px;" />
+                        </div>
+                    </h:form>
+                </p:outputPanel>
+                <!-- /.login-box-body -->
+            </div>
+            <!-- /.login-box -->
+
+<!--            <div class="footer-box">
+                <h:outputLabel value="#{loginController.member.companyName}" class="company-name" />
+                <h:outputText value="#{loginController.member.companyCopyRight}" escape="false"/>
+                <h:outputText value="${msg['label.title']} ${msg['label.app.version']}" styleClass="quited"/>
+            </div>-->
+        <!-- /.footer-box -->
+        </f:view>
+        <!-- Bootstrap 3.3.6 -->
+        <h:outputScript library="bootstrap" name="js/bootstrap.min.js"/>
+    </h:body>
+</html>
